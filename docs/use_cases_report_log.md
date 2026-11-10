@@ -213,4 +213,4 @@ No `audit:write`, `audit:update` or `audit:delete` permission is proposed for an
 - **Q-21**: Is exporting the audit log (UC-NK-02) needed? If so, add `audit:export` and log the export.
 - **Q-22**: Permission names differ between documents: `mvp.md` uses `user:read`, Workflow uses `workflowConfigManage`, `ticketReassign`. Which convention does the team keep?
 
-See also: [mvp.md](mvp.md) · [use_cases.md](use_cases.md) · [03-use-cases.md](03-use-cases.md) · [user_stories_report_log.md](user_stories_report_log.md)
+See also: [mvp.md](mvp.md) · [use_cases.md](use_cases.md) · [03-use-cases.md](03-use-cases.md) · [user_stories_report_log.md](user_stories_report_log.md) · [information_architecture_report_log.md](information_architecture_report_log.md)
