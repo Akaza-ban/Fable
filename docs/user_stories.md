@@ -1,147 +1,158 @@
-# User stories
+# User Stories & Acceptance Criteria — Dashboard Subsystem
 
-Mỗi story kèm acceptance criteria (AC). Use case liên quan: [use_cases.md](use_cases.md). Quy tắc `BR-xx`: [MVP.md](MVP.md).
+This document outlines the Agile requirement specifications for the **Dashboard** subsystem. Stories are grouped into strategic **Epics**, prioritized via the **MoSCoW** framework, and defined with **BDD (Given - When - Then)** Acceptance Criteria to support automated testing and product verification.
 
-## Đăng nhập & phân quyền
+---
 
-**US-01 — Đăng nhập** (UC-01)
-Là người dùng, tôi muốn đăng nhập bằng email và mật khẩu để dùng hệ thống theo đúng vai trò của mình.
-- AC1: Đúng thông tin → vào trang chủ đúng vai trò (Admin → Dashboard, Technician → Ticket được giao, Requester → Ticket của tôi).
-- AC2: Sai thông tin → thông báo lỗi chung, không tiết lộ email có tồn tại hay không.
-- AC3: Sai 5 lần liên tiếp → bị khóa 15 phút.
-- AC4: Tài khoản bị tắt → không đăng nhập được.
-- AC5: Đăng nhập lần đầu bằng mật khẩu tạm → bắt buộc đổi mật khẩu; gọi API khác trước khi đổi → `403` với `code = PASSWORD_CHANGE_REQUIRED`.
+## Epic & Story Summary
 
-**US-18 — Đăng nhập bằng Microsoft** (UC-17)
-Là nhân viên, tôi muốn đăng nhập bằng tài khoản Microsoft công ty để không phải nhớ thêm mật khẩu.
-- AC1: Tài khoản Microsoft thuộc tenant, email khớp user Admin đã tạo → vào đúng user đó, user được liên kết `microsoft_oid`, audit log `MICROSOFT_LINKED`.
-- AC2: Email chưa được Admin tạo → bị từ chối "Tài khoản chưa được cấp quyền truy cập", không có user nào được tạo.
-- AC3: Tài khoản Microsoft ngoài tenant → bị từ chối, không tạo user.
-- AC4: User bị tắt đăng nhập bằng Microsoft → bị từ chối.
-- AC5: ADMIN đăng nhập bằng Microsoft → vẫn phải nhập mã 2FA.
-- AC6: User chỉ dùng Microsoft gọi `POST /auth/login` bằng mật khẩu hoặc `POST /me/password` → bị chặn (lỗi đăng nhập chung / `422`).
+| Epic | Story ID | User Story Title | Priority | Primary Persona |
+|---|---|---|---|---|
+| **EPIC 1: Executive & Operational Visibility** | **US-DB-01** | Executive KPI Cards & Ticket Pipeline Breakdown | **Must Have** | IT Operations Manager |
+| | **US-DB-02** | AI Automation & Resolution Rate Analytics | **Should Have** | IT Director, System Admin |
+| **EPIC 2: SLA Governance & Bottleneck Mitigation** | **US-DB-03** | SLA Breach Early Warning Radar & Unassigned Backlog | **Must Have** | IT Manager, Team Lead |
+| | **US-DB-04** | Deep Metric Drill-Down & Context Retention | **Must Have** | All IT Internal Staff |
+| **EPIC 3: Workload Balancing & Resource Optimization** | **US-DB-05** | Engineer Capacity Matrix & Overload Warning | **Must Have** | Technical Team Lead |
+| | **US-DB-06** | Intelligent Workload Redistribution Suggestions | **Could Have** | Technical Team Lead |
+| **EPIC 4: Real-Time Situational Awareness & Fast Dispatch** | **US-DB-07** | Live Incident Stream & Critical P1 Broadcast | **Must Have** | On-Duty Engineer, IT Admin |
+| | **US-DB-08** | Personalized Technician Daily Workbench | **Must Have** | Support Technician |
 
-- AC7: Đăng nhập xong → vai trò và nhóm kỹ thuật đã được đồng bộ theo nhóm Microsoft (xem US-19), trang chủ theo vai trò mới.
+---
 
-**US-19 — Đồng bộ vai trò & nhóm từ Microsoft** (UC-18)
-Là Admin, tôi muốn vai trò và nhóm kỹ thuật của mỗi người tự theo nhóm Microsoft họ tham gia, để không phải cập nhật tay hai nơi.
-- AC1: Ánh xạ nhóm Microsoft "IT-Helpdesk" → vai trò TECHNICIAN và → nhóm kỹ thuật "Hỗ trợ IT". Người trong "IT-Helpdesk" đăng nhập → thành TECHNICIAN, có trong "Hỗ trợ IT" với `source = MICROSOFT`.
-- AC2: Người thuộc 2 nhóm ánh xạ tới TECHNICIAN và ADMIN → vai trò ADMIN.
-- AC3: Người bị gỡ khỏi nhóm Microsoft → sau lần đồng bộ kế tiếp (tối đa 1 giờ hoặc bấm "Đồng bộ ngay") mất vai trò / nhóm tương ứng; thành viên `MANUAL` vẫn giữ.
-- AC4: Admin sửa tay vai trò hoặc bớt thành viên đang do Microsoft quản lý → `409` `MANAGED_BY_MICROSOFT`.
-- AC5: Đồng bộ làm mất Admin đang hoạt động cuối cùng → không đổi, báo lỗi trong kết quả đồng bộ.
-- AC6: Mọi thay đổi do đồng bộ có audit log `actor_type = SYSTEM` với giá trị trước và sau.
-- AC7: TECHNICIAN hoặc AI_AGENT gọi API ánh xạ / đồng bộ → `403`.
+## EPIC 1: Executive & Operational Visibility
 
-**US-20 — Tự gỡ người rời tổ chức** (UC-18)
-Là Admin, tôi muốn người bị tắt hoặc xóa tài khoản Microsoft tự bị gỡ khỏi hệ thống, để nhân viên đã nghỉ không còn truy cập được.
-- AC1: Tài khoản Microsoft bị tắt → sau lần đồng bộ kế tiếp, user có `status = DISABLED`, `disabled_reason = MICROSOFT_REMOVED`, mọi request tiếp theo bằng token cũ bị từ chối.
-- AC2: Tài khoản Microsoft bị xóa → kết quả như AC1.
-- AC3: User bị gỡ khỏi mọi nhóm kỹ thuật (cả thành viên thêm tay); bản ghi user, ticket và audit log cũ vẫn còn.
-- AC4: Kết quả đồng bộ liệt kê người bị gỡ và số ticket đang mở của họ; audit log `USER_REMOVED_BY_MICROSOFT` với `actor_type = SYSTEM`.
-- AC5: Người bị gỡ là ADMIN đang hoạt động cuối cùng → không gỡ, báo lỗi trong kết quả đồng bộ.
-- AC6: Tài khoản Microsoft được bật lại → user vẫn `DISABLED` cho tới khi Admin bật tay.
+### US-DB-01: Executive KPI Cards & Ticket Pipeline Breakdown
+* **Story ID:** `US-DB-01` | **Priority:** `Must Have`
+* **User Story:**
+  > **As an** IT Operations Manager,  
+  > **I want to** view high-level KPI cards and priority distribution charts,  
+  > **So that** I can grasp departmental workload and throughput at a glance without generating manual reports.
 
-**US-02 — Đăng xuất** (UC-02)
-Là người dùng, tôi muốn đăng xuất để bảo vệ tài khoản trên máy dùng chung.
-- AC1: Sau khi đăng xuất, refresh token cũ không dùng được nữa.
+#### Acceptance Criteria (BDD):
+* **Scenario 1: Default KPI Rendering**
+  * **Given:** The IT Operations Manager is authenticated and navigates to the Dashboard.
+  * **When:** The dashboard page finishes loading.
+  * **Then:** The system displays 5 core KPI metric cards: Total Tickets, New (`OPEN`), In Progress (`IN_PROGRESS`), Pending Customer Input (`NEEDS_INFO`), and Completed (`RESOLVED`/`CLOSED`) over the past 24 hours.
+  * **And:** A priority breakdown chart is displayed: P1 (Red), P2 (Orange), P3 (Yellow), P4 (Blue).
 
-**US-03 — Chỉ thấy ticket trong phạm vi** (UC-03)
-Là người gửi ticket, tôi chỉ muốn thấy ticket của mình. Là kỹ thuật viên, tôi muốn thấy ticket giao cho mình và nhóm mình.
-- AC1: REQUESTER gọi danh sách ticket → chỉ nhận ticket do mình tạo.
-- AC2: TECHNICIAN mở ticket không thuộc mình / nhóm mình → `403`.
-- AC3: ADMIN thấy tất cả ticket.
+* **Scenario 2: Dynamic Time Range Filtering**
+  * **Given:** The user is viewing data for "Today".
+  * **When:** The user selects "Last 7 Days" from the date range dropdown.
+  * **Then:** All KPI cards and charts refresh asynchronously with 7-day aggregated data without triggering a full page reload.
 
-**US-04 — AI truy cập bằng service account** (UC-03)
-Là hệ thống AI, tôi cần gọi API bằng API key để đọc ticket, nhóm và người dùng phục vụ phân luồng.
-- AC1: API key hợp lệ → đọc được ticket, nhóm, người dùng (kèm `skills`).
-- AC2: AI gọi API tạo / sửa người dùng, gán vai trò hoặc sửa nhóm → `403`.
-- AC3: Mọi request của AI được ghi log với `actor_type = AI`.
+* **Scenario 3: Role-Based Access Enforcement**
+  * **Given:** A user with the `REQUESTER` role attempts to access `/admin/dashboard`.
+  * **When:** The HTTP request reaches the server.
+  * **Then:** The server returns `403 Forbidden` and redirects the user to `/my-tickets`.
 
-**US-13 — Quên mật khẩu** (UC-12)
-Là người dùng, tôi muốn đặt lại mật khẩu qua email khi quên để không phải nhờ Admin.
-- AC1: Nhập email bất kỳ → luôn nhận cùng một thông báo.
-- AC2: Link đặt lại dùng được 1 lần trong 30 phút; dùng lại hoặc quá hạn → báo không còn hiệu lực.
-- AC3: Đặt lại thành công → mọi phiên cũ bị đăng xuất, tài khoản được gỡ khóa.
-- AC4: Tài khoản bị tắt hoặc chỉ dùng Microsoft → không nhận được email đặt lại.
+---
 
-**US-14 — Xác thực 2 lớp** (UC-01, UC-13)
-Là người dùng, tôi muốn bật 2FA để tài khoản an toàn hơn.
-- AC1: Quét QR, nhập đúng mã → 2FA bật; lần đăng nhập sau phải nhập mã.
-- AC2: Sai mã 2FA 5 lần → khóa 15 phút.
-- AC3: ADMIN bắt buộc có 2FA; ADMIN gọi API tắt 2FA của mình → `403`.
-- AC4: Admin reset 2FA cho người khác → người đó bị đăng xuất mọi phiên, có audit log `2FA_RESET`.
+### US-DB-02: AI Automation & Resolution Rate Analytics
+* **Story ID:** `US-DB-02` | **Priority:** `Should Have`
+* **User Story:**
+  > **As an** IT Director or Administrator,  
+  > **I want to** track the percentage of tickets autonomously resolved by AI,  
+  > **So that** I can measure ROI on AI investments and verify human workload offloading.
 
-## Quản lý người dùng
+#### Acceptance Criteria:
+* **Scenario 1: Autonomous Resolution Rate Calculation**
+  * **Given:** 1,000 tickets are ingested during the day, with 350 resolved entirely by AI (e.g., automated permission grant, self-service password reset).
+  * **When:** The administrator views the "AI Automation Rate" card.
+  * **Then:** The card displays `35%` along with a period-over-period trend indicator (+X% vs last week).
+  * **And:** Hovering over the card reveals a tooltip: *"350 automated resolutions / 650 routed to human engineers"*.
 
-**US-05 — Xem danh sách người dùng** (UC-04)
-Là Admin, tôi muốn tìm và lọc người dùng để quản lý nhanh.
-- AC1: Tìm theo tên / email, lọc theo vai trò, trạng thái, nhóm, kỹ năng; có phân trang.
-- AC2: TECHNICIAN hoặc REQUESTER truy cập → `403`.
+---
 
-**US-06 — Thêm người dùng** (UC-05)
-Là Admin, tôi muốn tạo tài khoản mới và gán vai trò.
-- AC1: Tạo thành công → người dùng đăng nhập được bằng mật khẩu tạm và bị yêu cầu đổi ngay.
-- AC2: Email trùng → báo lỗi `409`, không tạo.
-- AC3: Có bản ghi audit log `USER_CREATED`.
-- AC4: AI_AGENT gọi API tạo người dùng → `403`.
-- AC5: Bỏ trống mật khẩu tạm → người đó đăng nhập được bằng Microsoft (email khớp), không đăng nhập được bằng mật khẩu.
+## EPIC 2: SLA Governance & Bottleneck Mitigation
 
-**US-07 — Sửa người dùng, đổi vai trò & kỹ năng** (UC-06)
-Là Admin, tôi muốn đổi thông tin, kỹ năng và vai trò của người dùng để AI phân việc đúng người.
-- AC1: Đổi vai trò → quyền mới áp dụng ngay ở request tiếp theo của người đó.
-- AC2: Không thể hạ vai trò của Admin cuối cùng hoặc của chính mình.
-- AC3: Audit log có giá trị trước và sau.
-- AC4: Kỹ năng mới hiện ngay khi AI đọc `GET /users/:id`.
+### US-DB-03: SLA Breach Early Warning Radar & Unassigned Backlog
+* **Story ID:** `US-DB-03` | **Priority:** `Must Have`
+* **User Story:**
+  > **As a** Technical Support Team Lead,  
+  > **I want to** pinpoint unassigned tickets and tickets nearing or breaching SLA deadlines,  
+  > **So that** I can intervene before service level commitments are compromised.
 
-**US-08 — Bật / tắt tài khoản** (UC-07)
-Là Admin, tôi muốn tắt tài khoản người đã nghỉ để họ không truy cập được nữa.
-- AC1: Tắt → người đó bị đăng xuất ngay ở request tiếp theo.
-- AC2: Không tắt được chính mình hoặc Admin cuối cùng.
-- AC3: Tắt TECHNICIAN còn ticket đang mở → hiện cảnh báo số ticket.
+#### Acceptance Criteria:
+* **Scenario 1: Two-Tier SLA Deadline Badges**
+  * **Given:** Ticket #TK-992 has 25 minutes remaining before resolution deadline ($\le 20\%$ of total SLA duration).
+  * **When:** The team lead reviews the SLA radar widget.
+  * **Then:** The ticket displays a **Yellow Warning** badge with a live countdown `00:24:59`.
+  * **And:** If the ticket exceeds the deadline, the badge turns **Red (Breached)** with the overdue duration `-00:15:20`.
 
-**US-09 — Quản lý nhóm kỹ thuật** (UC-08)
-Là Admin, tôi muốn tạo nhóm kỹ thuật và thêm thành viên để AI phân luồng ticket đúng nhóm.
-- AC1: Tạo / sửa nhóm với tên, mô tả, danh mục phụ trách.
-- AC2: Thêm / bớt thành viên; một kỹ thuật viên có thể ở nhiều nhóm.
-- AC3: Không xóa được nhóm còn ticket đang mở.
-- AC4: TECHNICIAN gọi API sửa nhóm → `403`.
+* **Scenario 2: Unassigned Ticket Escalation**
+  * **Given:** A newly created ticket has remained unassigned for over 30 minutes and AI could not auto-resolve it.
+  * **When:** The periodic scan runs.
+  * **Then:** The ticket is automatically highlighted in the "Requires Immediate Assignment" queue with an urgent indicator.
 
-**US-15 — Quản lý service account AI** (UC-14)
-Là Admin, tôi muốn tạo và xoay API key cho AI để kiểm soát việc AI truy cập hệ thống.
-- AC1: Tạo / xoay → API key hiển thị đúng một lần; lần xem sau chỉ thấy tên, trạng thái, lần dùng cuối.
-- AC2: Xoay key hoặc tắt service account → request bằng key cũ trả `401`.
-- AC3: AI_AGENT gọi API quản lý service account → `403`.
+---
 
-**US-16 — AI đề xuất cải thiện phân luồng** (UC-15)
-Là hệ thống AI, tôi muốn gửi đề xuất bổ sung danh mục cho nhóm hoặc kỹ năng cho kỹ thuật viên dựa trên ticket đã xử lý, để lần phân luồng sau chính xác hơn.
-- AC1: Gửi đề xuất `GROUP_CATEGORY` / `USER_SKILL` có lý do và ticket bằng chứng → tạo ở trạng thái `PENDING`, dữ liệu nhóm / người dùng chưa đổi.
-- AC2: Gửi đề xuất đổi vai trò hoặc trạng thái → `422`.
-- AC3: Gửi lại nội dung đã bị từ chối trong 30 ngày → `409`.
-- AC4: TECHNICIAN hoặc ADMIN gọi API tạo đề xuất → `403`.
+### US-DB-04: Deep Metric Drill-Down & Context Retention
+* **Story ID:** `US-DB-04` | **Priority:** `Must Have`
+* **User Story:**
+  > **As a** Support Engineer or Administrator,  
+  > **I want to** click directly on any metric card or chart section to navigate to the filtered ticket list,  
+  > **So that** I can immediately work on those specific tickets without configuring manual search filters.
 
-**US-17 — Duyệt đề xuất của AI** (UC-16)
-Là Admin, tôi muốn xem và duyệt đề xuất của AI để hệ thống thông minh dần mà vẫn trong tầm kiểm soát.
-- AC1: Danh sách đề xuất `PENDING` hiện nội dung thay đổi, lý do, độ tin cậy, link ticket bằng chứng.
-- AC2: Duyệt → danh mục nhóm / kỹ năng được cập nhật; audit log có actor là Admin và `suggestion_id`.
-- AC3: Từ chối → lưu lý do; đề xuất không còn trong danh sách chờ.
-- AC4: Duyệt đề xuất đã xử lý → `409`.
-- AC5: AI_AGENT gọi API duyệt → `403`.
+#### Acceptance Criteria:
+* **Scenario 1: Drill-Down from Overdue SLA Card**
+  * **Given:** The SLA card indicates `"08 Breached Tickets"`.
+  * **When:** The user clicks on the card.
+  * **Then:** The browser navigates to `/tickets?filter=sla_breached&scope=all`.
+  * **And:** The table renders exactly the 8 corresponding breached tickets.
 
-## Hồ sơ cá nhân
+---
 
-**US-10 — Cập nhật hồ sơ** (UC-09)
-Là người dùng, tôi muốn sửa họ tên, SĐT, avatar.
-- AC1: Lưu thành công và hiển thị ngay.
-- AC2: Gửi kèm email, vai trò, trạng thái hoặc kỹ năng → trả `422`, không thay đổi gì.
+## EPIC 3: Workload Balancing & Resource Optimization
 
-**US-11 — Đổi mật khẩu** (UC-10)
-Là người dùng, tôi muốn đổi mật khẩu để giữ tài khoản an toàn.
-- AC1: Sai mật khẩu cũ → báo lỗi.
-- AC2: Mật khẩu mới không đạt chính sách → báo lỗi cụ thể.
-- AC3: Đổi thành công → các phiên khác bị đăng xuất.
+### US-DB-05: Engineer Capacity Matrix & Overload Warning
+* **Story ID:** `US-DB-05` | **Priority:** `Must Have`
+* **User Story:**
+  > **As a** Technical Team Lead,  
+  > **I want to** monitor the real-time active workload of each engineer on my team,  
+  > **So that** I can identify bottlenecks and redistribute tasks before engineers become overwhelmed.
 
-**US-12 — Xem vai trò & quyền** (UC-11)
-Là người dùng, tôi muốn biết mình có quyền gì để hiểu vì sao thấy hoặc không thấy một chức năng.
-- AC1: Hiển thị vai trò, nhóm, kỹ năng, trạng thái 2FA, trạng thái liên kết Microsoft và danh sách quyền bằng câu dễ hiểu.
-- AC2: AI_AGENT gọi `/me/permissions` → `403` (service account không có hồ sơ).
+#### Acceptance Criteria:
+* **Scenario 1: Threshold-Based Capacity Classification**
+  * **Given:** Engineer Alice is actively working on 8 open tickets (`IN_PROGRESS`).
+  * **When:** The team lead opens the "IT Support Workload" widget.
+  * **Then:** Alice's progress bar is highlighted in Red with an `Overloaded (8/7)` indicator badge.
+  * **And:** Engineer Bob with 2 open tickets is rendered in Green with a `Normal (2/7)` indicator badge.
+
+* **Scenario 2: Peer Privacy Protection**
+  * **Given:** A standard technician logs into the platform.
+  * **When:** Viewing the workload section.
+  * **Then:** They can only see their own workload metric compared against the team's average; individual ticket breakdowns of peers remain hidden.
+
+---
+
+## EPIC 4: Real-Time Situational Awareness & Fast Dispatch
+
+### US-DB-07: Live Incident Stream & Critical P1 Broadcast
+* **Story ID:** `US-DB-07` | **Priority:** `Must Have`
+* **User Story:**
+  > **As an** On-Duty Support Engineer,  
+  > **I want to** receive instant real-time alerts when a critical P1 ticket is logged without refreshing the page,  
+  > **So that** our team can respond immediately to severe outages (minimizing MTTR).
+
+#### Acceptance Criteria:
+* **Scenario 1: Audio & Visual Alert for P1 Tickets**
+  * **Given:** The dashboard is open on the operations monitoring screen.
+  * **When:** A new P1 (Critical) ticket is created in the system.
+  * **Then:** A persistent red alert banner immediately renders at the top of the viewport, accompanied by an audible chime (if enabled).
+  * **And:** The alert remains visible until an engineer clicks "Acknowledge Incident".
+
+---
+
+### US-DB-08: Personalized Technician Daily Workbench
+* **Story ID:** `US-DB-08` | **Priority:** `Must Have`
+* **User Story:**
+  > **As a** Frontline Support Technician,  
+  > **I want to** have a personalized workbench showing my assigned tasks and pending inquiries,  
+  > **So that** I can focus exclusively on my daily duties without getting distracted by global enterprise statistics.
+
+#### Acceptance Criteria:
+* **Scenario 1: Priority-Sorted Personal Queue**
+  * **Given:** A technician logs into the system.
+  * **When:** Their default homepage loads.
+  * **Then:** The "My Queue Today" list is automatically ordered by priority: P1 tickets first $\rightarrow$ Nearest SLA deadlines $\rightarrow$ Newly assigned items.
+  * **And:** Quick-action buttons ("Start Working", "Request More Info") are accessible directly on each list item.

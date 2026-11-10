@@ -1,133 +1,138 @@
-# Use cases
+# Use Case Specification — Dashboard Subsystem
 
-Vai trò, ma trận quyền và quy tắc `BR-xx` xem ở [MVP.md](MVP.md).
-
-## Tổng quan
-
-| Mã | Use case | Actor |
-|---|---|---|
-| UC-01 | Đăng nhập (kèm 2FA nếu bật) | Mọi người dùng |
-| UC-02 | Đăng xuất | Mọi người dùng |
-| UC-03 | Kiểm tra quyền & phạm vi trên mỗi request | Hệ thống |
-| UC-04 | Xem / tìm danh sách người dùng | Admin |
-| UC-05 | Thêm người dùng | Admin |
-| UC-06 | Sửa người dùng, gán vai trò & kỹ năng | Admin |
-| UC-07 | Bật / tắt tài khoản | Admin |
-| UC-08 | Quản lý nhóm kỹ thuật & thành viên | Admin |
-| UC-09 | Xem & cập nhật hồ sơ cá nhân | Mọi người dùng |
-| UC-10 | Đổi mật khẩu | Mọi người dùng |
-| UC-11 | Xem vai trò & quyền của mình | Mọi người dùng |
-| UC-12 | Quên mật khẩu | Mọi người dùng (chưa đăng nhập) |
-| UC-13 | Bật / tắt 2FA | Mọi người dùng; Admin reset cho người khác |
-| UC-14 | Quản lý service account AI | Admin |
-| UC-15 | AI gửi đề xuất cải thiện phân luồng | AI_AGENT |
-| UC-16 | Duyệt / từ chối đề xuất của AI | Admin |
-| UC-17 | Đăng nhập bằng Microsoft | Người dùng đã được Admin tạo tài khoản |
-| UC-18 | Ánh xạ & đồng bộ nhóm Microsoft | Admin; Hệ thống (đồng bộ định kỳ) |
+This document specifies the Use Cases for the **Dashboard** subsystem of the AI-Powered Automated Ticket Dispatching & Resolution System.  
+Focus: Detailed interactions between **Actors** and the **System**, processing logic, preconditions, postconditions, alternative flows, and exception scenarios.
 
 ---
 
-## Đăng nhập & phân quyền
+## 1. Actors & Use Case Catalog
 
-### UC-01 Đăng nhập
-- **Luồng chính:** nhập email + mật khẩu → hệ thống kiểm tra → nếu bật 2FA: trả `challenge_token`, người dùng nhập mã 6 số → trả access token (15 phút) + refresh token (7 ngày) → chuyển tới trang chủ theo vai trò.
-- **Nhánh:** `must_change_password = true` → chuyển tới màn hình đổi mật khẩu, chưa dùng được chức năng khác (BR-10). ADMIN chưa cài 2FA → bắt buộc cài trước khi vào hệ thống (BR-12).
-- **Ngoại lệ:** sai thông tin → báo lỗi chung "Email hoặc mật khẩu không đúng"; tài khoản bị tắt → báo "Tài khoản đã bị vô hiệu hóa"; sai mật khẩu hoặc mã 2FA 5 lần → khóa 15 phút (BR-04).
-- **BR:** BR-01, BR-04, BR-10, BR-12.
+### 1.1. Participating Actors
+* **System Administrator (`ADMIN`):** Oversees end-to-end system operations, ticket allocation, engineering team workloads, and overall platform KPIs.
+* **Technical Team Lead (`TECHNICIAN_LEAD`):** Monitors team performance, unassigned ticket queues, and workload capacity of team members.
+* **Support Technician (`TECHNICIAN`):** Tracks personal assigned tickets, approaching SLA deadlines, and team queue status.
+* **AI Service (`AI_AGENT`):** Serves as an automated system actor delivering classification, confidence scores, and workload rebalancing recommendations.
 
-### UC-17 Đăng nhập bằng Microsoft
-- **Luồng chính:** bấm "Đăng nhập bằng Microsoft" → chuyển sang trang đăng nhập Microsoft (OIDC, Authorization Code + PKCE) → Microsoft trả về `/auth/microsoft/callback` → backend kiểm tra `state`, tenant, lấy `oid`, email, họ tên → tìm user theo `microsoft_oid`, lần đầu thì theo email rồi liên kết (BR-16) → **đồng bộ vai trò & nhóm kỹ thuật** (BR-18) → chuyển về `/login/callback?code=…` (mã một lần, 60 giây) → frontend đổi mã lấy access + refresh token → trang chủ theo vai trò **sau khi đồng bộ**.
-- **Nhánh:** ADMIN (sau đồng bộ) → vẫn phải nhập mã 2FA (BR-17). Lần đầu liên kết → ghi audit log `MICROSOFT_LINKED`.
-- **Ngoại lệ:** tài khoản ngoài tenant → "Tài khoản Microsoft không thuộc tổ chức"; email chưa được Admin tạo → "Tài khoản chưa được cấp quyền truy cập", không tạo user; tài khoản bị tắt → "Tài khoản đã bị vô hiệu hóa"; người dùng hủy ở Microsoft hoặc `state` sai → về `/login` kèm thông báo lỗi; Microsoft Graph lỗi → vẫn cho đăng nhập với vai trò / nhóm hiện tại, ghi lỗi vào kết quả đồng bộ.
-- **BR:** BR-03, BR-09, BR-12, BR-16, BR-17, BR-18.
+### 1.2. Use Case Catalog
 
-### UC-02 Đăng xuất
-- Thu hồi refresh token hiện tại, xóa token phía client, về trang đăng nhập.
+| UC ID | Use Case Name | Primary Actor | Business Objective |
+|---|---|---|---|
+| **UC-DB-01** | Monitor Overall Operations & Ticket Distribution | `ADMIN` | Gain macro-level visibility into ticket intake, status progression, and AI resolution rates. |
+| **UC-DB-02** | Track Bottlenecks & Manage SLA Breaches | `ADMIN`, `TECHNICIAN_LEAD` | Proactively identify at-risk and breached tickets to take timely mitigation actions. |
+| **UC-DB-03** | Monitor & Rebalance Technician Workload | `ADMIN`, `TECHNICIAN_LEAD` | Assess real-time engineer capacity, detect workload bottlenecks, and redistribute tasks. |
+| **UC-DB-04** | Real-Time Incident Alerting & Event Feed | `ADMIN`, `TECHNICIAN` | Receive immediate real-time notifications for critical P1 tickets, volume spikes, and workflow failures. |
+| **UC-DB-05** | Technician Personal Workspace & Queue Operations | `TECHNICIAN` | Manage personal daily work queues, review personal SLA countdowns, and claim unassigned group tickets. |
 
-### UC-03 Kiểm tra quyền & phạm vi
-- Mỗi request: xác thực token → lấy vai trò, trạng thái hiện tại từ DB / cache ngắn (BR-07) → kiểm tra quyền của endpoint → lọc dữ liệu theo phạm vi.
-- Không có quyền hoặc dữ liệu ngoài phạm vi → `403`. Token hết hạn → `401`, client dùng refresh token để lấy token mới. Tài khoản bị tắt → `401` (BR-03).
-- AI_AGENT xác thực bằng API key (header `X-API-Key`), chỉ dùng được các quyền ghi trong ma trận. Mọi request của AI ghi log với `actor_type = AI`.
-- **BR:** BR-03, BR-07, BR-09.
+---
 
-### UC-12 Quên mật khẩu
-- **Luồng chính:** nhập email → hệ thống luôn báo "Nếu email tồn tại, bạn sẽ nhận được link đặt lại" → gửi email chứa link (token 1 lần, 30 phút) → người dùng mở link, nhập mật khẩu mới → kiểm tra BR-05 → đặt lại thành công, thu hồi mọi refresh token, gỡ khóa.
-- **Ngoại lệ:** token hết hạn / đã dùng → báo "Link không còn hiệu lực"; tài khoản bị tắt hoặc không có mật khẩu (chỉ dùng Microsoft) → không gửi email.
-- **BR:** BR-05, BR-11, BR-17.
+## 2. Detailed Use Case Specifications
 
-### UC-13 Bật / tắt 2FA
-- **Bật:** hệ thống sinh secret + mã QR → người dùng quét bằng ứng dụng Authenticator → nhập mã 6 số để xác nhận → bật.
-- **Tắt:** nhập mật khẩu + mã 2FA hiện tại → tắt. ADMIN không tự tắt được (BR-12).
-- **Admin reset 2FA người khác** (người dùng mất điện thoại): xóa secret, đăng xuất mọi phiên của người đó, ghi audit log `2FA_RESET`.
-- **BR:** BR-09, BR-12.
+### UC-DB-01: Monitor Overall Operations & Ticket Distribution
 
-## Quản lý người dùng
+* **Goal:** Provide System Administrators with a comprehensive overview of ticket volume, lifecycle distribution, and AI automation performance.
+* **Preconditions:** The user is authenticated with the `ADMIN` role.
+* **Postconditions:** Visual analytics and KPI metrics are rendered; deep drill-down navigation to `/tickets` is enabled.
 
-### UC-04 Xem / tìm danh sách người dùng
-- Danh sách có phân trang; tìm theo tên, email; lọc theo vai trò, trạng thái, nhóm, kỹ năng.
-- **Ngoại lệ:** không có `user:read` → `403`.
+#### Main Success Scenario (Main Flow):
+1. **Actor:** Navigates to the `Dashboard` via the primary navigation sidebar.
+2. **System:**
+   - Validates user role and data scope (`ADMIN` -> global enterprise-wide scope).
+   - Queries cached statistics for the default time window (Today / Past 24 Hours).
+   - Renders the dashboard layout:
+     - **Summary KPI Cards:** Total tickets received, New (`OPEN`), In Progress (`IN_PROGRESS`), Waiting for Customer (`NEEDS_INFO`), and Closed (`CLOSED`).
+     - **AI Automation Rate:** Percentage and count of tickets resolved end-to-end by AI without manual engineer intervention.
+     - **Distribution Charts:** Breakdown by priority (P1 Critical -> P4 Low) and incident category (Hardware, Network, Access & Permissions, Software, etc.).
+     - **Hourly Trend Line Chart:** Ticket intake volume distributed across hourly intervals.
+3. **Actor:** Modifies the time range filter (e.g., selects "Last 7 Days", "This Month", or "Custom Date Range").
+4. **System:** Validates the date parameters and asynchronously reloads all KPI cards and charts.
+5. **Actor:** Clicks on a specific chart element (e.g., the "P1 - Critical" slice on the breakdown chart).
+6. **System:** Navigates to the Ticket Management screen (`/tickets`) with preset URL query parameters: `priority=P1&date_range=...`.
 
-### UC-05 Thêm người dùng
-- Nhập email, họ tên, vai trò, nhóm và kỹ năng (nếu là TECHNICIAN), mật khẩu tạm (tùy chọn). Có mật khẩu tạm → `must_change_password = true`. Bỏ trống → người dùng chỉ đăng nhập được bằng Microsoft, tự liên kết theo email ở lần đầu (BR-16). Vai trò chọn khi tạo có thể bị thay bởi đồng bộ Microsoft sau lần đăng nhập đầu (BR-18).
-- **Ngoại lệ:** email đã tồn tại → `409`; mật khẩu tạm không đạt BR-05 → `422`.
-- Ghi audit log `USER_CREATED`.
-- **BR:** BR-01, BR-05, BR-09, BR-10.
+#### Alternative & Exception Flows:
+* **A1 - Invalid Custom Date Range:** At step 3, if the start date is after the end date or the interval exceeds 365 days, the system displays an inline validation error: *"Invalid date range. Range cannot exceed 1 year."* and retains the current data view.
+* **E1 - Aggregation Service Failure:** If the analytics database or cache is unreachable, the system displays an isolated error widget: *"Failed to load metric data. Please click to Retry."* without blocking the rest of the application.
 
-### UC-06 Sửa người dùng, gán vai trò & kỹ năng
-- Sửa họ tên, SĐT, kỹ năng (`skills`), vai trò, nhóm. Không cho tự hạ vai trò, không hạ Admin cuối cùng (BR-02).
-- Vai trò / nhóm đang do Microsoft quản lý → `409` `MANAGED_BY_MICROSOFT` (BR-19); giao diện khóa ô đó và ghi "Đồng bộ từ Microsoft".
-- Ghi audit log `USER_UPDATED` / `ROLE_CHANGED` kèm giá trị trước và sau.
-- **BR:** BR-02, BR-07, BR-09.
+---
 
-### UC-07 Bật / tắt tài khoản
-- Tắt → thu hồi token (BR-03). Không cho tắt chính mình hoặc Admin cuối cùng (BR-02).
-- Tài khoản bị hệ thống tự tắt do rời Microsoft (BR-20) hiện lý do "Đã bị gỡ bên Microsoft"; Admin vẫn bật lại tay được.
-- Nếu tắt TECHNICIAN còn ticket đang xử lý: hiển thị cảnh báo số ticket; việc chuyển ticket thuộc module Ticket / Workflow.
-- Ghi audit log `USER_DISABLED` / `USER_ENABLED`.
-- **BR:** BR-02, BR-03, BR-09.
+### UC-DB-02: Track Bottlenecks & Manage SLA Breaches
 
-### UC-08 Quản lý nhóm kỹ thuật & thành viên
-- Tạo / sửa / xóa nhóm (tên, mô tả, danh mục ticket phụ trách). Thêm / bớt TECHNICIAN vào nhóm (thành viên thêm tay có `source = MANUAL`; thành viên `source = MICROSOFT` không bớt tay được — BR-19).
-- Danh mục phụ trách của nhóm được AI dùng để phân luồng.
-- **Ngoại lệ:** xóa nhóm còn ticket đang mở → `409` (BR-08); thêm người không phải TECHNICIAN → `422`.
-- **BR:** BR-08, BR-09.
+* **Goal:** Locate stagnant tickets and identify tickets nearing or exceeding Service Level Agreement (SLA) response/resolution deadlines.
+* **Preconditions:** The user is logged in as `ADMIN` or `TECHNICIAN_LEAD`.
+* **Postconditions:** At-risk tickets are surfaced for immediate escalation, reminder dispatch, or re-assignment.
 
-### UC-18 Ánh xạ & đồng bộ nhóm Microsoft
-- **Cấu hình ánh xạ:** Admin thêm dòng ánh xạ: chọn nhóm Microsoft (nhập Object ID hoặc tìm theo tên qua Microsoft Graph) → đích là **một vai trò** (`ADMIN` / `TECHNICIAN` / `REQUESTER`) hoặc **một nhóm kỹ thuật**. Xóa dòng ánh xạ được.
-- **Đồng bộ:** chạy khi đăng nhập Microsoft, mỗi 1 giờ, hoặc Admin bấm "Đồng bộ ngay" → với mỗi user đã liên kết: lấy nhóm Microsoft → tính vai trò và nhóm kỹ thuật theo BR-18 → ghi thay đổi + audit log `ROLE_SYNCED` / `GROUP_MEMBER_SYNCED` (`actor_type = SYSTEM`).
-- **Tự gỡ người rời tổ chức:** tài khoản Microsoft bị tắt hoặc bị xóa → tắt tài khoản (`disabled_reason = MICROSOFT_REMOVED`), thu hồi phiên, gỡ khỏi mọi nhóm kỹ thuật, ghi audit log `USER_REMOVED_BY_MICROSOFT`; kết quả đồng bộ liệt kê người bị gỡ kèm số ticket đang mở (BR-20).
-- **Kết quả đồng bộ:** thời điểm chạy, số user đã xử lý, số thay đổi, danh sách lỗi / bỏ qua (user không phải TECHNICIAN nằm trong nhóm Microsoft ánh xạ tới nhóm kỹ thuật; đụng Admin cuối cùng; Graph lỗi).
-- **Ngoại lệ:** Object ID không tồn tại trên Microsoft → `422`; ánh xạ trùng → `409`; nhóm kỹ thuật đích bị xóa → dòng ánh xạ bị xóa theo; hạ hoặc gỡ Admin cuối cùng → bỏ qua (BR-19, BR-20).
-- **BR:** BR-02, BR-03, BR-07, BR-09, BR-18, BR-19, BR-20.
+#### Main Success Scenario (Main Flow):
+1. **Actor:** Views the **SLA & Bottleneck Watch** widget on the dashboard.
+2. **System:**
+   - Scans all active tickets and matches them against active SLA policies:
+     - **Yellow Warning (Near Breach):** Remaining time $\le 20\%$ of the total SLA commitment.
+     - **Red Alert (Breached):** Actual time exceeds initial response deadline or resolution deadline.
+   - Displays a prioritized list of the Top 10 critical tickets sorted by priority descending (P1 $\rightarrow$ P4) and longest overdue time.
+   - Renders real-time countdown timers or overdue badges beside each ticket.
+3. **Actor:** Clicks "Quick View" on a breached ticket.
+4. **System:** Opens a summary modal containing: AI-generated problem summary, current assigned technician, and recent activity logs.
+5. **Actor:** Selects an action: "Send Reminder to Assignee" or "Reassign Ticket".
+6. **System:** Dispatches the notification/reassignment, updates the ticket state, and logs the action in the `AuditLog`.
 
-### UC-14 Quản lý service account AI
-- Tạo service account (tên) → hệ thống sinh API key, hiển thị **một lần** (BR-13).
-- Xoay key: sinh key mới, key cũ vô hiệu ngay. Bật / tắt: tắt → mọi request bằng key đó trả `401`.
-- Danh sách hiển thị tên, trạng thái, lần dùng cuối; không bao giờ hiển thị lại key.
-- Ghi audit log `SERVICE_ACCOUNT_CREATED` / `API_KEY_ROTATED` / `SERVICE_ACCOUNT_DISABLED`.
-- **BR:** BR-09, BR-13.
+#### Alternative Flows:
+* **A1 - 100% SLA Compliance:** If no tickets are nearing or exceeding deadlines, the widget displays a positive state card: *"All active tickets are currently meeting SLA targets."*
 
-### UC-15 AI gửi đề xuất cải thiện phân luồng
-- AI phát hiện mẫu từ ticket đã xử lý (ticket bị chuyển nhóm, kỹ thuật viên giải quyết tốt một loại vấn đề) → gửi đề xuất loại `GROUP_CATEGORY` hoặc `USER_SKILL`, kèm lý do, độ tin cậy, danh sách ticket bằng chứng.
-- Đề xuất ở trạng thái `PENDING`, không thay đổi dữ liệu nào.
-- **Ngoại lệ:** loại đề xuất khác 2 loại trên → `422`; trùng đề xuất đã bị từ chối trong 30 ngày → `409`; thiếu bằng chứng → `422`.
-- **BR:** BR-14, BR-15.
+---
 
-### UC-16 Duyệt / từ chối đề xuất của AI
-- Admin xem danh sách đề xuất `PENDING`: nội dung thay đổi, lý do, độ tin cậy, link tới ticket bằng chứng.
-- **Duyệt:** hệ thống áp dụng thay đổi (thêm / bớt danh mục nhóm hoặc kỹ năng), trạng thái `APPROVED`, audit log actor là Admin kèm `suggestion_id`.
-- **Từ chối:** nhập lý do (tùy chọn), trạng thái `REJECTED`; lý do được lưu để AI học.
-- **Ngoại lệ:** đề xuất đã xử lý → `409`; đối tượng đích đã bị xóa / tắt → `422`, đề xuất chuyển `REJECTED`.
-- **BR:** BR-09, BR-14, BR-15.
+### UC-DB-03: Monitor & Rebalance Technician Workload
 
-## Hồ sơ cá nhân
+* **Goal:** Provide team leads and admins with visibility into individual engineer workload to prevent burnout and ensure balanced distribution.
+* **Preconditions:** The user holds the `ADMIN` or `TECHNICIAN_LEAD` role.
+* **Postconditions:** Overloaded personnel are flagged, enabling rapid manual or AI-assisted task rebalancing.
 
-### UC-09 Xem & cập nhật hồ sơ
-- Sửa họ tên, SĐT, avatar. Email, vai trò, trạng thái, kỹ năng chỉ xem (BR-01).
+#### Main Success Scenario (Main Flow):
+1. **Actor:** Accesses the **Technician Workload Monitor** widget.
+2. **System:**
+   - Retrieves active technicians within the actor's authorized scope.
+   - Computes the workload index for each technician:
+     $$\text{Workload Index} = \text{Active Open Tickets} + (\text{Count of P1/P2 Tickets} \times 2)$$
+   - Categorizes capacity status:
+     - **Normal (Green):** $\le 4$ active tickets.
+     - **Busy (Yellow):** $5 - 7$ active tickets.
+     - **Overloaded (Red):** $> 7$ active tickets OR $\ge 2$ unresolved P1/P2 tickets.
+   - Displays comparative horizontal bar charts showing individual load versus team capacity.
+3. **Actor:** Filters the view by a specific engineering team (e.g., "IT Support Team", "Cloud Infrastructure Team").
+4. **System:** Updates the list and recalculates the team's average workload metric.
+5. **Actor:** Clicks on an "Overloaded" engineer to inspect their ticket backlog.
+6. **System:** Renders their active tickets along with an AI recommendation: *"Technician B currently has Low capacity (1 ticket). Suggest reassigning #TK-1082"*.
 
-### UC-10 Đổi mật khẩu
-- Nhập mật khẩu cũ, mật khẩu mới, xác nhận → kiểm tra BR-05 → đổi thành công → đăng xuất các phiên khác (BR-06), bỏ cờ `must_change_password` (BR-10).
-- **Ngoại lệ:** sai mật khẩu cũ → `400`; mật khẩu mới không đạt → `422`; tài khoản không có mật khẩu (chỉ dùng Microsoft) → `422` (BR-17).
+---
 
-### UC-11 Xem vai trò & quyền
-- Hiển thị vai trò, nhóm đang thuộc, kỹ năng, trạng thái 2FA, đã liên kết Microsoft hay chưa và danh sách quyền dạng dễ đọc (ví dụ "Xem ticket được giao cho bạn và nhóm của bạn").
+### UC-DB-04: Real-Time Incident Alerting & Event Feed
+
+* **Goal:** Instantly notify support staff of severe operational incidents, volume surges, and automation failures as they happen.
+* **Preconditions:** The dashboard page is open in the user's browser.
+* **Postconditions:** High-priority incidents are acknowledged or acted upon with minimal latency.
+
+#### Main Success Scenario (Main Flow):
+1. **System:** Maintains an active WebSocket connection to the event streaming service.
+2. **System:** Upon detection of an incoming high-severity event:
+   - **New P1 Ticket Ingestion:** Triggers an optional audio chime and displays a persistent pulsing red banner at the top of the viewport with incident details.
+   - **Ticket Surge / Spike Detection:** AI detects $> 5$ tickets matching identical keywords/categories within a 15-minute window (potential outage) $\rightarrow$ Displays a clustered outage alert banner.
+   - **Automation / API Failure:** AI workflow execution fails (e.g., permission granting API timeout) $\rightarrow$ Pushes an urgent fallback intervention alert.
+3. **Actor:** Clicks on the alert banner.
+4. **System:** Slides open a detailed incident drawer containing context telemetry and quick-action buttons ("Acknowledge Alert", "Dispatch Dedicated Incident Team").
+
+---
+
+### UC-DB-05: Technician Personal Workspace & Queue Operations
+
+* **Goal:** Provide frontline technicians with a focused personal cockpit displaying only tasks directly relevant to their duties.
+* **Preconditions:** The user is authenticated with the `TECHNICIAN` role.
+* **Postconditions:** The technician prioritizes and claims work items efficiently.
+
+#### Main Success Scenario (Main Flow):
+1. **Actor:** Logs in and is directed to `/technician/dashboard`.
+2. **System:**
+   - Applies the default scope: `assigned_to = me` OR `group_id IN (my_groups)`.
+   - Renders personalized operational modules:
+     - **My Queue Today:** Assigned tickets pending action, ordered by nearest SLA deadline.
+     - **Personal SLA Watch:** Real-time countdowns for the actor's own tickets.
+     - **Personal Productivity KPI:** Tickets resolved today/this week, customer satisfaction rating.
+     - **Unassigned Team Queue:** Open group tickets awaiting an engineer.
+3. **Actor:** Clicks "Claim Ticket" on an unassigned ticket belonging to their group.
+4. **System:** Assigns the ticket to the actor, transitions status to `IN_PROGRESS`, and immediately refreshes the queue counter.
