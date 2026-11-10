@@ -17,25 +17,25 @@
   <!-- Actor 1: Requester -->
   <rect x="90" y="60" width="170" height="44" rx="22" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
   <circle cx="114" cy="82" r="10" fill="#3b82f6"/>
-  <text x="114" y="86" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="bold">👤</text>
+  <text x="114" y="86" text-anchor="middle" fill="#ffffff" font-size="9" font-weight="bold">REQ</text>
   <text x="190" y="87" text-anchor="middle" fill="#f8fafc" font-size="13" font-weight="600">Requester</text>
 
   <!-- Actor 2: Technician -->
   <rect x="310" y="60" width="170" height="44" rx="22" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
   <circle cx="334" cy="82" r="10" fill="#3b82f6"/>
-  <text x="334" y="86" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="bold">🛠️</text>
+  <text x="334" y="86" text-anchor="middle" fill="#ffffff" font-size="9" font-weight="bold">TECH</text>
   <text x="410" y="87" text-anchor="middle" fill="#f8fafc" font-size="13" font-weight="600">Technician</text>
 
   <!-- Actor 3: Operations Lead -->
   <rect x="530" y="60" width="170" height="44" rx="22" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
   <circle cx="554" cy="82" r="10" fill="#3b82f6"/>
-  <text x="554" y="86" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="bold">⚡</text>
+  <text x="554" y="86" text-anchor="middle" fill="#ffffff" font-size="9" font-weight="bold">LEAD</text>
   <text x="630" y="87" text-anchor="middle" fill="#f8fafc" font-size="13" font-weight="600">Operations Lead</text>
 
   <!-- Actor 4: Administrator -->
   <rect x="750" y="60" width="170" height="44" rx="22" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
   <circle cx="774" cy="82" r="10" fill="#3b82f6"/>
-  <text x="774" y="86" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="bold">🛡️</text>
+  <text x="774" y="86" text-anchor="middle" fill="#ffffff" font-size="9" font-weight="bold">ADM</text>
   <text x="850" y="87" text-anchor="middle" fill="#f8fafc" font-size="13" font-weight="600">Administrator</text>
 
   <!-- CONNECTOR PATHS -->

@@ -58,7 +58,7 @@ The system organizes capabilities across 14 discrete use cases (`UC01` to `UC14`
 | **UC04** | Submit Ticket & Evidence | Requester | Submit support requests with category, error logs, and screenshots. |
 | **UC05** | Track Ticket & Clarification | Requester | View real-time status timeline and respond to AI clarifying questions. |
 | **UC06** | Search KB Solutions | All Roles | Natural language semantic search for verified solutions with instant answer extraction. |
-| **UC07** | Rate & Report KB Article | All Roles | Submit helpfulness votes (👍/👎) or report outdated/inaccurate technical steps. |
+| **UC07** | Rate & Report KB Article | All Roles | Submit helpfulness votes (Helpful / Unhelpful) or report outdated/inaccurate technical steps. |
 | **UC08** | Claim & Triage Tickets | Technician / Lead | Claim unassigned tickets from team queue or reassign across tiers. |
 | **UC09** | Update Fix & Root Cause | Technician / Lead | Transition ticket states (In Progress, Needs Info, Resolved) and record resolution. |
 | **UC10** | AI Synthesize KB from Ticket | Technician / Lead | 1-click generation of structured KB draft from closed ticket with PII scrubbing. |
