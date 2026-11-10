@@ -148,6 +148,7 @@ Full list: [Business rules](docs/requirements/business-rules.md).
 
 - Requirements: [Features](docs/02-features.md), [Use cases](docs/03-use-cases.md), [INVEST backlog](docs/08-invest-requirements.md), [Acceptance criteria](docs/06-acceptance-criteria.md).
 - Requirements catalogs: [Business rules](docs/requirements/business-rules.md) and [Non-functional requirements](docs/requirements/non-functional-requirements.md).
+- Information architecture: [sitemap, routes, navigation, screen inventory, user flows, UI states](docs/04-information-architecture/README.md).
 - Traceability: [Master traceability matrix](docs/traceability/master-traceability.md).
 
 ## Project Progress
@@ -159,7 +160,8 @@ Full list: [Business rules](docs/requirements/business-rules.md).
 - [x] Traceability for the Workflow branch (screen / API / table names are proposed)
 - [ ] Resolve open questions Q1–Q3
 - [ ] Specify the remaining branches: Authentication & Authorization, Dashboard, Ticket Management, AI Ticket Processing, KB, Reports, Activity Log, Users, Profile
-- [ ] Information architecture and screen hierarchy
+- [x] Information architecture for the Workflow branch (draft, awaiting review)
+- [ ] Information architecture for the remaining branches
 - [ ] C4 System Context, Container, Component
 - [ ] Database design (ERD)
 - [ ] OpenAPI 3.0
