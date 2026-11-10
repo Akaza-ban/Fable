@@ -1,113 +1,113 @@
-# Acceptance Criteria — Workflow & tự động hóa (V1)
+# Acceptance Criteria — Workflow & Automation (V1)
 
-> Trạng thái thiết kế: TARGET V1
+> Design status: TARGET V1
 >
-> Trạng thái cài đặt: CHƯA TRIỂN KHAI — mọi tiêu chí là mục tiêu nghiệm thu
+> Implementation status: NOT IMPLEMENTED — all criteria are acceptance targets
 
-Các tiêu chí mô tả hành vi sản phẩm mục tiêu. Giao diện có thể thỏa tiêu chí về mặt hiển thị, nhưng phân quyền và business rule **phải** được thực thi ở API.
+These criteria describe target product behavior. The UI may satisfy a criterion visually, but authorization and business rules **must** be enforced by the API.
 
-## AC-UC-WF-01 — Cấu hình quy tắc phân công
+## AC-UC-WF-01 — Configure assignment rules
 
 *(US-WF-01, US-WF-02)*
 
-- Chỉ Admin tạo, sửa, bật/tắt, sắp thứ tự, lưu trữ quy tắc; vai trò khác nhận `403`.
-- Quy tắc mới được lưu ở trạng thái Tắt và nằm cuối danh sách thứ tự.
-- Nhóm đích không có thành viên hoạt động → `400`; tên trống hoặc không có điều kiện nào → `400`.
-- Khi nhiều quy tắc cùng khớp, quy tắc có thứ tự nhỏ nhất được áp dụng.
-- Chạy thử trả về quy tắc khớp, nhóm và kỹ thuật viên dự kiến; số bản ghi phân công và nhật ký không đổi sau khi chạy thử.
-- Mỗi thao tác thay đổi tạo một bản ghi nhật ký `WORKFLOW_RULE_*` chứa giá trị trước và sau.
+- Only Admin can create, edit, enable/disable, reorder and archive rules; other roles receive `403`.
+- A new rule is saved as Disabled and placed at the end of the ordered list.
+- Target team without active members → `400`; empty name or no condition → `400`.
+- When several rules match, the rule with the lowest order is applied.
+- Dry run returns the matching rule, team and expected technician; the number of assignment and audit records is unchanged afterwards.
+- Every change produces a `WORKFLOW_RULE_*` audit record with before and after values.
 
-## AC-UC-WF-02 — Cấu hình SLA
+## AC-UC-WF-02 — Configure SLA
 
 *(US-WF-03, US-WF-04)*
 
-- Chỉ Admin cập nhật chính sách SLA và lịch làm việc.
-- Thời hạn giải quyết nhỏ hơn thời hạn phản hồi, hoặc ngưỡng cảnh báo ngoài 1–99% → `400`.
-- Ticket tạo sau khi lưu dùng phiên bản mới; ticket đang mở giữ phiên bản đã gắn trừ khi đổi mức ưu tiên.
-- Hạn chót bỏ qua ngoài giờ làm việc và ngày nghỉ: ticket P3 tạo lúc 16:30 thứ Sáu (giờ làm 08:00–17:00) có hạn phản hồi 11:30 thứ Hai.
-- Thời gian ticket ở `NEEDS_INFO` không tính vào SLA; mỗi lần tạm dừng/tiếp tục được lưu với thời điểm.
+- Only Admin can update SLA policies and the business calendar.
+- Resolution time shorter than response time, or warning threshold outside 1–99% → `400`.
+- Tickets created after saving use the new version; open tickets keep their attached version unless their priority changes.
+- Deadlines skip non-working hours and holidays: a P3 ticket created at 16:30 on Friday (working hours 08:00–17:00) has its response deadline at 11:30 on Monday.
+- Time spent in `NEEDS_INFO` is not counted toward the SLA; each pause/resume is stored with its timestamp.
 
-## AC-UC-WF-03 — Cấu hình phạm vi xử lý của AI
+## AC-UC-WF-03 — Configure the AI processing scope
 
 *(US-WF-05, US-WF-06, US-WF-07)*
 
-- Chỉ Admin thay đổi cấu hình; ngưỡng ngoài 0.00–1.00 hoặc số lượt hỏi ngoài 0–5 → `400`.
-- Tắt `AUTO_APPROVE` → mọi ticket mới thuộc luồng A chuyển sang luồng C (con người) cho đến khi bật lại.
-- Hành động AI bị tắt không được gọi cho ticket mới tạo sau thời điểm tắt.
-- Mục whitelist tham chiếu connector không tồn tại → `400`.
-- Danh mục quyền tham chiếu hệ thống không có connector → `400`.
-- Thay đổi danh mục quyền có hiệu lực ngay với các quyết định và lần thực thi sau thời điểm lưu.
-- API response và giao diện không bao giờ chứa thông tin bí mật của connector.
+- Only Admin can change the configuration; threshold outside 0.00–1.00 or clarification rounds outside 0–5 → `400`.
+- Disabling `AUTO_APPROVE` → every new flow-A ticket goes to flow C (human) until it is re-enabled.
+- A disabled AI action is not invoked for tickets created after it was disabled.
+- Whitelist entry referencing a non-existent connector → `400`.
+- Entitlement referencing a system without a connector → `400`.
+- Entitlement catalog changes take effect immediately for decisions and executions after saving.
+- API responses and the UI never contain connector secrets.
 
-## AC-UC-WF-04 — Phân luồng ticket
+## AC-UC-WF-04 — Route ticket
 
 *(US-WF-08, US-WF-09)*
 
-- Mỗi ticket mới có đúng một bản ghi `ai_decisions` hiện hành với `outcome` ∈ {`AUTO_APPROVED`, `NEEDS_INFO`, `ROUTE_TO_HUMAN`}, độ tin cậy và lý do.
-- Ticket *"Xin cấp quyền đọc thư mục Kế toán chung"* từ nhân viên phòng Kế toán, quyền có trong danh mục, độ tin cậy ≥ ngưỡng → luồng A.
-- Ticket *"Chuột bị hỏng, cần cấp chuột mới"* → luồng C (cần con người), không tạo `workflow_run`.
-- Độ tin cậy < ngưỡng hoặc thiếu trường bắt buộc → ticket `NEEDS_INFO`, người gửi nhận một câu hỏi cụ thể nêu rõ thông tin còn thiếu.
-- Sau khi người gửi trả lời, ticket được phân luồng lại; sau 2 lượt hỏi vẫn chưa đạt → luồng C với lý do `MAX_CLARIFICATION_REACHED`.
-- AI Service không phản hồi trong 30 giây → luồng C với lý do `AI_UNAVAILABLE`.
-- Phân luồng hoàn tất ≤ 15 giây (P95) sau khi ticket được tạo hoặc người gửi trả lời.
+- Every new ticket has exactly one current `ai_decisions` record with `outcome` ∈ {`AUTO_APPROVED`, `NEEDS_INFO`, `ROUTE_TO_HUMAN`}, a confidence and a reason.
+- *"Please grant me read access to the shared Accounting folder"* from an Accounting employee, entitlement in the catalog, confidence ≥ threshold → flow A.
+- *"My mouse is broken, I need a new one"* → flow C (needs a human); no `workflow_run` is created.
+- Confidence < threshold or a required field missing → ticket `NEEDS_INFO`; the requester receives one specific question naming the missing information.
+- After the requester answers, the ticket is re-routed; still not passing after 2 rounds → flow C with reason `MAX_CLARIFICATION_REACHED`.
+- AI Service does not respond within 30 seconds → flow C with reason `AI_UNAVAILABLE`.
+- Routing completes within ≤ 15 seconds (P95) after the ticket is created or the requester answers.
 
-## AC-UC-WF-05 — Tự động phân công kỹ thuật viên
+## AC-UC-WF-05 — Auto-assign technician
 
 *(US-WF-10, US-WF-11)*
 
-- Ticket luồng C khớp quy tắc được giao cho một kỹ thuật viên đang hoạt động, không vắng mặt, thuộc nhóm đích, trong ≤ 10 giây (P95).
-- Với `ROUND_ROBIN`, N ticket liên tiếp chia đều cho các thành viên khả dụng (chênh lệch ≤ 1); với `LEAST_LOADED`, chọn người có ít ticket mở nhất.
-- Thông báo cho kỹ thuật viên có bản tóm tắt AI **và lý do chuyển người** (ví dụ *"Yêu cầu phần cứng"*, *"Quyền X không thuộc danh mục phòng ban"*).
-- Không khớp quy tắc → ticket `TRIAGE` và trưởng nhóm tiếp nhận nhận thông báo.
-- Phân công lại thiếu lý do → `400`; trưởng nhóm phân công ra ngoài nhóm mình → `403`.
-- Nhật ký phân công tự động có nguồn `AUTOMATION` và `ruleId`.
+- A flow-C ticket matching a rule is assigned to an active, non-absent technician of the target team within ≤ 10 seconds (P95).
+- With `ROUND_ROBIN`, N consecutive tickets are spread evenly across available members (difference ≤ 1); with `LEAST_LOADED`, the member with the fewest open tickets is chosen.
+- The technician notification includes the AI summary **and the routing reason** (e.g. *"Hardware request"*, *"Entitlement X is not in the department catalog"*).
+- No rule matches → ticket `TRIAGE` and the intake team lead is notified.
+- Reassignment without a reason → `400`; a team lead assigning outside their own team → `403`.
+- Automatic assignment audit records have source `AUTOMATION` and `ruleId`.
 
-## AC-UC-WF-06 — Nhắc và cảnh báo SLA
+## AC-UC-WF-06 — Reminders and SLA warnings
 
 *(US-WF-12, US-WF-13, US-WF-14)*
 
-- Khi đạt ngưỡng cảnh báo, người được giao nhận đúng một thông báo cho mỗi ngưỡng, trong ≤ 2 phút.
-- Khi quá hạn, ticket được gắn `sla_breached = true`, trưởng nhóm được thông báo, và sự kiện `SLA_BREACHED` được ghi.
-- Nếu bật nâng ưu tiên, ưu tiên tăng đúng một bậc và không vượt P1.
-- Ticket `NEEDS_INFO` được nhắc ở ngày 1 và ngày N−1, tự chuyển `CLOSED` ở ngày N với lý do *không phản hồi*.
-- Người gửi mở lại được ticket tự đóng trong 7 ngày; sau đó → `409`.
-- Ticket `AUTOMATING` không bao giờ bị tự đóng.
+- When a warning threshold is reached, the assignee receives exactly one notification per threshold within ≤ 2 minutes.
+- On breach, the ticket gets `sla_breached = true`, the team lead is notified, and an `SLA_BREACHED` event is recorded.
+- If priority raise is enabled, priority increases by exactly one level and never above P1.
+- `NEEDS_INFO` tickets are reminded on day 1 and day N−1, and automatically become `CLOSED` on day N with reason *no response*.
+- The requester can reopen an auto-closed ticket within 7 days; afterwards → `409`.
+- `AUTOMATING` tickets are never auto-closed.
 
-## AC-UC-WF-07 — AI duyệt yêu cầu trong phạm vi
+## AC-UC-WF-07 — AI approves in-scope request
 
 *(US-WF-15, US-WF-16)*
 
-- Chỉ duyệt khi **tất cả** điều kiện chính sách đạt: thao tác trong whitelist đang bật; quyền / mẫu tài khoản trong danh mục phòng ban người nhận; thời hạn ≤ tối đa; người nhận là người gửi hoặc cùng phòng ban; người nhận chưa có quyền đó.
-- Một điều kiện không đạt → `ROUTE_TO_HUMAN`, không có lời gọi connector thay đổi dữ liệu, lý do nêu đúng điều kiện bị trượt.
-- Yêu cầu quyền cho người khác phòng ban → luồng C, kể cả khi độ tin cậy = 1.00.
-- Người nhận đã có quyền → ticket `RESOLVED` với thông báo *"Bạn đã có quyền này"*, không gọi `GRANT_ACCESS`.
-- Kết quả AI thiếu trường hoặc sai định dạng → luồng C; không bao giờ duyệt khi dữ liệu trích xuất không hợp lệ.
-- Admin xem được mỗi quyết định với: độ tin cậy, thông tin trích xuất, kết quả từng điều kiện, phiên bản cấu hình đã dùng; người gửi chỉ thấy lý do tóm tắt.
-- Quyết định duyệt hoàn tất ≤ 5 giây (P95) sau khi phân luồng xong.
+- Approval only when **all** policy conditions pass: operation in an enabled whitelist entry; entitlement / account template in the beneficiary department's catalog; duration ≤ maximum; beneficiary is the requester or in the same department; beneficiary does not already have that access.
+- Any condition fails → `ROUTE_TO_HUMAN`, no data-changing connector call, and the reason names the failed condition.
+- A request for a user in another department → flow C, even with confidence = 1.00.
+- Beneficiary already has the access → ticket `RESOLVED` with the message *"You already have this access"*; `GRANT_ACCESS` is not called.
+- AI output with missing fields or wrong format → flow C; approval never happens on invalid extracted data.
+- Admin can view each decision with: confidence, extracted information, result of each condition, configuration version used; the requester only sees a summary reason.
+- The approval decision completes within ≤ 5 seconds (P95) after routing.
 
-## AC-UC-WF-08 — Thực thi qua API
+## AC-UC-WF-08 — Execute via API
 
 *(US-WF-17, US-WF-18)*
 
-- Connector chỉ được gọi khi quyết định `AUTO_APPROVED` và chính sách **tại thời điểm chạy** vẫn cho phép; nếu không → `FAILED` mã `PRECONDITION_FAILED`, không có lời gọi ra ngoài.
-- `CHECK_ACCOUNT` không thay đổi dữ liệu bên ngoài; kết quả (tồn tại, bị khóa, quyền hiện có) được gửi cho người gửi.
-- Lần thực thi đầu tiên bắt đầu ≤ 30 giây sau khi AI duyệt (P95).
-- Gọi lại với cùng khóa idempotency không tạo thêm thay đổi trên hệ thống cấp quyền bên ngoài.
-- Lỗi tạm thời được thử lại tối đa 3 lần (1 / 5 / 15 phút); lỗi vĩnh viễn không được thử lại tự động.
-- Mỗi lần gọi lưu một `workflow_run_attempt` với mã kết quả, thời lượng và payload đã che dữ liệu nhạy cảm.
-- Quyền có thời hạn được thu hồi trong ≤ 5 phút sau khi hết hạn; người dùng được báo trước 1 ngày.
+- The connector is only called when the decision is `AUTO_APPROVED` and the policy **at execution time** still allows it; otherwise → `FAILED` with code `PRECONDITION_FAILED` and no outbound call.
+- `CHECK_ACCOUNT` does not change external data; the result (exists, locked, current access) is sent to the requester.
+- The first execution starts within ≤ 30 seconds after AI approval (P95).
+- Repeating a call with the same idempotency key creates no additional change in the external access-management system.
+- Transient errors are retried up to 3 times (1 / 5 / 15 minutes); permanent errors are not retried automatically.
+- Every call stores a `workflow_run_attempt` with result code, duration and a payload with sensitive data masked.
+- Time-bound access is revoked within ≤ 5 minutes after expiry; the user is notified 1 day in advance.
 
-## AC-UC-WF-09 — Xác minh và chuyển người khi lỗi
+## AC-UC-WF-09 — Verify and hand off on failure
 
 *(US-WF-19, US-WF-20)*
 
-- Ticket chỉ chuyển `RESOLVED` khi xác minh thành công hoặc kỹ thuật viên đánh dấu xử lý thủ công.
-- Người gửi xác nhận → `CLOSED`; báo chưa được → giao kỹ thuật viên nhóm phụ trách.
-- Run `FAILED` → ticket được giao kỹ thuật viên kèm mã lỗi, bước lỗi và lịch sử các lần thử.
-- Thử lại tạo run mới dùng **cùng** khóa idempotency và kiểm tra lại chính sách; chính sách không còn cho phép → `409`.
-- Xử lý thủ công thiếu ghi chú → `400`.
-- Chỉ kỹ thuật viên được giao hoặc Admin được thử lại / xử lý thủ công; người khác → `403`.
+- A ticket only becomes `RESOLVED` after successful verification or after a technician marks it resolved manually.
+- Requester confirms → `CLOSED`; reports not fixed → assigned to a technician of the owning team.
+- Run `FAILED` → ticket assigned to a technician with the error code, failed step and attempt history.
+- Retry creates a new run with the **same** idempotency key and re-checks the policy; if the policy no longer allows it → `409`.
+- Manual resolution without a note → `400`.
+- Only the assigned technician or an Admin may retry / resolve manually; others → `403`.
 
 ## Definition of Ready
 
-Một work item backend chỉ sẵn sàng khi nêu rõ operationId trong OpenAPI, application service, repository phụ thuộc, quy tắc RBAC, kết quả kiểm tra/lỗi và danh sách unit test. Bảng [traceability](traceability/master-traceability.md) cung cấp ánh xạ này.
+A backend work item is ready only when it names its OpenAPI operationId, application service, repository dependencies, RBAC rule, validation/error outcomes and unit-test cases. The [traceability matrix](traceability/master-traceability.md) provides this mapping.

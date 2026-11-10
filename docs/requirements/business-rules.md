@@ -1,125 +1,125 @@
-# Business Rules — Workflow & tự động hóa (V1)
+# Business Rules — Workflow & Automation (V1)
 
-> Trạng thái thiết kế: TARGET V1
-> Trạng thái cài đặt: CHƯA TRIỂN KHAI
+> Design status: TARGET V1
+> Implementation status: NOT IMPLEMENTED
 
-Chỉ các quy tắc đã được xác nhận trong tài liệu dự án được liệt kê ở đây.
+Only rules confirmed by project documentation are catalogued here.
 
-## BR-WF-01 — Chỉ tự động thực thi hành động trong whitelist
+## BR-WF-01 — Only whitelisted actions are executed automatically
 
-- **Nguồn:** `03-use-cases.md` UC-WF-03, UC-WF-08
-- **US liên quan:** US-WF-06, US-WF-17
-- **API liên quan:** `createAutomationAction`, `updateAutomationAction`, thực thi nội bộ
-- **Quy tắc:** Hệ thống chỉ tự động gọi connector cho các mục whitelist đang bật. V1 gồm `CHECK_ACCOUNT`, `CREATE_ACCOUNT`, `GRANT_ACCESS`, `REVOKE_ACCESS`. Mọi yêu cầu khác được chuyển cho kỹ thuật viên.
+- **Source:** `03-use-cases.md` UC-WF-03, UC-WF-08
+- **Related US:** US-WF-06, US-WF-17
+- **Related API:** `createAutomationAction`, `updateAutomationAction`, internal execution
+- **Rule:** The system only calls connectors automatically for enabled whitelist entries. V1 includes `CHECK_ACCOUNT`, `CREATE_ACCOUNT`, `GRANT_ACCESS`, `REVOKE_ACCESS`. Every other request is routed to a technician.
 
-## BR-WF-02 — AI chỉ duyệt khi đạt kiểm tra chính sách cố định
+## BR-WF-02 — The AI approves only when the deterministic policy check passes
 
-- **Nguồn:** UC-WF-07, AC-UC-WF-07
-- **US liên quan:** US-WF-07, US-WF-15
-- **API liên quan:** nội bộ (AI decision), `updateDepartmentEntitlements`
-- **Quy tắc:** AI Service được tự duyệt yêu cầu cơ bản, nhưng chỉ khi **tất cả** điều kiện chính sách (không dùng AI) đạt: thao tác trong whitelist đang bật; quyền / mẫu tài khoản thuộc danh mục của phòng ban người nhận; thời hạn ≤ tối đa; người nhận hợp lệ (BR-WF-16). AI không được duyệt ngoài phạm vi này dù độ tin cậy cao đến đâu.
+- **Source:** UC-WF-07, AC-UC-WF-07
+- **Related US:** US-WF-07, US-WF-15
+- **Related API:** internal (AI decision), `updateDepartmentEntitlements`
+- **Rule:** The AI Service may self-approve basic requests, but only when **all** policy conditions (evaluated without AI) pass: operation in an enabled whitelist entry; entitlement / account template in the beneficiary department's catalog; duration ≤ maximum; valid beneficiary (BR-WF-16). The AI may never approve outside this scope, however high its confidence.
 
-## BR-WF-03 — Yêu cầu cần con người luôn chuyển kỹ thuật viên
+## BR-WF-03 — Requests that need a human always go to a technician
 
-- **Nguồn:** UC-WF-04, UC-WF-05
-- **US liên quan:** US-WF-10
-- **API liên quan:** nội bộ (routing)
-- **Quy tắc:** Yêu cầu phần cứng (cấp chuột, bàn phím, sửa máy…), yêu cầu ngoài whitelist, yêu cầu không đạt chính sách, và yêu cầu vẫn chưa rõ sau số lượt hỏi tối đa luôn được chuyển cho kỹ thuật viên. AI không thực hiện, chỉ tóm tắt và nêu lý do chuyển.
+- **Source:** UC-WF-04, UC-WF-05
+- **Related US:** US-WF-10
+- **Related API:** internal (routing)
+- **Rule:** Hardware requests (mouse, keyboard, PC repair…), requests outside the whitelist, requests failing the policy check, and requests still unclear after the maximum clarification rounds are always routed to a technician. The AI does not perform them; it only summarizes and states the routing reason.
 
-## BR-WF-04 — Thực thi idempotent
+## BR-WF-04 — Idempotent execution
 
-- **Nguồn:** AC-UC-WF-08, AC-UC-WF-09
-- **US liên quan:** US-WF-17, US-WF-20
-- **API liên quan:** `retryWorkflowRun`, connector
-- **Quy tắc:** Khóa idempotency = `decisionId + action`. Một quyết định duyệt dẫn tới tối đa một thay đổi trên hệ thống cấp quyền bên ngoài, kể cả khi thử lại.
+- **Source:** AC-UC-WF-08, AC-UC-WF-09
+- **Related US:** US-WF-17, US-WF-20
+- **Related API:** `retryWorkflowRun`, connectors
+- **Rule:** Idempotency key = `decisionId + action`. One approval decision leads to at most one change in the external access-management system, even when retried.
 
-## BR-WF-05 — Nguồn hành động trong nhật ký
+## BR-WF-05 — Action source in the audit log
 
-- **Nguồn:** `08-invest-requirements.md` ràng buộc dùng chung
-- **US liên quan:** US-WF-01 … US-WF-20
-- **API liên quan:** mọi thao tác thay đổi
-- **Quy tắc:** Mỗi bản ghi nhật ký có `source` ∈ {`USER`, `AI`, `AUTOMATION`}. `USER` gắn với tài khoản người dùng; `AI` là actor AI Service; `AUTOMATION` là tác vụ nội bộ của hệ thống (quy tắc, bộ hẹn giờ, thực thi API) — **không phải actor**. Bản ghi `AI`/`AUTOMATION` phải có căn cứ (`decisionId`, `ruleId`, `slaPolicyVersion` hoặc `runId`).
+- **Source:** `08-invest-requirements.md` cross-cutting constraints
+- **Related US:** US-WF-01 … US-WF-20
+- **Related API:** all mutating operations
+- **Rule:** Every audit record has `source` ∈ {`USER`, `AI`, `AUTOMATION`}. `USER` is tied to a user account; `AI` is the AI Service actor; `AUTOMATION` is an internal system task (rules, timers, API execution) — **not an actor**. `AI`/`AUTOMATION` records must include their grounds (`decisionId`, `ruleId`, `slaPolicyVersion` or `runId`).
 
-## BR-WF-06 — Ngưỡng tin cậy và hỏi lại
+## BR-WF-06 — Confidence threshold and clarification
 
-- **Nguồn:** UC-WF-04, AC-UC-WF-04
-- **US liên quan:** US-WF-05, US-WF-09
-- **API liên quan:** `updateAiActionSetting`
-- **Quy tắc:** Độ tin cậy dưới ngưỡng hoặc thiếu thông tin bắt buộc → AI hỏi lại người gửi. Tối đa **2 lượt** (giá trị đề xuất, Admin cấu hình được); vẫn chưa đạt → chuyển kỹ thuật viên.
+- **Source:** UC-WF-04, AC-UC-WF-04
+- **Related US:** US-WF-05, US-WF-09
+- **Related API:** `updateAiActionSetting`
+- **Rule:** Confidence below the threshold or missing required information → the AI asks the requester. Maximum **2 rounds** (proposed value, configurable by Admin); still not passing → route to a technician.
 
-## BR-WF-07 — Tạm dừng SLA
+## BR-WF-07 — SLA pause
 
-- **Nguồn:** AC-UC-WF-02
-- **US liên quan:** US-WF-04
-- **API liên quan:** nội bộ (SLA engine)
-- **Quy tắc:** Đồng hồ SLA tạm dừng khi ticket ở `NEEDS_INFO` và chạy tiếp khi người gửi trả lời. Ở `TRIAGE` đồng hồ vẫn chạy.
+- **Source:** AC-UC-WF-02
+- **Related US:** US-WF-04
+- **Related API:** internal (SLA engine)
+- **Rule:** The SLA clock pauses while the ticket is in `NEEDS_INFO` and resumes when the requester answers. In `TRIAGE` the clock keeps running.
 
-## BR-WF-08 — Phiên bản chính sách SLA
+## BR-WF-08 — SLA policy versioning
 
-- **Nguồn:** UC-WF-02
-- **US liên quan:** US-WF-03
-- **API liên quan:** `updateSlaPolicy`
-- **Quy tắc:** Mỗi lần lưu tạo phiên bản mới. Ticket gắn với phiên bản tại thời điểm tạo, và chỉ đổi phiên bản khi đổi mức ưu tiên.
+- **Source:** UC-WF-02
+- **Related US:** US-WF-03
+- **Related API:** `updateSlaPolicy`
+- **Rule:** Every save creates a new version. A ticket is bound to the version in force when it was created, and only switches version when its priority changes.
 
-## BR-WF-09 — Thứ tự quy tắc phân công
+## BR-WF-09 — Assignment rule order
 
-- **Nguồn:** AC-UC-WF-01, AC-UC-WF-05
-- **US liên quan:** US-WF-01, US-WF-02, US-WF-10
-- **API liên quan:** `reorderAssignmentRules`, `dryRunAssignmentRules`
-- **Quy tắc:** Quy tắc đang bật được xét theo thứ tự tăng dần; quy tắc khớp đầu tiên thắng. Không khớp quy tắc nào → `TRIAGE`.
+- **Source:** AC-UC-WF-01, AC-UC-WF-05
+- **Related US:** US-WF-01, US-WF-02, US-WF-10
+- **Related API:** `reorderAssignmentRules`, `dryRunAssignmentRules`
+- **Rule:** Enabled rules are evaluated in ascending order; the first matching rule wins. No rule matches → `TRIAGE`.
 
-## BR-WF-10 — Kỹ thuật viên khả dụng
+## BR-WF-10 — Available technicians
 
-- **Nguồn:** AC-UC-WF-05
-- **US liên quan:** US-WF-10
-- **API liên quan:** nội bộ (assignment engine)
-- **Quy tắc:** Chỉ giao cho thành viên của nhóm đích, tài khoản đang hoạt động và không đánh dấu vắng mặt.
+- **Source:** AC-UC-WF-05
+- **Related US:** US-WF-10
+- **Related API:** internal (assignment engine)
+- **Rule:** Tickets are only assigned to members of the target team whose account is active and who are not marked absent.
 
-## BR-WF-11 — Không tự đóng ticket đang tự động hóa
+## BR-WF-11 — Automating tickets are never auto-closed
 
-- **Nguồn:** AC-UC-WF-06
-- **US liên quan:** US-WF-14
-- **API liên quan:** nội bộ (scheduler)
-- **Quy tắc:** Tác vụ tự đóng chỉ áp dụng cho `NEEDS_INFO` quá hạn; không bao giờ đóng ticket `AUTOMATING`.
+- **Source:** AC-UC-WF-06
+- **Related US:** US-WF-14
+- **Related API:** internal (scheduler)
+- **Rule:** Auto-close only applies to overdue `NEEDS_INFO` tickets; `AUTOMATING` tickets are never closed automatically.
 
-## BR-WF-12 — Kiểm tra lại chính sách khi thực thi
+## BR-WF-12 — Policy is re-checked at execution time
 
-- **Nguồn:** UC-WF-08, UC-WF-09
-- **US liên quan:** US-WF-17, US-WF-20
-- **API liên quan:** `retryWorkflowRun`
-- **Quy tắc:** Mỗi lần thực thi hoặc thử lại đều kiểm tra lại whitelist và danh mục quyền **hiện hành**. Nếu Admin đã thu hẹp phạm vi sau khi AI duyệt, lần thực thi bị chặn.
+- **Source:** UC-WF-08, UC-WF-09
+- **Related US:** US-WF-17, US-WF-20
+- **Related API:** `retryWorkflowRun`
+- **Rule:** Every execution or retry re-checks the **current** whitelist and entitlement catalog. If the Admin narrowed the scope after the AI approved, the execution is blocked.
 
-## BR-WF-13 — Xác minh trước khi đánh dấu đã xử lý
+## BR-WF-13 — Verification before marking resolved
 
-- **Nguồn:** AC-UC-WF-09
-- **US liên quan:** US-WF-19, US-WF-20
-- **API liên quan:** `resolveWorkflowRunManually`, `confirmTicketResolution`
-- **Quy tắc:** Ticket tự động hóa chỉ chuyển `RESOLVED` khi thao tác kiểm tra của connector thành công hoặc kỹ thuật viên ghi nhận xử lý thủ công có ghi chú.
+- **Source:** AC-UC-WF-09
+- **Related US:** US-WF-19, US-WF-20
+- **Related API:** `resolveWorkflowRunManually`, `confirmTicketResolution`
+- **Rule:** An automated ticket only becomes `RESOLVED` when the connector's check operation succeeds or a technician records a manual resolution with a note.
 
-## BR-WF-14 — Thu hồi quyền có thời hạn
+## BR-WF-14 — Revocation of time-bound access
 
-- **Nguồn:** UC-WF-08
-- **US liên quan:** US-WF-18
-- **API liên quan:** nội bộ (scheduler)
-- **Quy tắc:** Quyền cấp có `expires_at` được thu hồi tự động khi hết hạn bằng một `workflow_run` `REVOKE_ACCESS`; việc thu hồi phải ghi nhật ký.
+- **Source:** UC-WF-08
+- **Related US:** US-WF-18
+- **Related API:** internal (scheduler)
+- **Rule:** Access granted with `expires_at` is revoked automatically on expiry through a `REVOKE_ACCESS` `workflow_run`; the revocation must be audited.
 
-## BR-WF-15 — Bảo vệ thông tin bí mật của connector
+## BR-WF-15 — Protection of connector secrets
 
-- **Nguồn:** AC-UC-WF-03, AC-UC-WF-08
-- **US liên quan:** US-WF-06, US-WF-17
-- **API liên quan:** mọi thao tác whitelist và workflow run
-- **Quy tắc:** Credential của connector chỉ nằm trong cấu hình bí mật lúc triển khai. Payload lưu vào `workflow_run_attempts` phải che token, mật khẩu và khóa.
+- **Source:** AC-UC-WF-03, AC-UC-WF-08
+- **Related US:** US-WF-06, US-WF-17
+- **Related API:** all whitelist and workflow-run operations
+- **Rule:** Connector credentials only live in deployment secret configuration. Payloads stored in `workflow_run_attempts` must mask tokens, passwords and keys.
 
-## BR-WF-16 — Người nhận hợp lệ khi AI tự duyệt
+## BR-WF-16 — Valid beneficiary for AI self-approval
 
-- **Nguồn:** UC-WF-07, AC-UC-WF-07
-- **US liên quan:** US-WF-15
-- **API liên quan:** nội bộ (AI decision)
-- **Quy tắc:** AI chỉ tự duyệt khi người nhận quyền / tài khoản là chính người gửi, hoặc thuộc cùng phòng ban với người gửi. Yêu cầu cho người khác phòng ban luôn chuyển kỹ thuật viên.
+- **Source:** UC-WF-07, AC-UC-WF-07
+- **Related US:** US-WF-15
+- **Related API:** internal (AI decision)
+- **Rule:** The AI only self-approves when the beneficiary of the access / account is the requester, or belongs to the same department as the requester. Requests for users in other departments are always routed to a technician.
 
-## BR-WF-17 — Lưu căn cứ quyết định của AI
+## BR-WF-17 — AI decision grounds are stored
 
-- **Nguồn:** UC-WF-04, UC-WF-07
-- **US liên quan:** US-WF-16
-- **API liên quan:** `listAiDecisions`, `getAiDecision`
-- **Quy tắc:** Mỗi quyết định của AI lưu độ tin cậy, thông tin trích xuất, kết quả từng điều kiện chính sách, phiên bản cấu hình và lý do. Bản ghi không được sửa sau khi tạo.
+- **Source:** UC-WF-04, UC-WF-07
+- **Related US:** US-WF-16
+- **Related API:** `listAiDecisions`, `getAiDecision`
+- **Rule:** Each AI decision stores confidence, extracted information, the result of each policy condition, the configuration version and the reason. Records are immutable once created.

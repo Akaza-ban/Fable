@@ -1,51 +1,51 @@
-# Danh mục tính năng (Feature Catalog)
+# Feature Catalog
 
-> Trạng thái thiết kế: TARGET V1
+> Design status: TARGET V1
 >
-> Phạm vi tài liệu hiện tại: chỉ **F05 Workflow & tự động hóa** được đặc tả chi tiết; các tính năng còn lại sẽ bổ sung sau.
+> Current documentation scope: only **F05 Workflow & Automation** is specified in detail; the remaining features will be added later.
 
-Tên hệ thống: **Hệ thống phân luồng & xử lý ticket IT tự động ứng dụng AI**.
+System name: **AI-Powered IT Ticket Routing and Automated Resolution System**.
 
-| ID | Tên | V1 | Trạng thái đặc tả |
+| ID | Name | V1 | Specification status |
 |---|---|---|---|
-| F01 | Đăng nhập & phân quyền | Có | Chưa đặc tả |
-| F02 | Dashboard | Có | Chưa đặc tả |
-| F03 | Quản lý ticket | Có | Chưa đặc tả |
-| F04 | Xử lý ticket bằng AI | Có | Chưa đặc tả |
-| **F05** | **Workflow & tự động hóa** | Có | **Đã đặc tả (tài liệu này)** |
-| F06 | Kho kiến thức — KB | Có | Chưa đặc tả |
-| F07 | Báo cáo & phân tích | Có | Chưa đặc tả |
-| F08 | Nhật ký hoạt động | Có | Chưa đặc tả |
-| F09 | Quản lý người dùng | Có | Chưa đặc tả |
-| F10 | Hồ sơ cá nhân | Có | Chưa đặc tả |
+| F01 | Authentication & Authorization | Yes | Not specified |
+| F02 | Dashboard | Yes | Not specified |
+| F03 | Ticket Management | Yes | Not specified |
+| F04 | AI Ticket Processing | Yes | Not specified |
+| **F05** | **Workflow & Automation** | Yes | **Specified (this document set)** |
+| F06 | Knowledge Base — KB | Yes | Not specified |
+| F07 | Reports & Analytics | Yes | Not specified |
+| F08 | Activity Log | Yes | Not specified |
+| F09 | User Management | Yes | Not specified |
+| F10 | Personal Profile | Yes | Not specified |
 
-## F05 Workflow & tự động hóa
+## F05 Workflow & Automation
 
-**Bối cảnh:** doanh nghiệp nhận khoảng **8.000 ticket/ngày** từ các phòng ban. Phần lớn là yêu cầu cơ bản, lặp lại (kiểm tra tài khoản, cấp tài khoản, cấp thêm quyền) — nếu kỹ thuật viên xử lý tay sẽ quá tải.
+**Context:** the enterprise receives about **8,000 tickets per day** from its departments. Most of them are basic, repetitive requests (account check, account creation, additional access). Handling them manually would overload the technicians.
 
-**Mục tiêu V1:** AI Service tự duyệt và hệ thống tự thực thi các yêu cầu cơ bản **trong phạm vi được cấu hình**; các yêu cầu cần con người (phần cứng, ngoài phạm vi) được chuyển cho kỹ thuật viên; khi AI không chắc chắn thì hỏi lại người gửi.
+**V1 goal:** the AI Service approves, and the system automatically executes, basic requests **within the configured scope**; requests that need a human (hardware, out of scope) are routed to technicians; when the AI is not confident, it asks the requester for clarification.
 
-| Loại yêu cầu | Ví dụ | Ai xử lý |
+| Request type | Examples | Handled by |
 |---|---|---|
-| Cơ bản, trong phạm vi AI | Kiểm tra tài khoản, cấp tài khoản, cấp thêm quyền | **AI duyệt → hệ thống gọi API thực thi** |
-| Cần con người | Cấp chuột, bàn phím, sửa máy, lỗi phức tạp, quyền ngoài danh mục | **Kỹ thuật viên** |
-| AI chưa chắc chắn | Ticket mô tả mơ hồ, thiếu thông tin | **AI hỏi lại người gửi**, rồi phân luồng lại |
+| Basic, within AI scope | Account check, account creation, additional access | **AI approves → system executes via API** |
+| Needs a human | New mouse or keyboard, PC repair, complex incidents, access outside the catalog | **Technician** |
+| AI not confident | Vague description, missing information | **AI asks the requester**, then re-routes |
 
-- F05.1 Cấu hình quy tắc phân công kỹ thuật viên (điều kiện, nhóm đích, chiến lược chia việc, thứ tự, chạy thử)
-- F05.2 Cấu hình chính sách SLA theo mức ưu tiên và lịch làm việc
-- F05.3 Cấu hình **phạm vi xử lý của AI**: hành động AI và ngưỡng tin cậy, danh mục hành động tự động (whitelist), danh mục quyền theo phòng ban
-- F05.4 **Phân luồng ticket**: AI tự xử lý / hỏi lại người gửi / chuyển con người
-- F05.5 **Tự động phân công kỹ thuật viên theo quy tắc** + hàng chờ thủ công
-- F05.6 Nhắc phản hồi, cảnh báo và chuyển cấp khi vi phạm SLA
-- F05.7 **AI duyệt yêu cầu trong phạm vi** (AI hiểu yêu cầu + kiểm tra chính sách cố định)
-- F05.8 **Gọi API thực thi sau khi được duyệt** (idempotent, có thử lại, thu hồi quyền khi hết hạn)
-- F05.9 Xác minh kết quả và chuyển kỹ thuật viên khi lỗi
+- F05.1 Configure technician assignment rules (conditions, target team, distribution strategy, order, dry run)
+- F05.2 Configure SLA policies by priority and business calendar
+- F05.3 Configure the **AI processing scope**: AI actions and confidence thresholds, automation action catalog (whitelist), department entitlement catalog
+- F05.4 **Ticket routing**: AI self-service / ask the requester / route to a human
+- F05.5 **Automatic technician assignment by rules** + manual triage queue
+- F05.6 Response reminders, SLA warnings and escalation on breach
+- F05.7 **AI approval of in-scope requests** (AI understanding + deterministic policy check)
+- F05.8 **API execution after approval** (idempotent, with retries, automatic revocation on expiry)
+- F05.9 Result verification and hand-off to a technician on failure
 
-**Ngoài phạm vi F05 (thuộc tính năng khác):**
+**Outside F05 (owned by other features):**
 
-- Mô hình phân loại, trích xuất thông tin, tóm tắt của AI → F04 (F05 chỉ *cấu hình* và *sử dụng* kết quả).
-- Tra cứu lịch sử chạy workflow và lỗi → F08 Nhật ký hoạt động (F05 chỉ *sinh* dữ liệu).
-- Thống kê tỷ lệ AI tự giải quyết, vi phạm SLA → F07 Báo cáo & phân tích.
-- Quản lý nhóm kỹ thuật, phòng ban, thành viên → F09 Quản lý người dùng.
+- AI classification, extraction and summarization models → F04 (F05 only *configures* and *consumes* their output).
+- Browsing workflow run history and errors → F08 Activity Log (F05 only *produces* the data).
+- AI self-resolution rate and SLA breach statistics → F07 Reports & Analytics.
+- Managing technical teams, departments and members → F09 User Management.
 
 **Related:** [Use cases](03-use-cases.md) · [INVEST backlog](08-invest-requirements.md) · [Acceptance criteria](06-acceptance-criteria.md)

@@ -1,98 +1,98 @@
-# INVEST Requirements — Workflow & tự động hóa (V1)
+# INVEST Requirements — Workflow & Automation (V1)
 
-> Trạng thái thiết kế: TARGET V1
+> Design status: TARGET V1
 >
-> Phạm vi: F05 — US-WF-01 … US-WF-20
+> Scope: F05 — US-WF-01 … US-WF-20
 
-Mỗi user story đủ nhỏ để triển khai và kiểm thử độc lập. Xác thực, phân quyền, kiểm tra dữ liệu, ghi nhật ký và xử lý lỗi là **ràng buộc nghiệm thu dùng chung**, không phải tính năng ẩn.
+Each user story is small enough to implement and test independently. Authentication, authorization, validation, auditing and error handling are **shared acceptance constraints**, not hidden features.
 
 ## INVEST checklist
 
-| Tiêu chí | Áp dụng trong backlog này |
+| Principle | Application in this backlog |
 |---|---|
-| **Independent** | Mỗi story tạo ra một kết quả demo được; chỉ ghi phụ thuộc khi thật sự cần. |
-| **Negotiable** | Giao diện và cách cài đặt có thể đổi, miễn mục tiêu, quyền và business rule giữ nguyên. |
-| **Valuable** | Mỗi story nêu rõ lợi ích cho người dùng hoặc doanh nghiệp. |
-| **Estimable** | Đầu vào, đầu ra, vai trò, phụ thuộc và kết quả lỗi đều được mô tả. |
-| **Small** | Mỗi story một năng lực chính, tách được thành task API, application, persistence, UI và test. |
-| **Testable** | Mỗi story liên kết tới tiêu chí nghiệm thu quan sát được trong [06-acceptance-criteria.md](06-acceptance-criteria.md). |
+| **Independent** | Each story produces a demonstrable outcome and lists only unavoidable prerequisites. |
+| **Negotiable** | UI layout and implementation details may change as long as the goal, permissions and business rules stay the same. |
+| **Valuable** | Every story names the benefit to the user or the business. |
+| **Estimable** | Inputs, outputs, roles, dependencies and failure outcomes are explicit. |
+| **Small** | Each story targets one capability and can be split into API, application, persistence, UI and test tasks. |
+| **Testable** | Every story links to observable acceptance criteria in [06-acceptance-criteria.md](06-acceptance-criteria.md). |
 
 ## Product backlog
 
-Ưu tiên theo MoSCoW: **Must** (bắt buộc V1), **Should** (nên có), **Could** (làm nếu còn thời gian).
+MoSCoW priority: **Must** (required for V1), **Should** (important), **Could** (if time allows).
 
-| ID | User story | Giá trị | Phụ thuộc | Ưu tiên | AC |
+| ID | User story | Value | Dependencies | Priority | AC |
 |---|---|---|---|---|---|
-| US-WF-01 | Là **Admin**, tôi muốn tạo và sửa quy tắc phân công theo điều kiện (loại yêu cầu, danh mục, ưu tiên, phòng ban) trỏ tới một nhóm kỹ thuật và chiến lược chia việc, để ticket cần con người tự đến đúng nhóm. | Bỏ khâu điều phối tay | Nhóm kỹ thuật (F09) | Must | AC-UC-WF-01 |
-| US-WF-02 | Là **Admin**, tôi muốn sắp thứ tự ưu tiên các quy tắc và chạy thử trên ticket mẫu, để biết trước kết quả phân công trước khi bật. | Giảm cấu hình sai | US-WF-01 | Should | AC-UC-WF-01 |
-| US-WF-03 | Là **Admin**, tôi muốn định nghĩa SLA theo mức ưu tiên và lịch làm việc, để mỗi ticket có hạn xử lý rõ ràng. | Cam kết dịch vụ đo được | — | Must | AC-UC-WF-02 |
-| US-WF-04 | Là **Kỹ thuật viên**, tôi muốn SLA tạm dừng khi AI đang chờ người gửi trả lời, để không bị tính vi phạm vì việc ngoài tầm kiểm soát. | SLA công bằng | US-WF-03 | Should | AC-UC-WF-02 |
-| US-WF-05 | Là **Admin**, tôi muốn bật/tắt từng hành động AI (kể cả tự duyệt), đặt ngưỡng tin cậy và số lượt hỏi lại tối đa, để kiểm soát mức độ AI được tự quyết. | Kiểm soát rủi ro AI | AI Service (F04) | Must | AC-UC-WF-03 |
-| US-WF-06 | Là **Admin**, tôi muốn khai báo danh mục hành động tự động (kiểm tra tài khoản, cấp tài khoản, cấp quyền) kèm connector và tham số, để chỉ những việc đã định nghĩa mới được AI tự xử lý. | Tự động hóa có giới hạn | Connector đã khai báo | Must | AC-UC-WF-03 |
-| US-WF-07 | Là **Admin**, tôi muốn khai báo danh mục quyền và mẫu tài khoản mà AI được tự cấp cho từng phòng ban, kèm thời hạn tối đa, để AI không cấp quyền vượt phạm vi. | Ngăn cấp quyền sai | US-WF-06, phòng ban (F09) | Must | AC-UC-WF-03 |
-| US-WF-08 | Là **Người gửi**, tôi muốn yêu cầu cơ bản của tôi (kiểm tra tài khoản, cấp tài khoản, cấp thêm quyền) được AI nhận diện và xử lý ngay, để không phải chờ kỹ thuật viên. | Giải quyết tức thì phần lớn ticket | US-WF-05, US-WF-06 | Must | AC-UC-WF-04 |
-| US-WF-09 | Là **Người gửi**, tôi muốn khi AI chưa chắc chắn thì AI hỏi lại tôi câu hỏi cụ thể (tối đa 2 lượt), để yêu cầu được hiểu đúng thay vì bị xử lý sai. | Giảm xử lý sai | US-WF-08 | Must | AC-UC-WF-04 |
-| US-WF-10 | Là **Kỹ thuật viên**, tôi muốn yêu cầu cần con người (phần cứng, ngoài phạm vi AI, không đạt chính sách) được tự động giao cho tôi kèm bản tóm tắt AI và lý do, để tôi xử lý ngay không cần đọc lại từ đầu. | Kỹ thuật viên chỉ nhận việc cần người | US-WF-01, US-WF-08 | Must | AC-UC-WF-05 |
-| US-WF-11 | Là **Trưởng nhóm**, tôi muốn ticket không khớp quy tắc nào vào hàng chờ thủ công, và tôi có thể phân công lại có lý do, để không ticket nào bị bỏ sót hay giao sai. | Không bỏ sót ticket | US-WF-10 | Must | AC-UC-WF-05 |
-| US-WF-12 | Là **Kỹ thuật viên**, tôi muốn được nhắc khi ticket đạt ngưỡng cảnh báo SLA, để xử lý trước khi quá hạn. | Giảm vi phạm SLA | US-WF-03 | Must | AC-UC-WF-06 |
-| US-WF-13 | Là **Trưởng nhóm**, tôi muốn ticket vi phạm SLA được tự động chuyển cấp (thông báo, gắn cờ, nâng ưu tiên tùy cấu hình), để can thiệp kịp thời. | Phản ứng nhanh khi trễ | US-WF-03 | Must | AC-UC-WF-06 |
-| US-WF-14 | Là **Người gửi**, tôi muốn được nhắc khi AI đang chờ tôi trả lời, và ticket tự đóng sau N ngày nếu tôi không trả lời (vẫn mở lại được), để ticket không treo vô thời hạn. | Hàng đợi sạch | US-WF-09 | Should | AC-UC-WF-06 |
-| US-WF-15 | Là **Người gửi**, tôi muốn yêu cầu nằm trong danh mục cho phép của phòng ban được AI duyệt ngay sau khi kiểm tra chính sách, để tôi không phải chờ ai duyệt. | Duyệt trong vài giây | US-WF-07, US-WF-08 | Must | AC-UC-WF-07 |
-| US-WF-16 | Là **Admin**, tôi muốn xem từng quyết định của AI kèm độ tin cậy, thông tin trích xuất và kết quả từng điều kiện chính sách, để kiểm tra lại và điều chỉnh cấu hình khi AI quyết định chưa đúng. | Giải trình được quyết định AI | US-WF-15 | Must | AC-UC-WF-07 |
-| US-WF-17 | Là **Người gửi**, tôi muốn sau khi AI duyệt, hệ thống tự gọi API thực thi (không cấp trùng, tự thử lại khi lỗi tạm thời), để tôi có tài khoản / quyền ngay mà không cần ai thao tác tay. | Tự giải quyết không cần KTV | US-WF-15 | Must | AC-UC-WF-08 |
-| US-WF-18 | Là **Admin**, tôi muốn quyền có thời hạn được tự động thu hồi khi hết hạn, để giảm rủi ro tồn đọng quyền. | Bảo mật | US-WF-17 | Could | AC-UC-WF-08 |
-| US-WF-19 | Là **Người gửi**, tôi muốn hệ thống tự kiểm tra lại kết quả trên hệ thống cấp quyền bên ngoài rồi mời tôi xác nhận, để chắc chắn yêu cầu đã thực sự được xử lý. | Kết quả đáng tin | US-WF-17 | Must | AC-UC-WF-09 |
-| US-WF-20 | Là **Kỹ thuật viên**, tôi muốn khi thực thi hoặc xác minh thất bại, ticket được chuyển cho tôi kèm log lỗi để tôi thử lại hoặc xử lý thủ công, để lỗi tự động hóa không bị bỏ quên. | Có người chịu trách nhiệm khi lỗi | US-WF-17, US-WF-10 | Must | AC-UC-WF-09 |
+| US-WF-01 | As an **Admin**, I want to create and edit assignment rules based on conditions (request type, category, priority, department) pointing to a technical team and a distribution strategy, so that tickets that need a human reach the right team automatically. | No manual dispatching | Technical teams (F09) | Must | AC-UC-WF-01 |
+| US-WF-02 | As an **Admin**, I want to order the rules and dry-run them on a sample ticket, so that I know the assignment outcome before enabling them. | Fewer configuration mistakes | US-WF-01 | Should | AC-UC-WF-01 |
+| US-WF-03 | As an **Admin**, I want to define SLAs per priority and business calendar, so that every ticket has a clear deadline. | Measurable service commitment | — | Must | AC-UC-WF-02 |
+| US-WF-04 | As a **Technician**, I want the SLA to pause while the AI is waiting for the requester's answer, so that I am not penalized for delays outside my control. | Fair SLA | US-WF-03 | Should | AC-UC-WF-02 |
+| US-WF-05 | As an **Admin**, I want to enable/disable each AI action (including auto-approval), set confidence thresholds and the maximum clarification rounds, so that I control how much the AI may decide on its own. | AI risk control | AI Service (F04) | Must | AC-UC-WF-03 |
+| US-WF-06 | As an **Admin**, I want to declare the automation action catalog (account check, account creation, access grant) with connectors and parameters, so that only predefined tasks can be handled by the AI. | Bounded automation | Declared connectors | Must | AC-UC-WF-03 |
+| US-WF-07 | As an **Admin**, I want to declare, per department, the entitlements and account templates the AI may grant, with a maximum duration, so that the AI never grants access beyond scope. | Prevents wrongful grants | US-WF-06, departments (F09) | Must | AC-UC-WF-03 |
+| US-WF-08 | As a **Requester**, I want my basic requests (account check, account creation, additional access) to be recognized and handled by the AI immediately, so that I don't have to wait for a technician. | Instant resolution of most tickets | US-WF-05, US-WF-06 | Must | AC-UC-WF-04 |
+| US-WF-09 | As a **Requester**, I want the AI to ask me a specific question when it is not confident (max 2 rounds), so that my request is understood correctly instead of being handled wrongly. | Fewer wrong actions | US-WF-08 | Must | AC-UC-WF-04 |
+| US-WF-10 | As a **Technician**, I want requests that need a human (hardware, outside AI scope, policy check failed) to be assigned to me automatically with an AI summary and the reason, so that I can start without re-reading everything. | Technicians only get work that needs them | US-WF-01, US-WF-08 | Must | AC-UC-WF-05 |
+| US-WF-11 | As a **Team Lead**, I want tickets that match no rule to go to a manual triage queue, and to be able to reassign tickets with a reason, so that no ticket is missed or misassigned. | Nothing slips through | US-WF-10 | Must | AC-UC-WF-05 |
+| US-WF-12 | As a **Technician**, I want to be reminded when a ticket reaches its SLA warning threshold, so that I can act before it is overdue. | Fewer SLA breaches | US-WF-03 | Must | AC-UC-WF-06 |
+| US-WF-13 | As a **Team Lead**, I want SLA-breached tickets to be escalated automatically (notification, flag, optional priority raise), so that I can intervene in time. | Fast reaction to delays | US-WF-03 | Must | AC-UC-WF-06 |
+| US-WF-14 | As a **Requester**, I want to be reminded when the AI is waiting for my answer, and the ticket to close automatically after N days without an answer (still reopenable), so that tickets don't hang forever. | Clean queues | US-WF-09 | Should | AC-UC-WF-06 |
+| US-WF-15 | As a **Requester**, I want requests within my department's allowed catalog to be approved by the AI right after the policy check, so that I don't have to wait for anyone's approval. | Approval in seconds | US-WF-07, US-WF-08 | Must | AC-UC-WF-07 |
+| US-WF-16 | As an **Admin**, I want to see each AI decision with its confidence, extracted information and the result of each policy condition, so that I can review it and adjust the configuration when the AI gets it wrong. | Explainable AI decisions | US-WF-15 | Must | AC-UC-WF-07 |
+| US-WF-17 | As a **Requester**, I want the system to call the API automatically after AI approval (no duplicate grants, automatic retry on transient errors), so that I get my account / access right away without manual work. | Self-resolution without technicians | US-WF-15 | Must | AC-UC-WF-08 |
+| US-WF-18 | As an **Admin**, I want time-bound access to be revoked automatically on expiry, so that stale access does not accumulate. | Security | US-WF-17 | Could | AC-UC-WF-08 |
+| US-WF-19 | As a **Requester**, I want the system to verify the result on the external access-management system and then ask me to confirm, so that I am sure my request was really fulfilled. | Trustworthy result | US-WF-17 | Must | AC-UC-WF-09 |
+| US-WF-20 | As a **Technician**, I want tickets whose execution or verification failed to be handed to me with the error log so I can retry or resolve manually, so that automation failures are never forgotten. | Clear ownership of failures | US-WF-17, US-WF-10 | Must | AC-UC-WF-09 |
 
-Nhóm theo use case:
+Grouped by use case:
 
 ```text
-US-WF-01–02   UC-WF-01  Cấu hình quy tắc phân công
-US-WF-03–04   UC-WF-02  Cấu hình SLA
-US-WF-05–07   UC-WF-03  Cấu hình phạm vi xử lý của AI
-US-WF-08–09   UC-WF-04  Phân luồng ticket (AI tự xử lý / hỏi lại)
-US-WF-10–11   UC-WF-05  Tự động phân công kỹ thuật viên
-US-WF-12–14   UC-WF-06  Nhắc & cảnh báo SLA
-US-WF-15–16   UC-WF-07  AI duyệt yêu cầu trong phạm vi
-US-WF-17–18   UC-WF-08  Thực thi qua API
-US-WF-19–20   UC-WF-09  Xác minh / chuyển người khi lỗi
+US-WF-01–02   UC-WF-01  Configure assignment rules
+US-WF-03–04   UC-WF-02  Configure SLA
+US-WF-05–07   UC-WF-03  Configure AI processing scope
+US-WF-08–09   UC-WF-04  Route ticket (AI self-service / clarification)
+US-WF-10–11   UC-WF-05  Auto-assign technician
+US-WF-12–14   UC-WF-06  SLA reminders & warnings
+US-WF-15–16   UC-WF-07  AI approves in-scope request
+US-WF-17–18   UC-WF-08  Execute via API
+US-WF-19–20   UC-WF-09  Verify / hand off on failure
 ```
 
-## Đánh giá INVEST từng story
+## Per-story INVEST review
 
-`PASS` nghĩa là thiết kế hiện tại đủ thông tin để lập kế hoạch và nghiệm thu, **không** có nghĩa đã có code hay test.
+`PASS` means the current design provides enough information for planning and acceptance. It does **not** claim that code or tests already exist.
 
-| Story | I | N | V | E | S | T | Ghi chú |
+| Story | I | N | V | E | S | T | Notes |
 |---|---|---|---|---|---|---|---|
-| US-WF-01 | PASS | PASS | PASS | PASS | PASS | PASS | Điều kiện AND, quy tắc mới mặc định Tắt. |
-| US-WF-02 | PASS | PASS | PASS | PASS | PASS | PASS | Chạy thử không ghi dữ liệu; khớp đầu tiên thắng. |
-| US-WF-03 | PASS | PASS | PASS | PASS | PASS | PASS | Có bảng giá trị mặc định P1–P4; chính sách có phiên bản. |
-| US-WF-04 | PASS | PASS | PASS | PASS | PASS | PASS | Trạng thái tạm dừng duy nhất: `NEEDS_INFO`. |
-| US-WF-05 | PASS | PASS | PASS | PASS | PASS | PASS | 5 hành động AI, ngưỡng 0.00–1.00, số lượt hỏi mặc định 2. |
-| US-WF-06 | PASS | PASS | PASS | PASS | PASS | PASS | 4 thao tác V1: `CHECK_ACCOUNT`, `CREATE_ACCOUNT`, `GRANT_ACCESS`, `REVOKE_ACCESS`. |
-| US-WF-07 | PASS | PASS | PASS | PASS | PASS | PASS | Danh mục theo phòng ban; kiểm tra không dùng AI. |
-| US-WF-08 | PASS | PASS | PASS | PASS | PASS | PASS | Ba luồng A/B/C có điều kiện rõ ràng. |
-| US-WF-09 | PASS | NEEDS CONFIRM | PASS | PASS | PASS | PASS | Số lượt hỏi tối đa = 2 là giá trị đề xuất, chờ chốt. |
-| US-WF-10 | PASS | PASS | PASS | PASS | PASS | PASS | Thông báo phải có lý do chuyển người. |
-| US-WF-11 | PASS | PASS | PASS | PASS | PASS | PASS | Lý do phân công lại bắt buộc; SLA vẫn chạy ở `TRIAGE`. |
-| US-WF-12 | PASS | PASS | PASS | PASS | PASS | PASS | Mỗi ngưỡng nhắc một lần. |
-| US-WF-13 | PASS | PASS | PASS | PASS | PASS | PASS | Nâng ưu tiên là tùy chọn cấu hình. |
-| US-WF-14 | PASS | PASS | PASS | PASS | PASS | PASS | N mặc định 5 ngày làm việc; mở lại trong 7 ngày. |
-| US-WF-15 | PASS | NEEDS CONFIRM | PASS | PASS | PASS | PASS | Chưa chốt: quyền nhạy cảm có cần Admin duyệt hay không (xem Câu hỏi mở trong README). |
-| US-WF-16 | PASS | PASS | PASS | PASS | PASS | PASS | Đọc từ `ai_decisions`, không cần AI chạy lại. |
-| US-WF-17 | PASS | PASS | PASS | PASS | PASS | PASS | Khóa idempotency, 3 lần thử 1/5/15 phút; demo được với mock connector. |
-| US-WF-18 | PASS | PASS | PASS | PASS | PASS | PASS | Thu hồi tái dùng cơ chế `workflow_run`. |
-| US-WF-19 | PASS | PASS | PASS | PASS | PASS | PASS | Connector phải có thao tác kiểm tra. |
-| US-WF-20 | PASS | PASS | PASS | PASS | PASS | PASS | Thử lại luôn kiểm tra lại chính sách hiện hành. |
+| US-WF-01 | PASS | PASS | PASS | PASS | PASS | PASS | AND conditions; new rules are disabled by default. |
+| US-WF-02 | PASS | PASS | PASS | PASS | PASS | PASS | Dry run writes no data; first match wins. |
+| US-WF-03 | PASS | PASS | PASS | PASS | PASS | PASS | P1–P4 defaults provided; policies are versioned. |
+| US-WF-04 | PASS | PASS | PASS | PASS | PASS | PASS | Only pause state: `NEEDS_INFO`. |
+| US-WF-05 | PASS | PASS | PASS | PASS | PASS | PASS | 5 AI actions, threshold 0.00–1.00, default 2 clarification rounds. |
+| US-WF-06 | PASS | PASS | PASS | PASS | PASS | PASS | 4 V1 operations: `CHECK_ACCOUNT`, `CREATE_ACCOUNT`, `GRANT_ACCESS`, `REVOKE_ACCESS`. |
+| US-WF-07 | PASS | PASS | PASS | PASS | PASS | PASS | Catalog per department; check does not use AI. |
+| US-WF-08 | PASS | PASS | PASS | PASS | PASS | PASS | Flows A/B/C have explicit conditions. |
+| US-WF-09 | PASS | NEEDS CONFIRM | PASS | PASS | PASS | PASS | Max 2 clarification rounds is a proposed value, pending confirmation. |
+| US-WF-10 | PASS | PASS | PASS | PASS | PASS | PASS | Notification must include the routing reason. |
+| US-WF-11 | PASS | PASS | PASS | PASS | PASS | PASS | Reassignment reason required; SLA keeps running in `TRIAGE`. |
+| US-WF-12 | PASS | PASS | PASS | PASS | PASS | PASS | One reminder per threshold. |
+| US-WF-13 | PASS | PASS | PASS | PASS | PASS | PASS | Priority raise is a configuration option. |
+| US-WF-14 | PASS | PASS | PASS | PASS | PASS | PASS | N defaults to 5 business days; reopen within 7 days. |
+| US-WF-15 | PASS | NEEDS CONFIRM | PASS | PASS | PASS | PASS | Open: whether sensitive entitlements still need Admin approval (see Open questions in README). |
+| US-WF-16 | PASS | PASS | PASS | PASS | PASS | PASS | Read from `ai_decisions`; no need to re-run the AI. |
+| US-WF-17 | PASS | PASS | PASS | PASS | PASS | PASS | Idempotency key, 3 retries at 1/5/15 minutes; demoable with a mock connector. |
+| US-WF-18 | PASS | PASS | PASS | PASS | PASS | PASS | Revocation reuses the `workflow_run` mechanism. |
+| US-WF-19 | PASS | PASS | PASS | PASS | PASS | PASS | Connectors must expose a check operation. |
+| US-WF-20 | PASS | PASS | PASS | PASS | PASS | PASS | Retry always re-checks the current policy. |
 
-## Ràng buộc nghiệm thu dùng chung
+## Cross-cutting acceptance constraints
 
-- Chỉ tồn tại 3 vai trò `ADMIN`, `TECHNICIAN`, `REQUESTER`; actor hệ thống duy nhất là **AI Service**.
-- AI chỉ tự duyệt khi **kiểm tra chính sách cố định** đạt; API, không phải React client hay AI, là nơi thực thi RBAC, whitelist và danh mục quyền.
-- Mọi hành động không do người dùng thực hiện đều ghi nhật ký với nguồn `AI` hoặc `AUTOMATION` và căn cứ (`decisionId`, `ruleId`, `runId`).
-- Thông tin bí mật của connector không bao giờ xuất hiện trong UI, API response, log hay nhật ký.
-- Lỗi API dùng chuẩn `ProblemDetails` (`400`, `403`, `404`, `409`).
-- Thời gian lưu UTC; SLA tính theo giờ làm việc của lịch đã cấu hình.
-- Hệ thống phải chịu được tải tham chiếu **8.000 ticket/ngày** (xem NFR).
+- Only 3 roles exist: `ADMIN`, `TECHNICIAN`, `REQUESTER`; the only system actor is the **AI Service**.
+- The AI only self-approves when the **deterministic policy check** passes; the API — not the React client nor the AI — enforces RBAC, the whitelist and the entitlement catalog.
+- Every action not performed by a user is logged with source `AI` or `AUTOMATION` and its grounds (`decisionId`, `ruleId`, `runId`).
+- Connector secrets never appear in the UI, API responses, logs or audit records.
+- API errors use `ProblemDetails` (`400`, `403`, `404`, `409`).
+- Times are stored in UTC; SLAs are computed in business hours of the configured calendar.
+- The system must sustain the reference load of **8,000 tickets per day** (see NFRs).
 
 **Related:** [Use cases](03-use-cases.md) · [Acceptance criteria](06-acceptance-criteria.md) · [Business rules](requirements/business-rules.md)

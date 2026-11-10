@@ -1,59 +1,59 @@
-# Actor, vai trò, use case — Workflow & tự động hóa
+# Actors, Roles, Use Cases — Workflow & Automation
 
-> Trạng thái thiết kế: TARGET V1
+> Design status: TARGET V1
 >
-> Phạm vi: F05 Workflow & tự động hóa (UC-WF-01 … UC-WF-09)
+> Scope: F05 Workflow & Automation (UC-WF-01 … UC-WF-09)
 
-## Actor / vai trò
+## Actors / roles
 
-| Mã vai trò | Tên hiển thị | Trách nhiệm trong workflow |
+| Role code | Display name | Workflow responsibilities |
 |---|---|---|
-| `ADMIN` | Quản trị viên | Cấu hình quy tắc phân công, SLA, phạm vi xử lý của AI (hành động AI, whitelist, danh mục quyền); theo dõi quyết định của AI |
-| `TECHNICIAN` | Kỹ thuật viên | Xử lý yêu cầu cần con người và yêu cầu tự động hóa bị lỗi; có thể được đánh dấu **Trưởng nhóm** (`is_lead`) trong nhóm |
-| `REQUESTER` | Người gửi | Gửi yêu cầu, trả lời câu hỏi của AI, xác nhận kết quả |
+| `ADMIN` | Administrator | Configures assignment rules, SLA, and the AI processing scope (AI actions, whitelist, entitlement catalog); reviews AI decisions |
+| `TECHNICIAN` | Technician | Handles requests that need a human and automation failures; may be flagged as **Team Lead** (`is_lead`) within a team |
+| `REQUESTER` | Requester | Submits requests, answers AI questions, confirms results |
 
-| Actor hệ thống | Mã trong nhật ký | Trách nhiệm |
+| System actor | Audit code | Responsibilities |
 |---|---|---|
-| AI Service | `AI` | Phân loại ticket kèm độ tin cậy, trích xuất thông tin, hỏi lại khi chưa chắc chắn, **duyệt yêu cầu cơ bản trong phạm vi**, tóm tắt ticket cho kỹ thuật viên |
+| AI Service | `AI` | Classifies tickets with a confidence score, extracts information, asks for clarification when not confident, **approves basic in-scope requests**, summarizes tickets for technicians |
 
-> Hệ thống có 3 vai trò người dùng và **1 actor hệ thống duy nhất là AI Service**.
+> The system has 3 user roles and **exactly 1 system actor: the AI Service**.
 >
-> Các tác vụ tự động (áp quy tắc phân công, bộ hẹn giờ SLA, gọi API thực thi, xác minh) là **hành vi bên trong hệ thống**, không phải actor; chúng được ghi nhật ký với nguồn `AUTOMATION` (BR-WF-05). Hệ thống cấp quyền bên ngoài (AD, Google Workspace, mock API…) là **chi tiết tích hợp** qua connector.
+> Automated tasks (applying assignment rules, SLA timers, API execution, verification) are **internal system behavior**, not actors; they are logged with source `AUTOMATION` (BR-WF-05). The external access-management system (AD, Google Workspace, mock API…) is an **integration detail** reached through connectors.
 
-## Nguyên tắc phân luồng
+## Routing principles
 
-Khoảng **8.000 ticket/ngày** được AI Service phân thành ba luồng:
+About **8,000 tickets per day** are routed by the AI Service into three flows:
 
-| Luồng | Điều kiện | Xử lý |
+| Flow | Condition | Handling |
 |---|---|---|
-| **A — AI tự xử lý** | Độ tin cậy ≥ ngưỡng, loại yêu cầu có trong whitelist, **đạt kiểm tra chính sách** | AI duyệt → hệ thống gọi API → xác minh → người gửi xác nhận |
-| **B — Hỏi lại người gửi** | Độ tin cậy < ngưỡng, hoặc thiếu thông tin bắt buộc | AI hỏi lại → người gửi trả lời → phân luồng lại (tối đa 2 lượt) |
-| **C — Chuyển con người** | Yêu cầu cần con người (phần cứng…), ngoài whitelist, không đạt chính sách, hoặc vẫn chưa chắc chắn sau 2 lượt hỏi | Tự động phân công kỹ thuật viên kèm bản tóm tắt AI |
+| **A — AI self-service** | Confidence ≥ threshold, request type is in the whitelist, **policy check passes** | AI approves → system calls the API → verification → requester confirms |
+| **B — Clarification** | Confidence < threshold, or required information is missing | AI asks the requester → requester answers → re-route (max 2 rounds) |
+| **C — Human handling** | Needs a human (hardware…), outside the whitelist, policy check fails, or still unclear after 2 rounds | Automatic technician assignment with an AI summary |
 
-**AI duyệt gồm hai bước** (BR-WF-02):
+**AI approval has two steps** (BR-WF-02):
 
-1. **AI hiểu yêu cầu:** phân loại, trích xuất người nhận, hệ thống, quyền / loại tài khoản, thời hạn.
-2. **Kiểm tra chính sách cố định (không dùng AI):** hành động có trong whitelist, quyền có trong danh mục cho phép của phòng ban người nhận, thời hạn không vượt mức tối đa, người nhận hợp lệ. Đạt → duyệt; không đạt → luồng C.
+1. **AI understands the request:** classifies it and extracts the beneficiary, target system, entitlement / account type and duration.
+2. **Deterministic policy check (no AI involved):** the action is in the whitelist, the entitlement is in the beneficiary's department catalog, the duration does not exceed the maximum, and the beneficiary is valid. Pass → approve; fail → flow C.
 
-Nhờ vậy, kể cả khi AI hiểu sai, hệ thống cũng không cấp quyền ra ngoài phạm vi Admin đã cấu hình.
+As a result, even if the AI misunderstands a request, the system cannot grant access outside the scope configured by the Admin.
 
 ```mermaid
 flowchart TD
-    t["Ticket mới (~8.000/ngày)"] --> ai["AI Service phân loại<br/>+ trích xuất thông tin"]
-    ai --> conf{"Độ tin cậy ≥ ngưỡng<br/>và đủ thông tin?"}
-    conf -- "Không" --> ask{"Đã hỏi lại<br/>< 2 lượt?"}
-    ask -- "Có" --> b["Luồng B: AI hỏi lại người gửi"]
+    t["New ticket (~8,000/day)"] --> ai["AI Service classifies<br/>+ extracts information"]
+    ai --> conf{"Confidence ≥ threshold<br/>and information complete?"}
+    conf -- "No" --> ask{"Clarification rounds<br/>< 2?"}
+    ask -- "Yes" --> b["Flow B: AI asks the requester"]
     b --> ai
-    ask -- "Không" --> c
-    conf -- "Có" --> human{"Cần con người?<br/>(phần cứng, ngoài whitelist)"}
-    human -- "Có" --> c["Luồng C: phân công kỹ thuật viên"]
-    human -- "Không" --> policy{"Kiểm tra chính sách<br/>(danh mục quyền, thời hạn, người nhận)"}
-    policy -- "Không đạt" --> c
-    policy -- "Đạt" --> a["Luồng A: AI duyệt"]
-    a --> exec["Gọi API thực thi"]
-    exec --> verify{"Xác minh OK?"}
-    verify -- "Có" --> done["Người gửi xác nhận → đóng"]
-    verify -- "Không" --> c
+    ask -- "No" --> c
+    conf -- "Yes" --> human{"Needs a human?<br/>(hardware, outside whitelist)"}
+    human -- "Yes" --> c["Flow C: assign a technician"]
+    human -- "No" --> policy{"Policy check<br/>(entitlements, duration, beneficiary)"}
+    policy -- "Fail" --> c
+    policy -- "Pass" --> a["Flow A: AI approves"]
+    a --> exec["Execute via API"]
+    exec --> verify{"Verification OK?"}
+    verify -- "Yes" --> done["Requester confirms → closed"]
+    verify -- "No" --> c
 
     classDef auto fill:#e8f1fc,color:#123,stroke:#3a7bd5
     classDef human fill:#fdecea,color:#5a1a14,stroke:#d9534f
@@ -63,59 +63,59 @@ flowchart TD
     class b askc
 ```
 
-## Ma trận vai trò × chức năng
+## Role × feature matrix
 
-| Chức năng | Admin | Kỹ thuật viên | Người gửi |
+| Feature | Admin | Technician | Requester |
 |---|---|---|---|
-| Cấu hình quy tắc phân công | ✓ | | |
-| Cấu hình SLA, lịch làm việc | ✓ | | |
-| Cấu hình phạm vi AI (hành động AI, whitelist, danh mục quyền) | ✓ | | |
-| Xem quyết định của AI và căn cứ | ✓ | Ticket được giao | Ticket của mình (lý do tóm tắt) |
-| Xem hàng chờ phân loại thủ công | ✓ | Trưởng nhóm | |
-| Phân công lại ticket | ✓ | Trưởng nhóm (trong nhóm mình) | |
-| Nhận nhắc / cảnh báo SLA | | ✓ | ✓ (khi AI chờ mình trả lời) |
-| Gửi yêu cầu | ✓ | ✓ | ✓ |
-| Trả lời câu hỏi của AI | ✓ | ✓ | ✓ (ticket của mình) |
-| Thử lại / xử lý thủ công khi lỗi | ✓ | Ticket được giao | |
-| Xác nhận kết quả / báo chưa được | | | Ticket của mình |
+| Configure assignment rules | ✓ | | |
+| Configure SLA and business calendar | ✓ | | |
+| Configure AI scope (AI actions, whitelist, entitlement catalog) | ✓ | | |
+| View AI decisions and their grounds | ✓ | Assigned tickets | Own tickets (summary reason) |
+| View the manual triage queue | ✓ | Team Lead | |
+| Reassign tickets | ✓ | Team Lead (own team) | |
+| Receive reminders / SLA warnings | | ✓ | ✓ (when the AI is waiting for them) |
+| Submit requests | ✓ | ✓ | ✓ |
+| Answer AI questions | ✓ | ✓ | ✓ (own tickets) |
+| Retry / resolve manually on failure | ✓ | Assigned tickets | |
+| Confirm result / report not fixed | | | Own tickets |
 
-Menu và nút không hiển thị khi người dùng không có quyền. Truy cập URL trái phép → `#/403`. **Backend là nơi thực thi phân quyền**; ẩn nút ở frontend chỉ phục vụ UI/UX.
+Menus and buttons are hidden when the user lacks permission. Unauthorized URL access → `#/403`. **The backend enforces authorization**; hiding frontend controls serves UI/UX only.
 
 ## Use Case Diagram
 
 ```mermaid
 flowchart LR
-    subgraph left["Actor"]
+    subgraph left["Actors"]
         direction TB
         admin(["Admin"])
-        tech(["Kỹ thuật viên"])
+        tech(["Technician"])
     end
 
-    subgraph system["Workflow & tự động hóa — System Boundary"]
+    subgraph system["Workflow & Automation — System Boundary"]
         direction TB
-        subgraph config["Cấu hình"]
+        subgraph config["Configuration"]
             direction LR
-            uc01["UC-WF-01 Cấu hình quy tắc phân công"]
-            uc02["UC-WF-02 Cấu hình SLA"]
-            uc03["UC-WF-03 Cấu hình phạm vi xử lý của AI"]
+            uc01["UC-WF-01 Configure assignment rules"]
+            uc02["UC-WF-02 Configure SLA"]
+            uc03["UC-WF-03 Configure AI processing scope"]
         end
-        subgraph routing["Phân luồng & điều phối"]
+        subgraph routing["Routing & dispatch"]
             direction LR
-            uc04["UC-WF-04 Phân luồng ticket"]
-            uc05["UC-WF-05 Tự động phân công kỹ thuật viên"]
-            uc06["UC-WF-06 Nhắc & cảnh báo SLA"]
+            uc04["UC-WF-04 Route ticket"]
+            uc05["UC-WF-05 Auto-assign technician"]
+            uc06["UC-WF-06 SLA reminders & warnings"]
         end
-        subgraph automation["Tự động xử lý"]
+        subgraph automation["Automated handling"]
             direction LR
-            uc07["UC-WF-07 AI duyệt yêu cầu trong phạm vi"]
-            uc08["UC-WF-08 Thực thi qua API"]
-            uc09["UC-WF-09 Xác minh / chuyển người khi lỗi"]
+            uc07["UC-WF-07 AI approves in-scope request"]
+            uc08["UC-WF-08 Execute via API"]
+            uc09["UC-WF-09 Verify / hand off on failure"]
         end
     end
 
-    subgraph right["Actor"]
+    subgraph right["Actors"]
         direction TB
-        requester(["Người gửi"])
+        requester(["Requester"])
         ai(["AI Service"])
     end
 
@@ -137,221 +137,221 @@ flowchart LR
     style system fill:#f8fbff,stroke:#1168bd,stroke-dasharray:5 5
 ```
 
-Viền đậm: nghiệp vụ cốt lõi. Màu tím: actor hệ thống (AI Service). UC-WF-05, 06, 08, 09 được hệ thống tự kích hoạt; actor nối vào là người hưởng kết quả hoặc người tác động (phân công lại, thử lại, xác nhận).
+Thick border: core business use cases. Purple: system actor (AI Service). UC-WF-05, 06, 08 and 09 are triggered automatically by the system; the connected actors are those who benefit from the result or act on it (reassign, retry, confirm).
 
-### Quy tắc và ràng buộc dùng chung
+### Shared rules and constraints
 
 ```mermaid
 flowchart LR
-    auth["Xác thực phiên"]:::shared
-    authorize["Kiểm tra RBAC"]:::shared
-    validate["Kiểm tra dữ liệu"]:::shared
-    audit["Ghi nhật ký (nguồn USER / AI / AUTOMATION)"]:::shared
-    whitelist["Kiểm tra whitelist"]:::rule
-    policy["Kiểm tra chính sách cố định"]:::rule
-    idem["Khóa idempotency"]:::rule
+    auth["Authenticate session"]:::shared
+    authorize["Check RBAC"]:::shared
+    validate["Validate input"]:::shared
+    audit["Write audit log (source USER / AI / AUTOMATION)"]:::shared
+    whitelist["Whitelist check"]:::rule
+    policy["Deterministic policy check"]:::rule
+    idem["Idempotency key"]:::rule
 
-    configUc["UC-WF-01..03 Cấu hình"] --> auth & authorize & validate & audit
-    routeUc["UC-WF-04 Phân luồng"] --> audit
-    approveUc["UC-WF-07 AI duyệt"] --> whitelist & policy & audit
-    execUc["UC-WF-08 Thực thi API"] --> whitelist & policy & idem & audit
-    retryUc["UC-WF-09 Thử lại thủ công"] --> auth & authorize & policy & idem & audit
+    configUc["UC-WF-01..03 Configuration"] --> auth & authorize & validate & audit
+    routeUc["UC-WF-04 Routing"] --> audit
+    approveUc["UC-WF-07 AI approval"] --> whitelist & policy & audit
+    execUc["UC-WF-08 API execution"] --> whitelist & policy & idem & audit
+    retryUc["UC-WF-09 Manual retry"] --> auth & authorize & policy & idem & audit
 
     classDef shared fill:#1168bd,color:#fff,stroke:#0b4884
     classDef rule fill:#e8f1fc,color:#123,stroke:#3a7bd5
 ```
 
-## Trạng thái liên quan
+## Related states
 
-### Trạng thái ticket (phần do workflow điều khiển)
+### Ticket status (workflow-controlled part)
 
-| Trạng thái | Ý nghĩa |
+| Status | Meaning |
 |---|---|
-| `NEW` | Vừa tạo, chờ AI phân loại |
-| `NEEDS_INFO` | AI đang hỏi lại người gửi — **SLA tạm dừng** |
-| `TRIAGE` | Chưa có nhóm nào nhận (không khớp quy tắc phân công) — chờ trưởng nhóm phân loại thủ công |
-| `ASSIGNED` | Đã giao cho nhóm / kỹ thuật viên |
-| `IN_PROGRESS` | Kỹ thuật viên đang xử lý |
-| `AUTOMATING` | AI đã duyệt, hệ thống đang thực thi / xác minh qua API |
-| `RESOLVED` | Đã xử lý, chờ người gửi xác nhận |
-| `CLOSED` | Đã đóng |
-| `CANCELLED` | Người gửi hủy |
+| `NEW` | Just created, waiting for AI classification |
+| `NEEDS_INFO` | AI is asking the requester for clarification — **SLA paused** |
+| `TRIAGE` | No team picked it up (no assignment rule matched) — waiting for manual triage by a team lead |
+| `ASSIGNED` | Assigned to a team / technician |
+| `IN_PROGRESS` | Technician is working on it |
+| `AUTOMATING` | AI approved; the system is executing / verifying via API |
+| `RESOLVED` | Handled, waiting for requester confirmation |
+| `CLOSED` | Closed |
+| `CANCELLED` | Cancelled by the requester |
 
-### Quyết định của AI (`ai_decisions.outcome`)
+### AI decision (`ai_decisions.outcome`)
 
-| Giá trị | Ý nghĩa | Luồng |
+| Value | Meaning | Flow |
 |---|---|---|
-| `AUTO_APPROVED` | Đạt độ tin cậy và kiểm tra chính sách | A |
-| `NEEDS_INFO` | Chưa chắc chắn hoặc thiếu thông tin | B |
-| `ROUTE_TO_HUMAN` | Cần con người / ngoài whitelist / không đạt chính sách / hết lượt hỏi | C |
+| `AUTO_APPROVED` | Confidence and policy check passed | A |
+| `NEEDS_INFO` | Not confident or information missing | B |
+| `ROUTE_TO_HUMAN` | Needs a human / outside whitelist / policy check failed / clarification limit reached | C |
 
-Mỗi quyết định lưu: danh mục, độ tin cậy, thông tin trích xuất, kết quả từng điều kiện chính sách, lý do.
+Each decision stores: category, confidence, extracted information, result of each policy condition, and reason.
 
-### Trạng thái lần chạy workflow (`workflow_runs.status`)
+### Workflow run status (`workflow_runs.status`)
 
 `QUEUED` → `RUNNING` → (`RETRY_WAIT` → `RUNNING`)* → `VERIFYING` → `SUCCEEDED`
-Nhánh lỗi: `FAILED` → `QUEUED` (thử lại thủ công) | `MANUALLY_RESOLVED`
+Failure branch: `FAILED` → `QUEUED` (manual retry) | `MANUALLY_RESOLVED`
 
 ```mermaid
 stateDiagram-v2
     [*] --> NEW
-    NEW --> NEEDS_INFO: AI chưa chắc chắn / thiếu thông tin
-    NEEDS_INFO --> NEW: người gửi trả lời → phân luồng lại
-    NEW --> AUTOMATING: AI duyệt (luồng A)
-    NEW --> ASSIGNED: chuyển con người (luồng C)
-    NEW --> TRIAGE: không khớp quy tắc phân công
-    TRIAGE --> ASSIGNED: trưởng nhóm phân công
-    AUTOMATING --> RESOLVED: thực thi + xác minh OK
-    AUTOMATING --> ASSIGNED: lỗi vĩnh viễn / hết lượt thử → giao KTV
-    ASSIGNED --> IN_PROGRESS: KTV nhận xử lý
-    IN_PROGRESS --> AUTOMATING: KTV thử lại tự động hóa
-    IN_PROGRESS --> RESOLVED: KTV xử lý xong
-    RESOLVED --> CLOSED: người gửi xác nhận
-    RESOLVED --> IN_PROGRESS: người gửi báo chưa được
-    NEEDS_INFO --> CLOSED: không phản hồi sau N ngày
-    NEW --> CANCELLED: người gửi hủy
+    NEW --> NEEDS_INFO: AI not confident / information missing
+    NEEDS_INFO --> NEW: requester answers → re-route
+    NEW --> AUTOMATING: AI approves (flow A)
+    NEW --> ASSIGNED: route to human (flow C)
+    NEW --> TRIAGE: no assignment rule matched
+    TRIAGE --> ASSIGNED: team lead assigns
+    AUTOMATING --> RESOLVED: execution + verification OK
+    AUTOMATING --> ASSIGNED: permanent error / retries exhausted → technician
+    ASSIGNED --> IN_PROGRESS: technician starts
+    IN_PROGRESS --> AUTOMATING: technician retries automation
+    IN_PROGRESS --> RESOLVED: technician done
+    RESOLVED --> CLOSED: requester confirms
+    RESOLVED --> IN_PROGRESS: requester reports not fixed
+    NEEDS_INFO --> CLOSED: no response after N days
+    NEW --> CANCELLED: requester cancels
     CLOSED --> [*]
     CANCELLED --> [*]
 ```
 
 ## Use cases
 
-### UC-WF-01 Cấu hình quy tắc phân công
+### UC-WF-01 Configure assignment rules
 
 - **Actor:** Admin
-- **Tiền điều kiện:** đăng nhập `ADMIN`; có ít nhất một nhóm kỹ thuật có thành viên đang hoạt động
-- **Luồng chính:** mở SCR-WF-01 → *Thêm quy tắc* → nhập tên, điều kiện (loại yêu cầu, danh mục, mức ưu tiên, phòng ban người gửi — kết hợp AND), nhóm đích, chiến lược chia việc (`ROUND_ROBIN` / `LEAST_LOADED`) → `createAssignmentRule` → backend kiểm tra quyền và dữ liệu → lưu ở trạng thái **Tắt** → ghi nhật ký → quy tắc xuất hiện cuối danh sách thứ tự
-- **Luồng phụ:**
-  - Kéo thả sắp xếp thứ tự → `reorderAssignmentRules`
-  - Chạy thử trên ticket mẫu → `dryRunAssignmentRules` → hiển thị quy tắc khớp, nhóm và người dự kiến nhận; không thay đổi dữ liệu
-  - Bật / tắt → `updateAssignmentRule`
-  - Lưu trữ quy tắc (không xóa cứng để giữ tham chiếu lịch sử) → `archiveAssignmentRule`
-- **Ngoại lệ:** nhóm đích không có thành viên hoạt động → `400`; điều kiện trùng hoàn toàn với quy tắc khác → cảnh báo, vẫn cho lưu
-- **Quyền:** `workflowConfigManage`
-- **Kết quả:** quy tắc được áp dụng cho ticket chuyển luồng C **sau** thời điểm bật
+- **Preconditions:** logged in as `ADMIN`; at least one technical team has active members
+- **Main flow:** open SCR-WF-01 → *Add rule* → enter name, conditions (request type, category, priority, requester department — combined with AND), target team, distribution strategy (`ROUND_ROBIN` / `LEAST_LOADED`) → `createAssignmentRule` → backend checks authorization and input → saved as **Disabled** → audit → the rule appears at the end of the ordered list
+- **Secondary flows:**
+  - Drag and drop to reorder → `reorderAssignmentRules`
+  - Dry run on a sample ticket → `dryRunAssignmentRules` → shows the matching rule, team and expected assignee; no data is changed
+  - Enable / disable → `updateAssignmentRule`
+  - Archive a rule (no hard delete, to keep historical references) → `archiveAssignmentRule`
+- **Exceptions:** target team has no active members → `400`; conditions identical to another rule → warning, saving still allowed
+- **Permission:** `workflowConfigManage`
+- **Result:** the rule applies to tickets entering flow C **after** it is enabled
 
-### UC-WF-02 Cấu hình chính sách SLA
+### UC-WF-02 Configure SLA policies
 
 - **Actor:** Admin
-- **Tiền điều kiện:** đăng nhập `ADMIN`
-- **Luồng chính:** mở SCR-WF-02 → chọn mức ưu tiên (P1–P4) → nhập thời hạn phản hồi đầu tiên, thời hạn giải quyết, ngưỡng cảnh báo (%) → chọn lịch làm việc (giờ làm, ngày nghỉ) → `updateSlaPolicy` → lưu phiên bản mới của chính sách → ghi nhật ký
-- **Giá trị mặc định đề xuất:**
+- **Preconditions:** logged in as `ADMIN`
+- **Main flow:** open SCR-WF-02 → choose a priority (P1–P4) → enter first-response time, resolution time, warning threshold (%) → choose a business calendar (working hours, holidays) → `updateSlaPolicy` → a new policy version is saved → audit
+- **Suggested defaults:**
 
-  | Ưu tiên | Phản hồi đầu | Giải quyết | Ngưỡng cảnh báo |
+  | Priority | First response | Resolution | Warning threshold |
   |---|---|---|---|
-  | P1 — Khẩn cấp | 15 phút | 4 giờ | 75% |
-  | P2 — Cao | 1 giờ | 8 giờ làm việc | 75% |
-  | P3 — Trung bình | 4 giờ làm việc | 3 ngày làm việc | 75% |
-  | P4 — Thấp | 8 giờ làm việc | 5 ngày làm việc | 75% |
+  | P1 — Critical | 15 minutes | 4 hours | 75% |
+  | P2 — High | 1 hour | 8 business hours | 75% |
+  | P3 — Medium | 4 business hours | 3 business days | 75% |
+  | P4 — Low | 8 business hours | 5 business days | 75% |
 
-- **Ngoại lệ:** thời hạn giải quyết < thời hạn phản hồi, ngưỡng ngoài 1–99% → `400`
-- **Quyền:** `workflowConfigManage`
-- **Kết quả:** ticket mới hoặc ticket đổi mức ưu tiên sau thời điểm lưu dùng phiên bản mới; ticket đang chạy giữ phiên bản đã gắn (BR-WF-08)
+- **Exceptions:** resolution time < response time, threshold outside 1–99% → `400`
+- **Permission:** `workflowConfigManage`
+- **Result:** new tickets, or tickets whose priority changes after saving, use the new version; open tickets keep their attached version (BR-WF-08)
 
-### UC-WF-03 Cấu hình phạm vi xử lý của AI
+### UC-WF-03 Configure the AI processing scope
 
 - **Actor:** Admin
-- **Tiền điều kiện:** đăng nhập `ADMIN`; connector của hệ thống cấp quyền bên ngoài đã được khai báo ở cấu hình triển khai (thông tin bí mật không nhập qua UI)
-- **Luồng chính — hành động AI:** SCR-WF-03 tab *Hành động AI* → bật/tắt từng hành động (`AUTO_CLASSIFY`, `ASK_FOR_INFO`, `AUTO_APPROVE`, `SUGGEST_KB`, `SUGGEST_PRIORITY`) → đặt ngưỡng tin cậy (0.00–1.00) và số lượt hỏi lại tối đa (mặc định 2) → `updateAiActionSetting` → ghi nhật ký
-- **Luồng chính — whitelist:** tab *Hành động tự động* → *Thêm* → nhập loại yêu cầu, connector, thao tác, tham số bắt buộc, thời hạn quyền tối đa, nhóm phụ trách khi lỗi → `createAutomationAction` → ghi nhật ký. Thao tác V1:
+- **Preconditions:** logged in as `ADMIN`; connectors to the external access-management system are declared in deployment configuration (secrets are never entered through the UI)
+- **Main flow — AI actions:** SCR-WF-03 tab *AI actions* → enable/disable each action (`AUTO_CLASSIFY`, `ASK_FOR_INFO`, `AUTO_APPROVE`, `SUGGEST_KB`, `SUGGEST_PRIORITY`) → set the confidence threshold (0.00–1.00) and the maximum clarification rounds (default 2) → `updateAiActionSetting` → audit
+- **Main flow — whitelist:** tab *Automation actions* → *Add* → enter request type, connector, operation, required parameters, maximum access duration, fallback team on failure → `createAutomationAction` → audit. V1 operations:
 
-  | Thao tác | Ý nghĩa | Thay đổi dữ liệu? |
+  | Operation | Meaning | Changes data? |
   |---|---|---|
-  | `CHECK_ACCOUNT` | Kiểm tra trạng thái tài khoản (tồn tại, bị khóa, quyền hiện có) và trả kết quả cho người gửi | Không (chỉ đọc) |
-  | `CREATE_ACCOUNT` | Cấp tài khoản mới theo mẫu tài khoản của phòng ban | Có |
-  | `GRANT_ACCESS` | Cấp thêm quyền trên một hệ thống | Có |
-  | `REVOKE_ACCESS` | Thu hồi quyền khi hết hạn (chỉ hệ thống tự gọi) | Có |
+  | `CHECK_ACCOUNT` | Check account status (exists, locked, current access) and return it to the requester | No (read-only) |
+  | `CREATE_ACCOUNT` | Create a new account from the department account template | Yes |
+  | `GRANT_ACCESS` | Grant additional access on a system | Yes |
+  | `REVOKE_ACCESS` | Revoke access on expiry (only invoked by the system) | Yes |
 
-- **Luồng chính — danh mục quyền:** tab *Danh mục quyền* → chọn phòng ban → khai báo các quyền / mẫu tài khoản được AI tự cấp cho phòng ban đó, kèm thời hạn tối đa → `updateDepartmentEntitlements` → ghi nhật ký
-- **Ngoại lệ:** connector không tồn tại → `400`; quyền tham chiếu hệ thống không có connector → `400`; ngưỡng ngoài 0.00–1.00 → `400`
-- **Quyền:** `workflowConfigManage`
-- **Kết quả:** AI chỉ tự duyệt những yêu cầu thuộc whitelist đang bật **và** nằm trong danh mục quyền của phòng ban người nhận
+- **Main flow — entitlement catalog:** tab *Entitlement catalog* → choose a department → declare the entitlements / account templates the AI may grant to that department, with a maximum duration → `updateDepartmentEntitlements` → audit
+- **Exceptions:** connector does not exist → `400`; entitlement references a system without a connector → `400`; threshold outside 0.00–1.00 → `400`
+- **Permission:** `workflowConfigManage`
+- **Result:** the AI only self-approves requests that are in an enabled whitelist entry **and** in the beneficiary department's entitlement catalog
 
-### UC-WF-04 Phân luồng ticket
+### UC-WF-04 Route ticket
 
-- **Actor:** Người gửi; AI Service
-- **Kích hoạt:** ticket mới được tạo, hoặc người gửi trả lời câu hỏi của AI
-- **Luồng chính:**
-  1. AI Service phân loại ticket, ước lượng độ tin cậy, trích xuất thông tin (người nhận, hệ thống, quyền / loại tài khoản, thời hạn)
-  2. Hệ thống ghi một bản ghi `ai_decisions` và quyết định luồng theo bảng *Nguyên tắc phân luồng*
-  3. Luồng A → UC-WF-07; luồng C → UC-WF-05
-- **Luồng thay thế — hỏi lại (luồng B):** độ tin cậy < ngưỡng hoặc thiếu trường bắt buộc → AI gửi câu hỏi cụ thể cho người gửi (ví dụ *"Bạn cần quyền trên hệ thống nào?"*) → ticket `NEEDS_INFO` → người gửi trả lời → quay lại bước 1. Sau 2 lượt vẫn chưa chắc chắn → luồng C
-- **Luồng thay thế — người gửi không trả lời:** xem UC-WF-06 (nhắc và tự đóng)
-- **Ngoại lệ:** AI Service không phản hồi / lỗi → ticket chuyển luồng C, ghi lý do `AI_UNAVAILABLE`
-- **Quyền:** tạo ticket: `ticketCreate`; trả lời: chủ ticket
-- **Kết quả:** mỗi ticket có đúng một quyết định phân luồng hiện hành, có căn cứ, được ghi nhật ký
+- **Actors:** Requester; AI Service
+- **Trigger:** a new ticket is created, or the requester answers an AI question
+- **Main flow:**
+  1. The AI Service classifies the ticket, estimates confidence, and extracts information (beneficiary, system, entitlement / account type, duration)
+  2. The system writes an `ai_decisions` record and selects the flow according to the *Routing principles* table
+  3. Flow A → UC-WF-07; flow C → UC-WF-05
+- **Alternative — clarification (flow B):** confidence < threshold or a required field is missing → the AI sends a specific question to the requester (e.g. *"Which system do you need access to?"*) → ticket `NEEDS_INFO` → requester answers → back to step 1. Still not confident after 2 rounds → flow C
+- **Alternative — requester does not answer:** see UC-WF-06 (reminders and auto-close)
+- **Exception:** AI Service unavailable / error → ticket goes to flow C with reason `AI_UNAVAILABLE`
+- **Permission:** create ticket: `ticketCreate`; answer: ticket owner
+- **Result:** each ticket has exactly one current routing decision, with its grounds, recorded in the audit log
 
-### UC-WF-05 Tự động phân công kỹ thuật viên
+### UC-WF-05 Auto-assign technician
 
-- **Actor:** Kỹ thuật viên (nhận phân công); Trưởng nhóm, Admin (phân công lại); AI Service (cung cấp bản tóm tắt)
-- **Kích hoạt:** ticket vào luồng C (cần con người, ngoài phạm vi, không đạt chính sách, hết lượt hỏi), hoặc ticket bị trả về từ UC-WF-09
-- **Luồng chính:** hệ thống lấy các quy tắc đang bật theo thứ tự → quy tắc **khớp đầu tiên** thắng → lọc thành viên nhóm đích đang hoạt động và không vắng mặt → chọn kỹ thuật viên theo chiến lược → tạo bản ghi phân công → ticket `ASSIGNED` → gửi thông báo kèm **bản tóm tắt AI và lý do chuyển người** → ghi nhật ký nguồn `AUTOMATION` kèm `ruleId`
-- **Luồng thay thế:**
-  - Không khớp quy tắc nào → ticket `TRIAGE`, thông báo trưởng nhóm của nhóm tiếp nhận mặc định
-  - Nhóm không còn ai khả dụng → giao cho nhóm (chưa giao cá nhân), thông báo trưởng nhóm
-  - Trưởng nhóm / Admin phân công lại → `reassignTicket` với lý do bắt buộc → ghi nhật ký giá trị trước/sau
-- **Quyền:** tự động: nội bộ hệ thống; phân công lại: `ticketReassign`
-- **Kết quả:** mọi ticket cần con người đều có người hoặc nhóm chịu trách nhiệm; SLA chạy ngay cả khi ở `TRIAGE`
+- **Actors:** Technician (assignee); Team Lead, Admin (reassignment); AI Service (provides the summary)
+- **Trigger:** a ticket enters flow C (needs a human, out of scope, policy check failed, clarification limit reached), or a ticket is returned from UC-WF-09
+- **Main flow:** the system takes enabled rules in order → the **first matching** rule wins → filters target-team members who are active and not marked absent → picks a technician using the strategy → creates an assignment record → ticket `ASSIGNED` → sends a notification including **the AI summary and the reason it was routed to a human** → audit with source `AUTOMATION` and `ruleId`
+- **Alternatives:**
+  - No rule matches → ticket `TRIAGE`, the lead of the default intake team is notified
+  - Nobody in the team is available → assign to the team (no individual yet), notify the team lead
+  - Team Lead / Admin reassigns → `reassignTicket` with a mandatory reason → audit with before/after values
+- **Permission:** automatic: internal system; reassignment: `ticketReassign`
+- **Result:** every ticket that needs a human has an owner person or team; the SLA keeps running even in `TRIAGE`
 
-### UC-WF-06 Nhắc phản hồi và cảnh báo SLA
+### UC-WF-06 Response reminders and SLA warnings
 
-- **Actor:** Kỹ thuật viên, Trưởng nhóm, Người gửi (nhận thông báo)
-- **Kích hoạt:** tự động — tác vụ định kỳ của hệ thống mỗi phút
-- **Luồng chính — cảnh báo:** ticket đạt ngưỡng cảnh báo → gửi nhắc cho người được giao (một lần cho mỗi ngưỡng) → ghi sự kiện `SLA_WARNING`
-- **Luồng chính — vi phạm:** quá hạn → gắn cờ `sla_breached` → thông báo trưởng nhóm → nếu cấu hình cho phép, nâng một bậc ưu tiên → ghi sự kiện `SLA_BREACHED`
-- **Luồng chính — chờ người gửi:** ticket `NEEDS_INFO` hoặc `RESOLVED` chờ xác nhận → nhắc người gửi ở ngày 1 và ngày N−1 → đến ngày N (mặc định 5 ngày làm việc) → `NEEDS_INFO` chuyển `CLOSED` với lý do *không phản hồi*; người gửi có thể mở lại trong 7 ngày
-- **Ngoại lệ:** ticket `AUTOMATING` không bị tự đóng (BR-WF-11)
-- **Quyền:** nội bộ hệ thống
-- **Kết quả:** không có ticket nào quá hạn mà không có người được báo
+- **Actors:** Technician, Team Lead, Requester (notification recipients)
+- **Trigger:** automatic — a system job runs every minute
+- **Main flow — warning:** ticket reaches the warning threshold → reminder to the assignee (once per threshold) → `SLA_WARNING` event recorded
+- **Main flow — breach:** deadline passed → flag `sla_breached` → notify the team lead → if configured, raise priority by one level → `SLA_BREACHED` event recorded
+- **Main flow — waiting for requester:** ticket in `NEEDS_INFO`, or `RESOLVED` awaiting confirmation → remind the requester on day 1 and day N−1 → on day N (default 5 business days) `NEEDS_INFO` becomes `CLOSED` with reason *no response*; the requester can reopen within 7 days
+- **Exception:** `AUTOMATING` tickets are never auto-closed (BR-WF-11)
+- **Permission:** internal system
+- **Result:** no ticket becomes overdue without someone being notified
 
-### UC-WF-07 AI duyệt yêu cầu trong phạm vi
+### UC-WF-07 AI approves in-scope request
 
-- **Actor:** AI Service; Người gửi (nhận kết quả)
-- **Kích hoạt:** UC-WF-04 xác định ticket thuộc luồng A
-- **Tiền điều kiện:** hành động `AUTO_APPROVE` đang bật; độ tin cậy ≥ ngưỡng; đủ thông tin bắt buộc
-- **Luồng chính:**
-  1. Hệ thống chạy **kiểm tra chính sách cố định** trên thông tin AI đã trích xuất:
-     - thao tác có trong whitelist đang bật;
-     - quyền / mẫu tài khoản có trong danh mục của phòng ban người nhận;
-     - thời hạn ≤ thời hạn tối đa;
-     - người nhận là chính người gửi, hoặc cùng phòng ban với người gửi (BR-WF-16);
-     - người nhận chưa có quyền đó (tránh cấp trùng).
-  2. Tất cả đạt → `ai_decisions.outcome = AUTO_APPROVED` kèm kết quả từng điều kiện → ticket `AUTOMATING` → kích hoạt UC-WF-08
-  3. Thông báo người gửi: *"Yêu cầu của bạn đã được duyệt tự động và đang được xử lý"*
-- **Luồng thay thế:**
-  - `CHECK_ACCOUNT` (chỉ đọc) → chỉ kiểm tra whitelist và người gửi có quyền xem tài khoản đó, rồi sang UC-WF-08
-  - Một điều kiện không đạt → `ROUTE_TO_HUMAN` với lý do cụ thể (ví dụ *"Quyền X không thuộc danh mục phòng Kế toán"*) → UC-WF-05
-  - Người nhận đã có quyền → ticket `RESOLVED` với thông báo *"Bạn đã có quyền này"*
-- **Ngoại lệ:** AI Service trả kết quả không hợp lệ (thiếu trường, sai định dạng) → luồng C
-- **Quyền:** nội bộ hệ thống; AI không bao giờ được duyệt ngoài whitelist và danh mục quyền (BR-WF-02)
-- **Kết quả:** yêu cầu cơ bản được duyệt trong vài giây, không cần con người; mọi quyết định có căn cứ để Admin kiểm tra lại
+- **Actors:** AI Service; Requester (receives the result)
+- **Trigger:** UC-WF-04 places the ticket in flow A
+- **Preconditions:** `AUTO_APPROVE` is enabled; confidence ≥ threshold; required information is complete
+- **Main flow:**
+  1. The system runs the **deterministic policy check** on the information extracted by the AI:
+     - the operation is in an enabled whitelist entry;
+     - the entitlement / account template is in the beneficiary department's catalog;
+     - duration ≤ maximum duration;
+     - the beneficiary is the requester, or in the same department as the requester (BR-WF-16);
+     - the beneficiary does not already have that access (avoid duplicate grants).
+  2. All pass → `ai_decisions.outcome = AUTO_APPROVED` with the result of each condition → ticket `AUTOMATING` → triggers UC-WF-08
+  3. Notify the requester: *"Your request has been approved automatically and is being processed"*
+- **Alternatives:**
+  - `CHECK_ACCOUNT` (read-only) → only checks the whitelist and that the requester may view that account, then proceeds to UC-WF-08
+  - Any condition fails → `ROUTE_TO_HUMAN` with a specific reason (e.g. *"Entitlement X is not in the Accounting catalog"*) → UC-WF-05
+  - Beneficiary already has the access → ticket `RESOLVED` with the message *"You already have this access"*
+- **Exception:** the AI Service returns invalid output (missing fields, wrong format) → flow C
+- **Permission:** internal system; the AI can never approve outside the whitelist and the entitlement catalog (BR-WF-02)
+- **Result:** basic requests are approved within seconds without human involvement; every decision has grounds the Admin can review
 
-### UC-WF-08 Thực thi yêu cầu qua API
+### UC-WF-08 Execute request via API
 
-- **Actor:** Người gửi (nhận kết quả)
-- **Kích hoạt:** tự động ngay khi AI duyệt (sự kiện `AiDecisionApproved`), hoặc khi kỹ thuật viên bấm *Thử lại* (UC-WF-09)
-- **Tiền điều kiện:** quyết định `AUTO_APPROVED`; whitelist và danh mục quyền **tại thời điểm chạy** vẫn cho phép (BR-WF-12)
-- **Luồng chính:** hệ thống tạo `workflow_run` với khóa idempotency = `decisionId + action` → gọi connector của hệ thống cấp quyền bên ngoài → lưu từng lần gọi vào `workflow_run_attempts` (request/response đã che dữ liệu nhạy cảm) → thành công → UC-WF-09 bước xác minh → nếu quyền có thời hạn, lên lịch thu hồi
-- **Luồng thay thế:**
-  - `CHECK_ACCOUNT` → kết quả kiểm tra được gửi cho người gửi, ticket `RESOLVED`
-  - Lỗi tạm thời (timeout, `5xx`, `429`) → `RETRY_WAIT` → thử lại tối đa 3 lần, cách nhau 1 / 5 / 15 phút
-  - Lỗi vĩnh viễn (`4xx` nghiệp vụ, từ chối quyền) hoặc hết lượt → `FAILED` → UC-WF-09 nhánh lỗi
-  - Đến hạn thu hồi → tạo `workflow_run` thao tác `REVOKE_ACCESS`, thông báo người dùng trước 1 ngày
-- **Ngoại lệ:** tiền điều kiện không thỏa → không gọi API, `FAILED` với mã `PRECONDITION_FAILED`
-- **Quyền:** nội bộ hệ thống; connector dùng tài khoản dịch vụ quyền tối thiểu
-- **Kết quả:** một quyết định duyệt dẫn tới **đúng một** thay đổi trên hệ thống cấp quyền bên ngoài
+- **Actor:** Requester (receives the result)
+- **Trigger:** automatically right after AI approval (`AiDecisionApproved` event), or when a technician clicks *Retry* (UC-WF-09)
+- **Preconditions:** decision `AUTO_APPROVED`; the whitelist and entitlement catalog **at execution time** still allow it (BR-WF-12)
+- **Main flow:** the system creates a `workflow_run` with idempotency key = `decisionId + action` → calls the connector of the external access-management system → stores each call in `workflow_run_attempts` (request/response with sensitive data masked) → success → UC-WF-09 verification step → if the access is time-bound, schedule revocation
+- **Alternatives:**
+  - `CHECK_ACCOUNT` → the check result is sent to the requester, ticket `RESOLVED`
+  - Transient error (timeout, `5xx`, `429`) → `RETRY_WAIT` → up to 3 retries, 1 / 5 / 15 minutes apart
+  - Permanent error (business `4xx`, permission denied) or retries exhausted → `FAILED` → UC-WF-09 failure branch
+  - Revocation due → create a `workflow_run` with `REVOKE_ACCESS`, notify the user 1 day in advance
+- **Exception:** preconditions not met → no API call, `FAILED` with code `PRECONDITION_FAILED`
+- **Permission:** internal system; connectors use least-privilege service accounts
+- **Result:** one approval decision leads to **exactly one** change in the external access-management system
 
-### UC-WF-09 Xác minh kết quả, chuyển người khi lỗi
+### UC-WF-09 Verify result, hand off on failure
 
-- **Actor:** Người gửi (xác nhận kết quả), Kỹ thuật viên (xử lý khi lỗi)
-- **Kích hoạt:** tự động sau khi UC-WF-08 kết thúc
-- **Luồng chính — xác minh:** hệ thống gọi thao tác kiểm tra của connector (ví dụ tài khoản đã tồn tại, người dùng đã có trong nhóm quyền) → khớp → `workflow_run` `SUCCEEDED` → ticket `RESOLVED` → thông báo người gửi → người gửi *Xác nhận* → `confirmTicketResolution` → `CLOSED`
-- **Luồng thay thế — người gửi báo chưa được:** `reopenTicket` → giao kỹ thuật viên của nhóm phụ trách (UC-WF-05)
-- **Luồng thay thế — lỗi:** `workflow_run` `FAILED` hoặc xác minh không khớp → giao kỹ thuật viên của nhóm phụ trách kèm mã lỗi, bước lỗi và lịch sử các lần thử → kỹ thuật viên mở SCR-T-02 tab *Tự động hóa*:
-  - *Thử lại* → `retryWorkflowRun` → quay lại UC-WF-08 (kiểm tra lại chính sách)
-  - *Đã xử lý thủ công* (ghi chú bắt buộc) → `resolveWorkflowRunManually` → `MANUALLY_RESOLVED`, ticket `RESOLVED`
-- **Ngoại lệ:** thử lại khi chính sách hiện tại không còn cho phép → `409`
-- **Quyền:** xác nhận: chủ ticket; thử lại / xử lý thủ công: `workflowRunRetry` + là người được giao hoặc Admin
-- **Kết quả:** ticket không bao giờ được đánh dấu đã xử lý nếu chưa xác minh hoặc chưa có kỹ thuật viên xác nhận (BR-WF-13)
+- **Actors:** Requester (confirms the result), Technician (handles failures)
+- **Trigger:** automatically after UC-WF-08 finishes
+- **Main flow — verification:** the system calls the connector's check operation (e.g. the account exists, the user is in the access group) → match → `workflow_run` `SUCCEEDED` → ticket `RESOLVED` → notify the requester → requester clicks *Confirm* → `confirmTicketResolution` → `CLOSED`
+- **Alternative — requester reports not fixed:** `reopenTicket` → assigned to a technician of the owning team (UC-WF-05)
+- **Alternative — failure:** `workflow_run` `FAILED` or verification mismatch → assigned to a technician of the owning team with the error code, failed step and attempt history → the technician opens SCR-T-02 tab *Automation*:
+  - *Retry* → `retryWorkflowRun` → back to UC-WF-08 (policy re-checked)
+  - *Resolved manually* (note required) → `resolveWorkflowRunManually` → `MANUALLY_RESOLVED`, ticket `RESOLVED`
+- **Exception:** retry when the current policy no longer allows it → `409`
+- **Permission:** confirm: ticket owner; retry / manual resolution: `workflowRunRetry` + assignee or Admin
+- **Result:** a ticket is never marked resolved without successful verification or a technician's confirmation (BR-WF-13)
 
 **Related:** [Features](02-features.md) · [INVEST backlog](08-invest-requirements.md) · [Acceptance criteria](06-acceptance-criteria.md) · [Business rules](requirements/business-rules.md)
