@@ -149,6 +149,7 @@ Teal boxes belong to F04. Grey dashed boxes belong to F05 and are shown only for
 | [03-user-stories-invest.md](03-user-stories-invest.md) | Backlog US-AI-01 … US-AI-21 with MoSCoW and size, INVEST review |
 | [04-acceptance-criteria.md](04-acceptance-criteria.md) | Given / When / Then criteria, evaluation sets |
 | [05-business-rules.md](05-business-rules.md) | BR-AI-01 … BR-AI-13 |
+| [information-architecture/](information-architecture/README.md) | Screens, sections and emails (SEC-AI, SCR-AI, EML-AI), routes and permissions, navigation, six user flows, UI states |
 
 ## Open questions
 
@@ -179,5 +180,6 @@ Teal boxes belong to F04. Grey dashed boxes belong to F05 and are shown only for
 - [x] Aligned with the client brief (email ticketing, free-text tickets, team taxonomy, specialized agents, Resolution, learning)
 - [x] Decision D-AI-01: agent first; technicians only for three classes
 - [ ] Decide the remaining open questions with the team (Q-AI-9 and Q-AI-10 with the F05 owner, Q-AI-14 with the client)
-- [ ] Non-functional requirements and traceability (screens, API, tables)
+- [x] Information architecture (screens, emails, navigation, flows, UI states)
+- [ ] Non-functional requirements and traceability (API, tables)
 - [ ] Build the evaluation sets ES-AI-01 … ES-AI-07
