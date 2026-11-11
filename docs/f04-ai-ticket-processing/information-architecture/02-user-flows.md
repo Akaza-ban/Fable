@@ -18,7 +18,7 @@ flowchart LR
     d --> e["UC-AI-12<br/>execute via API"]
     e --> f["UC-AI-13<br/>verify"]
     f --> g["EML-AI-04<br/>result reply"]
-    g --> h["SCR-AI-05<br/>Confirm"]
+    g --> h["DLG-T-08<br/>Confirm & rate"]
     h --> i["CLOSED"]
 
     classDef f04 fill:#f3ecfb,color:#111,stroke:#7b3fbf
@@ -31,7 +31,7 @@ flowchart LR
 2. The agent fills the request (`recipient`, `system`, `permission`) and proposes `GRANT_ACCESS` (SEC-AI-07 shows the form later, marked "Filled by AI").
 3. F05's policy check approves it. F04 executes it through the connector (UC-AI-12) and checks that Lan is in the access group (UC-AI-13). Lan's ticket shows "Being processed" in **SEC-AI-16**.
 4. Lan receives **EML-AI-04**: "You now have read access to \\\\fs01\\ketoan." The ticket is `RESOLVED` with a Resolution written by the AI; no technician was assigned (AC-AI-20.7).
-5. Lan clicks *Confirm* → SCR-T-02 with **SCR-AI-05** → *Yes, this solved it* → F05 `confirmTicketResolution` → `CLOSED`. *Not solved* → F05 `reopenTicket` → a technician. No click → F05 reminders and auto-close (UC-WF-06).
+5. Lan clicks *Confirm* → SCR-T-02 with F03 **DLG-T-08** *Confirm & rate* → `CLOSED`. *Not fixed* → F03 **DLG-T-07** → a technician. No click → F05 reminders and auto-close (UC-WF-06).
 6. **Branches:** the policy check fails → F05 escalates with `AGENT_CANNOT_RESOLVE` (flow 5 from step 3); execution or verification fails → flow 4.
 
 ## Flow 2 — How-to question answered by the agent
@@ -43,9 +43,9 @@ flowchart LR
     a["Minh emails<br/>a how-to question"] --> b["F05 routes<br/>to agent"]
     b --> c["UC-AI-10<br/>KB_ANSWER"]
     c --> d["EML-AI-03<br/>cited steps"]
-    d -- "Confirm" --> e["SCR-T-02 + SCR-AI-05<br/>POST confirm"]
+    d -- "Confirm" --> e["SCR-T-02 + DLG-T-08<br/>Confirm & rate"]
     e --> f["CLOSED"]
-    d -- "Not solved" --> g["SCR-AI-05<br/>POST not solved"]
+    d -- "Not fixed" --> g["DLG-T-07<br/>Not fixed"]
     g --> h["F05 escalates<br/>AGENT_CANNOT_RESOLVE"]
     h --> i["Technician"]
 
@@ -59,8 +59,8 @@ flowchart LR
 
 1. Minh emails "How do I add the Sales shared mailbox to my Outlook?". F05 routes it to the `HELPDESK` agent.
 2. The agent finds KB-205 (relevance ≥ 0.85) and sends **EML-AI-03** with cited steps; the ticket is `RESOLVED` (`ANSWERED_BY_KB`).
-3. Minh clicks *Confirm* → SCR-T-02 opens with **SCR-AI-05** pre-selected (SSO first if needed) → he clicks *Yes, this solved it* → `CLOSED`.
-4. **Branch:** *Not solved* → SCR-AI-05 → F05 assigns a technician with `NOT_SOLVED_BY_AGENT`; the banner says KB-205 was already sent.
+3. Minh clicks *Confirm* → SCR-T-02 opens with F03 **DLG-T-08** pre-selected (SSO first if needed) → he confirms and rates → `CLOSED`.
+4. **Branch:** *Not fixed* → F03 **DLG-T-07** → F05 assigns a technician with `NOT_SOLVED_BY_AGENT`; the banner says KB-205 was already sent.
 5. **Portal variant:** while Minh types on SCR-T-01, **SEC-AI-01** shows KB-205; *This solved my problem* → no ticket is created.
 
 ## Flow 3 — L2 problem fixed with guided troubleshooting
@@ -90,7 +90,7 @@ flowchart LR
 1. F05 routes the ticket (`EV_CHARGING`, `L2`, `INCIDENT`) to the agent. KB-301 "Charging report is slow" has a self-service procedure, so the agent starts guidance.
 2. Minh receives **EML-AI-07** with step 1 (clear the browser cache, `[KB-301 §1]`) and the three answers. The same card is in **SEC-AI-17** on the ticket.
 3. Minh replies "Still the same, it takes about 2 minutes". The agent records the finding and sends step 2 (shorten the date range, `[KB-301 §2]`).
-4. Minh chooses *It works now* → the ticket is `RESOLVED` with `GUIDED_BY_AI`; the reply and the Resolution say that step 2 fixed it. Minh confirms through **SCR-AI-05**.
+4. Minh chooses *It works now* → the ticket is `RESOLVED` with `GUIDED_BY_AI`; the reply and the Resolution say that step 2 fixed it. Minh confirms through F03 **DLG-T-08**.
 5. **Branches:** no fix after the procedure or 5 rounds, or *I need a person* → `GUIDANCE_FAILED`; the technician opens the ticket and reads the transcript in **SEC-AI-17**. An answer shows a known defect code → `SYSTEM_BUG` (flow 5). No answer for 24 hours → F05 reminder, then escalation (Q-AI-15).
 
 ## Flow 4 — Automation fails and a technician takes over
@@ -148,7 +148,7 @@ flowchart LR
 2. F05 assigns it to the SAP team. Quang opens the work queues with the saved filter *Suspected bugs* (**SEC-AI-14**).
 3. On **SCR-T-02** Quang sees the **SEC-AI-05** banner (class, reason, set by the SAP agent, the 4 linked tickets), the F03 summary and the **SEC-AI-07** SAP form (company code, transaction, error); he links the tickets as duplicates in F03.
 4. After fixing the system, Quang opens *Resolve*; **SEC-AI-13** drafts the Resolution and the reply; he edits and sends (**EML-AI-06**).
-5. The requester confirms through **SCR-AI-05**, or chooses *Not solved*.
+5. The requester confirms through F03 **DLG-T-08**, or chooses *Not fixed* (**DLG-T-07**).
 6. **Other start:** an `AGENT_CANNOT_RESOLVE` ticket (broken mouse, *Not solved*, failed policy check, failed guidance) enters at step 2 through the work queues, with the matching banner.
 
 ## Flow 6 — Business requirement to the dev team

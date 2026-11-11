@@ -62,7 +62,7 @@ flowchart TB
         t02["<b>SCR-T-02 Ticket detail</b><br/>Requester: SEC-AI-03 conversation, SEC-AI-04 KB,<br/>SEC-AI-17 guidance, SEC-AI-11 brief<br/>Technician: SEC-AI-05, 07, 09, 16, 17<br/>Admin: SEC-AI-18"]
         resolve["<b>Resolve dialog</b> (F03)<br/>• SEC-AI-13 AI draft of Resolution + reply"]
         m04["<b>SCR-AI-04</b> Review requirement brief"]
-        m05["<b>SCR-AI-05</b> Confirm resolution / Not solved"]
+        m05["<b>SCR-AI-05</b> This article solved my problem"]
         m06["<b>SCR-AI-06</b> Resolve run manually"]
         m07["<b>SCR-AI-07</b> Correct domain form"]
     end
@@ -99,8 +99,8 @@ flowchart TB
 
 | Role | Home page (F01) | Where F04 shows up |
 |---|---|---|
-| Requester | My tickets | Emails EML-AI-01, 03 … 05, 07, 08; create form (SEC-AI-01); ticket detail (SEC-AI-03, 04, 11, 17); modals SCR-AI-04, SCR-AI-05 |
-| Technician | Work queues | Columns and filters (SEC-AI-14); ticket detail (SEC-AI-05, 07, 09, 16, 17); Resolve dialog (SEC-AI-13); modals SCR-AI-06, SCR-AI-07 |
+| Requester | Portal (F02) | Emails EML-AI-01, 03 … 05, 07, 08; create form (SEC-AI-01); ticket detail (SEC-AI-03, 04, 11, 17); modals SCR-AI-04, SCR-AI-05 |
+| Technician | Workbench (F02) | Columns and filters (SEC-AI-14); ticket detail (SEC-AI-05, 07, 09, 16, 17); Resolve dialog (SEC-AI-13); modals SCR-AI-06, SCR-AI-07 |
 | Admin | Dashboard | Everything a technician sees, on every ticket, plus SEC-AI-18; sidebar **AI** group: SCR-WF-03, SCR-WF-30, SCR-AI-01, F01's AI suggestions and service accounts |
 | AI Service | — | No UI; works through the API as `AI_AGENT` |
 

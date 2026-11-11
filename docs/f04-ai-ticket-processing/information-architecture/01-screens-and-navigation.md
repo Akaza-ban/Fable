@@ -14,8 +14,8 @@ SEC-AI-01 and SEC-AI-04 extend F06's KB sections on the same pages (SEC-KB-01 on
 |---|---|---|---|
 | SCR-T-01 Create ticket | F03 | `/tickets/new` | SEC-AI-01 |
 | SCR-T-04 Work queues | F03 | `/tickets` | SEC-AI-14 |
-| SCR-T-02 Ticket detail | F03 | `/tickets/:id` | SEC-AI-03, 04, 05, 07, 09, 11, 16, 17, 18 |
-| Resolve dialog (DLG-T-05) | F03 | modal on `/tickets/:id` | SEC-AI-13 |
+| SCR-T-02 Ticket detail | F03 | `/tickets/:code` | SEC-AI-03, 04, 05, 07, 09, 11, 16, 17, 18 |
+| Resolve dialog (DLG-T-05) | F03 | modal on `/tickets/:code` | SEC-AI-13 |
 
 ### Sections
 
@@ -39,12 +39,12 @@ SEC-AI-01 and SEC-AI-04 extend F06's KB sections on the same pages (SEC-KB-01 on
 | ID | Name | Type | Opened from | Route | Content | Stories |
 |---|---|---|---|---|---|---|
 | SCR-AI-01 | Learning examples | Page | Admin sidebar, *AI* group | `/admin/ai/learning-examples` | Table (domain, how it was resolved, source ticket, date, origin: technician / confirmed agent / requester confirmed, used count); filter by domain and origin; *Exclude* with reason; excluded examples shown greyed | US-AI-19 |
-| SCR-AI-04 | Review requirement brief | Modal | SEC-AI-11, EML-AI-05 | `/tickets/:id?action=review-brief` | Editable brief; *Confirm brief*; *Not now* | US-AI-18 |
-| SCR-AI-05 | Confirm resolution | Modal | SEC-AI-03, SEC-AI-04, SEC-AI-17, EML-AI-01, 03, 04, 06, 07 | `/tickets/:id?action=solved&ref=:messageId` or `?action=not-solved&ref=:messageId` | The article, AI reply, guidance result, result reply or technician reply being confirmed; *Yes, this solved it* / *No, I still need help*; one POST on click (D-AI-IA-02). KB answers call the F03 close; other replies call F05 `confirmTicketResolution` / `reopenTicket` | US-AI-05, US-AI-16, US-AI-17, US-AI-24, US-AI-26 |
-| SCR-AI-06 | Resolve run manually | Modal | SEC-AI-16 *Resolved manually* | on `/tickets/:id` | What was done (required note); then opens the Resolve dialog with the AI draft | US-AI-25 |
-| SCR-AI-07 | Correct domain form | Modal | SEC-AI-07 *Correct* | on `/tickets/:id` | The domain form fields; note "This does not start any action or re-route the ticket" | US-AI-14 |
+| SCR-AI-04 | Review requirement brief | Modal | SEC-AI-11, EML-AI-05 | `/tickets/:code?action=review-brief` | Editable brief; *Confirm brief*; *Not now* | US-AI-18 |
+| SCR-AI-05 | This article solved my problem | Modal | SEC-AI-04, EML-AI-01 | `/tickets/:code?action=solved-by-kb&ref=:articleId` | The article; *Yes, this solved it* / *No, I still need help*; one POST on click (D-AI-IA-02); the open ticket goes to `RESOLVED` with `SOLVED_BY_KB`, then `CLOSED` (Q-AI-6). Confirming or rejecting a **resolved** ticket, including one the AI resolved, uses F03 DLG-T-08 / DLG-T-07 (README 2.7) | US-AI-05 |
+| SCR-AI-06 | Resolve run manually | Modal | SEC-AI-16 *Resolved manually* | on `/tickets/:code` | What was done (required note); then opens the Resolve dialog with the AI draft | US-AI-25 |
+| SCR-AI-07 | Correct domain form | Modal | SEC-AI-07 *Correct* | on `/tickets/:code` | The domain form fields; note "This does not start any action or re-route the ticket" | US-AI-14 |
 
-`ref` is the id of the message, step or KB suggestion being confirmed. The modal opens pre-selected but never acts until the user clicks. A guidance answer from an email link (EML-AI-07) opens SEC-AI-17 with the answer pre-selected; it is saved only on click.
+`ref` is the id of the article being confirmed. The modal opens pre-selected but never acts until the user clicks. A guidance answer from an email link (EML-AI-07) opens SEC-AI-17 with the answer pre-selected; it is saved only on click.
 
 ## 3. Emails
 
@@ -53,12 +53,12 @@ The AI writes the text; F03 sends the emails. Every link follows D-AI-IA-02.
 | ID | Email | Sent when | Links | Stories |
 |---|---|---|---|---|
 | EML-AI-01 | Acknowledgement with KB suggestions | An email ticket is routed and at least one article is above the threshold | Each article (F06 page); *This solved my problem* → SCR-AI-05; *I still need help* → SCR-T-02 | US-AI-05 |
-| EML-AI-03 | Agent KB reply | The agent's outcome is `KB_ANSWER` | Cited steps with article links; *Confirm* / *Not solved* → SCR-AI-05 | US-AI-17 |
+| EML-AI-03 | Agent KB reply | The agent's outcome is `KB_ANSWER` | Cited steps with article links; *Confirm* / *Not fixed* → F03 DLG-T-08 Confirm & rate / DLG-T-07 Not fixed | US-AI-17 |
 | EML-AI-07 | Guidance step | The agent sends a guidance step to an email requester | The step with its article link; *It works now* / *Still the same* / *I see something else* → SEC-AI-17; or reply to the email (F03 threads it) | US-AI-26 |
-| EML-AI-04 | Result reply after execution | UC-AI-13 verified a run, or a `CHECK_ACCOUNT` returned | *Confirm* / *Not solved* → SCR-AI-05; *Open ticket* → SCR-T-02 | US-AI-16, US-AI-24 |
+| EML-AI-04 | Result reply after execution | UC-AI-13 verified a run, or a `CHECK_ACCOUNT` returned | *Confirm* / *Not fixed* → F03 DLG-T-08 Confirm & rate / DLG-T-07 Not fixed; *Open ticket* → SCR-T-02 | US-AI-16, US-AI-24 |
 | EML-AI-08 | Access ends tomorrow | One day before a time-bound grant is revoked | *Open ticket* → SCR-T-02; how to ask for an extension (new ticket) | US-AI-23 |
 | EML-AI-05 | Requirement brief to confirm | A brief is drafted for a `BUSINESS_REQUIREMENT` | *Review and confirm* → SCR-AI-04 | US-AI-18 |
-| EML-AI-06 | Technician reply | A technician resolves the ticket with the AI draft | *Confirm* / *Not solved* → SCR-AI-05; *Open ticket* → SCR-T-02 (sent in the technician's name) | US-AI-16 |
+| EML-AI-06 | Technician reply | A technician resolves the ticket with the AI draft | *Confirm* / *Not fixed* → F03 DLG-T-08 Confirm & rate / DLG-T-07 Not fixed; *Open ticket* → SCR-T-02 (sent in the technician's name) | US-AI-16 |
 
 ## 4. Routes and permissions
 
@@ -86,9 +86,9 @@ A requester who opens an email link to someone else's ticket gets `#/403`, and n
 
 | Role | Sidebar | What changes because of F04 |
 |---|---|---|
-| Requester | My tickets, New ticket, Profile (F01, F03) | Nothing new in the sidebar |
-| Technician | Work queues, Profile | Work queues get AI columns and filters (SEC-AI-14). Saved filters *Suspected bugs* and *Failed automation* |
-| Admin | Dashboard, Tickets, Users, Groups, …, **AI** | One **AI** group: AI scope (SCR-WF-03, F05) · AI decisions (SCR-WF-30, F05) · Learning examples (SCR-AI-01, F04) · AI suggestions (F01) · Service accounts (F01) |
+| Requester | Portal, My tickets, Knowledge base; *+ New request* in the top bar (README 2.3) | Nothing new in the sidebar |
+| Technician | Workbench, Work queues, My tickets, Knowledge base, Reports (README 2.3) | Work queues get AI columns and filters (SEC-AI-14). Saved filters *Suspected bugs* and *Failed automation* |
+| Admin | Dashboard, Work queues, …, **AI & workflow** (README 2.3) | The **AI & workflow** group: AI scope (SCR-WF-03, F05) · AI decisions (SCR-WF-30, F05) · Learning examples (SCR-AI-01, F04) · AI suggestions (F01) · Service accounts (F01) |
 
 Contextual navigation inside SCR-T-02: the escalation banner links to the guidance transcript, the automation tab and the AI messages; a citation opens the KB article (F06) in a new tab; a linked burst ticket opens its own SCR-T-02 (if in scope); the Admin sees *View agent results* → SEC-AI-18.
 
@@ -100,16 +100,16 @@ Every Must story is reachable by its role.
 |---|---|---|---|
 | US-AI-05 | Must | Requester | SEC-AI-01, SEC-AI-04, EML-AI-01, SCR-AI-05 |
 | US-AI-06 | Must | Technician | SEC-AI-09 |
-| US-AI-17 | Must | Requester | SEC-AI-03, EML-AI-03, SCR-AI-05 |
+| US-AI-17 | Must | Requester | SEC-AI-03, EML-AI-03, DLG-T-08 / DLG-T-07 (F03) |
 | US-AI-20 | Must | Requester, Technician | SEC-AI-05, SEC-AI-07, SEC-AI-14, SEC-AI-18 |
 | US-AI-21 | Should | Technician | SEC-AI-05, SEC-AI-14 |
-| US-AI-26 | Should | Requester | SEC-AI-17, EML-AI-07, SCR-AI-05 |
+| US-AI-26 | Should | Requester | SEC-AI-17, EML-AI-07, DLG-T-08 / DLG-T-07 (F03) |
 | US-AI-27 | Should | Technician | SEC-AI-17 transcript, SEC-AI-05 |
 | US-AI-22 | Must | Requester | SEC-AI-16 status line |
 | US-AI-23 | Could | Admin, Requester | SEC-AI-16, EML-AI-08 |
-| US-AI-24 | Must | Requester | SEC-AI-16, EML-AI-04, SCR-AI-05 |
+| US-AI-24 | Must | Requester | SEC-AI-16, EML-AI-04, DLG-T-08 / DLG-T-07 (F03) |
 | US-AI-25 | Must | Technician | SEC-AI-14 filter, SEC-AI-05, SEC-AI-16, SCR-AI-06 |
-| US-AI-16 | Must | Technician, Requester | SEC-AI-13, SEC-AI-03, EML-AI-04, EML-AI-06, SCR-AI-05 |
+| US-AI-16 | Must | Technician, Requester | SEC-AI-13, SEC-AI-03, EML-AI-04, EML-AI-06, DLG-T-08 / DLG-T-07 (F03) |
 | US-AI-18 | Should | Requester, Technician | SEC-AI-11, SCR-AI-04, EML-AI-05 |
 | US-AI-14 | Should | Technician, Requester | SEC-AI-04, SEC-AI-07, SEC-AI-09, SEC-AI-17, SCR-AI-07 |
 | US-AI-19 | Should | Admin | SCR-AI-01, SEC-AI-18 |
@@ -118,7 +118,7 @@ Every Must story is reachable by its role.
 
 | Owner | Request |
 |---|---|
-| F03 | Host the sections above on SCR-T-01, SCR-T-02, SCR-T-04 and the Resolve dialog, including the new *Automation* tab (SEC-AI-16) and the guidance card (SEC-AI-17); `?action=` handling on `/tickets/:id` (D-AI-IA-02); send EML-AI-07 and EML-AI-08; the resolution code `GUIDED_BY_AI` (Q-AI-18) |
+| F03 | Host the sections above on SCR-T-01, SCR-T-02, SCR-T-04 and the Resolve dialog, including the new *Automation* tab (SEC-AI-16) and the guidance card (SEC-AI-17); `?action=` handling on `/tickets/:code` (D-AI-IA-02); send EML-AI-07 and EML-AI-08; the resolution code `GUIDED_BY_AI` (Q-AI-18) |
 | F05 | Remove the *Automation* tab from its own design of SCR-T-02 (now SEC-AI-16); the settings `AUTO_RESOLVE_KB` and `GUIDE_L2` on SCR-WF-03 (Q-AI-10, Q-AI-15); take over SEC-AI-15 and the AI-filled ticket fields |
 | F01 | The **AI** sidebar group for Admin; SSO return to the original link after login |
 | F06 | Article pages that open at a section (`#§3`) for citations; the self-service flag; troubleshooting procedures with a check and a next step for each step, and a flag on steps that need admin rights |
