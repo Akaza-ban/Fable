@@ -354,4 +354,4 @@ stateDiagram-v2
 - **Permission:** confirm: ticket owner; retry / manual resolution: `workflowRunRetry` + assignee or Admin
 - **Result:** a ticket is never marked resolved without successful verification or a technician's confirmation (BR-WF-13)
 
-**Related:** [Features](02-features.md) · [INVEST backlog](08-invest-requirements.md) · [Acceptance criteria](06-acceptance-criteria.md) · [Business rules](requirements/business-rules.md)
+**Related:** [Features](01-features.md) · [INVEST backlog](04-invest-requirements.md) · [Acceptance criteria](03-acceptance-criteria.md) · [Business rules](../requirements/business-rules.md)

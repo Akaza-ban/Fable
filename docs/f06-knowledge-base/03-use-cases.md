@@ -4,7 +4,7 @@
 >
 > Scope: **F06 Knowledge Base — KB (UC-KB-01 … UC-KB-05)**
 >
-> Related: [User Stories](2_user_stories.md) · [Information Architecture](4_information_architecture.md)
+> Related: [User Stories](02-user-stories.md) · [Information Architecture](04-information-architecture.md)
 
 ---
 
@@ -14,7 +14,7 @@
 | :--- | :--- | :--- |
 | `REQUESTER` | Requester | Searches KB articles for self-service, rates articles (helpful / unhelpful), reports outdated content |
 | `TECHNICIAN` | Technician | Authors new articles, edits existing procedures, triggers AI synthesis from resolved tickets |
-| `ADMIN` | Administrator / Lead | Approves or rejects articles, reviews visual diffs, manages categories, audits flagged content |
+| `ADMIN` | Administrator | Approves or rejects articles, reviews visual diffs, manages categories, audits flagged content |
 
 | System Actor | Audit Code | Responsibilities |
 | :--- | :--- | :--- |
@@ -28,7 +28,7 @@
 flowchart LR
     User([fa:fa-user Requester])
     Tech([fa:fa-user-gear Technician])
-    Admin([fa:fa-user-shield Admin / Lead])
+    Admin([fa:fa-user-shield Admin])
     AI([fa:fa-robot AI Service])
 
     UC1(UC-KB-01: Search & Retrieve Solutions)
@@ -97,7 +97,7 @@ flowchart LR
 | Field | Description |
 | :--- | :--- |
 | **ID & Name** | **UC-KB-03: Review & Publish Article** |
-| **Primary Actor** | `ADMIN` / Support Lead |
+| **Primary Actor** | `ADMIN` / Admin |
 | **Pre-conditions** | Admin has reviewer privileges (`kb:approve`); at least one article is in `PENDING_REVIEW`. |
 | **Post-conditions** | Article transitions to `PUBLISHED` and becomes searchable in the production index. |
 | **Main Flow** | 1. Admin accesses the Approval Queue tab.<br>2. Admin selects an article in `PENDING_REVIEW`.<br>3. System renders the visual Diff View (highlighting additions in green and deletions in red).<br>4. Admin validates technical correctness and compliance with security guidelines.<br>5. Admin clicks **[Approve & Publish]**.<br>6. System transitions status to `PUBLISHED`, updates active version, generates vector embeddings, and notifies the author. |
@@ -129,6 +129,6 @@ flowchart LR
 | **Primary Actor** | `REQUESTER`, `TECHNICIAN` |
 | **Pre-conditions** | User is viewing a `PUBLISHED` article. |
 | **Post-conditions** | Rating is persisted; if report is filed, issue is queued in the flagged audit queue. |
-| **Main Flow** | 1. User reviews troubleshooting instructions on an article.<br>2. User clicks **[👎 Not Helpful / Report Issue]**.<br>3. Modal opens prompting for issue categorization: *Outdated steps*, *Incorrect technical command*, *Missing context*, or *Broken link*.<br>4. User inputs contextual description and submits.<br>5. System logs feedback entity and increments `helpful_down_count`.<br>6. If article helpfulness drops below 60% or receives 3 reports within 30 days, status transitions to `FLAGGED` and triggers a review task for the author. |
-| **Alternative Flows** | **2a. Helpful rating:** User clicks **[👍 Helpful]**; system increments `helpful_up_count` and renders a confirmation thank-you message. |
+| **Main Flow** | 1. User reviews troubleshooting instructions on an article.<br>2. User clicks **[Not Helpful / Report Issue]**.<br>3. Modal opens prompting for issue categorization: *Outdated steps*, *Incorrect technical command*, *Missing context*, or *Broken link*.<br>4. User inputs contextual description and submits.<br>5. System logs feedback entity and increments `helpful_down_count`.<br>6. If article helpfulness drops below 60% or receives 3 reports within 30 days, status transitions to `FLAGGED` and triggers a review task for the author. |
+| **Alternative Flows** | **2a. Helpful rating:** User clicks **[Helpful]**; system increments `helpful_up_count` and renders a confirmation thank-you message. |
 | **Business Rules** | **BR-KB-05:** Articles flagged as `FLAGGED` display a warning banner to readers indicating procedures are under active revision. |

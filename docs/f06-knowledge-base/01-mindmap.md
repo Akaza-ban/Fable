@@ -51,7 +51,7 @@ mindmap
 | Ref | Capability | Description | Target User |
 | :--- | :--- | :--- | :--- |
 | **F06.1** | **Authoring & Editing** | Rich text and markdown authoring tool with heading formatting, code blocks, screenshots, category classification, error codes, and auto-saving every 20 seconds. | Technician, Admin |
-| **F06.2** | **Review & Publishing** | Approval workflow with visual Diff View showing highlighted additions and deletions. Supports version increments (v1.0 -> v1.1) and rollback audit trails. | Tech Lead, Admin |
+| **F06.2** | **Review & Publishing** | Approval workflow with visual Diff View showing highlighted additions and deletions. Supports version increments (v1.0 -> v1.1) and rollback audit trails. | Admin |
 | **F06.3** | **Smart Search & Retrieval** | Natural language semantic search (RAG) with intent detection, faceted filtering, and ticket deflection suggestions during requester ticket drafting. | Requester, Technician |
 | **F06.4** | **AI Article Generation** | Automatic synthesis of closed tickets into structured KB articles with strict PII scrubbing (masking emails, credentials, private IPs). | AI Service → Technician |
 | **F06.5** | **Feedback & Quality Loop** | Thumbs up/down rating widget, issue reporting modal, automated threshold flagging (`Helpful < 60%`), and revision assignment queues. | Requester, Technician, Admin |

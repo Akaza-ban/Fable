@@ -2,48 +2,65 @@
 
 The system helps an enterprise receive, classify, and dispatch internal IT support requests — processing approximately **8,000 tickets per day** across corporate departments. The AI Service evaluates incoming requests: basic requests within scope are **approved by the AI and executed automatically through backend APIs**; requests requiring hands-on human intervention are routed directly to technicians with an AI summary; when context is missing, it **asks the requester for clarification**.
 
----
+## 1. Requirements — User Stories and Use Cases
 
-## 1. Mindmap
+Requirements define what the system must do, who uses it, and the value delivered. Each branch of the mind map (F01–F09) is specified in its own folder under `docs/`; this section gives the overview across branches.
+
+### 1.1 Product mind map
 
 ![System Mind Map](docs/mindmap.png)
 
-> **XMind Outline:** A complete hierarchical outline for XMind import is provided in [XMind Outline Documentation](docs/mindmap-xmind.md).
+The outline for XMind import is in [the mind map outline](docs/mindmap-xmind.md).
 
----
+### 1.2 User stories
 
-## 2. User Stories
+**Actors**
 
-### Personas & Roles
-*   **Admin:** Quản trị viên hệ thống (Xem danh sách ticket, cấu hình quy tắc phân luồng, SLA, dashboard, thống kê & báo cáo, duyệt KB).
-*   **Requester (Người gửi ticket):** Nhân viên doanh nghiệp (Tạo ticket đính kèm minh chứng, xem trạng thái, bổ sung thông tin khi AI hỏi lại, tự khắc phục qua KB, xác nhận hoàn thành/mở lại).
-*   **Technician (Kỹ thuật viên):** Nhân viên kỹ thuật IT (Xem ticket được phân công, cập nhật trạng thái & giải pháp, xem tóm tắt AI, thêm ghi chú nội bộ, sửa phân loại AI, soạn thảo KB).
-*   **AI (Hệ thống AI):** Trợ lý thông minh (Phân luồng ticket, tự động xử lý ticket đơn giản, hỏi lại khi thiếu context, gợi ý giải pháp KB, gộp ticket trùng, tóm tắt cho KTV, trích xuất bài KB).
+The system has four actors: three human roles (Requester, Technician, Administrator) and the AI Service.
 
-### Core Backlog User Stories
+*   **Requester (Người gửi ticket):** Business employee who submits tickets, tracks status, answers AI clarifying questions, verifies KB solutions, and confirms resolution.
+*   **Technician (Kỹ thuật viên):** Support engineer who handles what the AI cannot resolve: troubleshooting, fixing, updating states and solutions, escalating to a higher tier, and authoring KB articles.
+*   **Administrator (Admin):** System owner who oversees all tickets, configures routing rules, SLA policies, and AI auto-approval whitelists, reviews KB revisions via visual diff, and monitors operational dashboards and audit logs.
+*   **AI Service (Hệ thống AI):** Intelligent background service that classifies and routes tickets, auto-resolves whitelisted requests, prompts for missing context, summarizes conversations, links duplicate cases, and synthesizes KB drafts from resolved tickets.
 
-| Story ID | Role | User Story (`As a... I want to... So that...`) | Priority |
-| :--- | :--- | :--- | :---: |
-| **US01** | `REQUESTER` | **As a** Requester, **I want to** submit tickets with screenshots and error logs, **So that** technicians understand my issue. | **Must** |
-| **US02** | `REQUESTER` | **As a** Requester, **I want** real-time KB solution suggestions while typing, **So that** I can resolve issues without submitting a ticket. | **Must** |
-| **US03** | `REQUESTER` | **As a** Requester, **I want to** answer AI clarifying questions, **So that** my incomplete request has sufficient context for routing. | **Must** |
-| **US04** | `REQUESTER` | **As a** Requester, **I want to** track ticket status and confirm resolution, **So that** I know when my issue is fixed. | **Must** |
-| **US05** | `AI` | **As the** AI Service, **I want to** classify tickets and extract structured fields, **So that** requests are routed to the right team. | **Must** |
-| **US06** | `AI` | **As the** AI Service, **I want to** auto-approve in-scope basic requests and call execution APIs, **So that** repetitive tickets are resolved instantly. | **Must** |
-| **US07** | `TECHNICIAN` | **As a** Technician, **I want to** view a 3-line AI summary on ticket assignment, **So that** I grasp the problem without reading long threads. | **Must** |
-| **US08** | `TECHNICIAN` | **As a** Technician, **I want to** claim tickets, update states, and document root causes, **So that** ticket lifecycle is cleanly tracked. | **Must** |
-| **US09** | `TECHNICIAN` | **As a** Technician, **I want** AI to synthesize a KB article draft from a resolved ticket with 1-click, **So that** know-how is captured with zero effort. | **Must** |
-| **US10** | `TECHNICIAN` | **As a** Technician, **I want to** author and revise troubleshooting guides in rich text/markdown, **So that** procedures are standardized. | **Must** |
-| **US11** | `OPERATIONS LEAD`| **As an** Operations Lead, **I want to** reassign tickets and escalate priority, **So that** critical incidents are resolved within SLA. | **Must** |
-| **US12** | `OPERATIONS LEAD`| **As an** Operations Lead, **I want to** review KB articles using a side-by-side Visual Diff, **So that** only validated steps are published. | **Must** |
-| **US13** | `ADMINISTRATOR` | **As an** Administrator, **I want to** configure rule-based routing and SLA timers (P1–P4), **So that** ticket allocation matches team capacity. | **Must** |
-| **US14** | `ADMINISTRATOR` | **As an** Administrator, **I want to** define the AI auto-execution whitelist and entitlement matrix, **So that** automated actions are strictly governed. | **Must** |
+In the use case diagrams, **User** is the common parent of the three human roles (login, dashboard, KB search).
 
----
+**Core backlog**
 
-## 3. Use Cases
+This is the system-level backlog: 22 stories across the branches. The last column lists the detailed stories in the branch folders, which hold the acceptance criteria.
 
-The system organizes capabilities across 14 discrete use cases (`UC01` to `UC14`) mapped to 4 operational roles:
+| Story ID | Role | User Story (`As a... I want to... So that...`) | Priority | Branch stories |
+| :--- | :--- | :--- | :---: | :--- |
+| **US01** | `REQUESTER` | **As a** Requester, **I want to** submit tickets with screenshots and error logs, **So that** the AI and technicians understand my issue without asking again. | **Must** | US-TK-01, US-TK-02 |
+| **US02** | `REQUESTER` | **As a** Requester, **I want** real-time KB solution suggestions while typing, **So that** I can resolve issues without submitting a ticket. | **Must** | US-AI-05, US-TK-04, US-KB-08 |
+| **US03** | `REQUESTER` | **As a** Requester, **I want to** answer AI clarifying questions inside my ticket, **So that** my incomplete request has sufficient context for routing. | **Must** | US-AI-03, US-AI-04, US-WF-09, US-TK-16 |
+| **US04** | `REQUESTER` | **As a** Requester, **I want to** track ticket status and confirm resolution, **So that** I know when my issue is fixed. | **Must** | US-TK-05, US-TK-20, US-WF-19, US-NK-02 |
+| **US05** | `REQUESTER` | **As a** Requester, **I want to** report "not fixed" or reopen a closed ticket within 7 days, **So that** I don't have to start over when the problem comes back. | **Must** | US-TK-21 |
+| **US06** | `AI` | **As the** AI Service, **I want to** classify tickets and extract structured fields, **So that** requests are routed to the right flow and team. | **Must** | US-AI-01, US-AI-02 |
+| **US07** | `AI` | **As the** AI Service, **I want to** auto-approve in-scope basic requests after the policy check and call execution APIs, **So that** repetitive tickets are resolved instantly. | **Must** | US-WF-08, US-WF-15, US-WF-17 |
+| **US08** | `AI` | **As the** AI Service, **I want to** route tickets that need a human to the right technician team, and send tickets that match no rule or that I fail to process to a shared triage queue, **So that** no ticket is left without an owner. | **Must** | US-WF-10, US-WF-11, US-NK-07 |
+| **US09** | `TECHNICIAN` | **As a** Technician, **I want to** see an AI summary of at most 150 words (problem, impact, key details, what was tried, why it came to a human) on every ticket routed to me, **So that** I grasp the problem without reading long threads. | **Must** | US-AI-07, US-AI-08 |
+| **US10** | `TECHNICIAN` | **As a** Technician, **I want to** claim tickets from my team queue or the triage queue, update states, and record the resolution and root cause, **So that** the ticket lifecycle is cleanly tracked. | **Must** | US-TK-11, US-TK-17, US-TK-18 |
+| **US11** | `TECHNICIAN` | **As a** Technician, **I want to** transfer a misrouted ticket to another team or escalate it to a higher tier with the work done so far, **So that** hard or misrouted tickets reach the right expertise in time. | **Must** | US-TK-12, US-TK-13 |
+| **US12** | `TECHNICIAN` | **As a** Technician, **I want** tickets whose automated execution or verification failed to be handed to me with the error log, **So that** I can retry or resolve them manually and no automation failure is forgotten. | **Must** | US-WF-20 |
+| **US13** | `TECHNICIAN` | **As a** Technician, **I want to** be reminded before a ticket breaches its SLA, with the SLA paused while the requester owes an answer, **So that** I can act in time and am not penalized for delays outside my control. | **Must** | US-WF-12, US-WF-04 |
+| **US14** | `TECHNICIAN` | **As a** Technician, **I want** AI to synthesize a KB article draft from a resolved ticket with 1-click, **So that** know-how is captured with zero effort. | **Must** | US-KB-04 |
+| **US15** | `TECHNICIAN` | **As a** Technician, **I want to** author and revise troubleshooting guides in rich text/markdown, **So that** procedures are standardized. | **Must** | US-KB-02, US-KB-03 |
+| **US16** | `TECHNICIAN` | **As a** Technician, **I want** a personal workbench with my tickets sorted by priority and SLA and figures for my team, **So that** I know what to work on next. | **Must** | US-DB-08, US-BC-02 |
+| **US17** | `ADMINISTRATOR` | **As an** Administrator, **I want to** configure rule-based routing and SLA timers (P1–P4), **So that** ticket allocation matches team capacity. | **Must** | US-WF-01, US-WF-02, US-WF-03 |
+| **US18** | `ADMINISTRATOR` | **As an** Administrator, **I want to** define the AI auto-execution whitelist, entitlement matrix and confidence thresholds, **So that** automated actions are strictly governed. | **Must** | US-WF-05, US-WF-06, US-WF-07 |
+| **US19** | `ADMINISTRATOR` | **As an** Administrator, **I want to** review KB articles using a side-by-side Visual Diff, **So that** only validated steps are published. | **Must** | US-KB-05 |
+| **US20** | `ADMINISTRATOR` | **As an** Administrator, **I want** an operations dashboard with ticket volume, SLA risk and breached tickets, and to be notified when a ticket breaches its SLA, **So that** I can step in before incidents pile up. | **Must** | US-DB-01, US-DB-03, US-WF-13 |
+| **US21** | `ADMINISTRATOR` | **As an** Administrator, **I want** reports on the AI self-resolution rate, handling time, SLA breaches and satisfaction, with CSV/XLSX export, **So that** I can decide whether to widen or narrow what the AI may do. | **Should** | US-BC-03, US-BC-04, US-BC-05, US-BC-06 |
+| **US22** | `ADMINISTRATOR` | **As an** Administrator, **I want** an immutable activity log of every user, AI and system action, including why the AI approved, asked back or routed each request, **So that** AI decisions and incidents can be reviewed and trusted. | **Must** | US-NK-03, US-NK-04, US-NK-05, US-WF-16 |
+
+Each branch keeps its detailed backlog with acceptance criteria in its own folder; see [Documentation](#documentation).
+
+### 1.3 Use cases
+
+#### Role-based use case allocation
+
+The system organizes capabilities across discrete use cases mapped to the 4 operational roles (Admin, Requester, Technician, AI Service):
 
 ```mermaid
 flowchart TB
@@ -55,7 +72,7 @@ flowchart TB
         ai(["4. AI"]):::actorPill
     end
 
-    subgraph dwopBoundary["AI-Powered IT Service Desk — System Boundary (Role-Based Use Case Allocation)"]
+    subgraph systemBoundary["AI-Powered IT Service Desk — System Boundary (Role-Based Use Case Allocation)"]
         direction LR
 
         cardAdmin["<b>1. Admin</b><br/><br/>• <b>UC01</b> Login & SSO Auth<br/>• <b>UC02</b> Logout<br/>• <b>UC03</b> View All Tickets<br/>• <b>UC04</b> Operational Dashboard<br/>• <b>UC05</b> Reports & Analytics<br/>• <b>UC06</b> Config Routing Rules & SLA<br/>• <b>UC07</b> Config AI Whitelist Scope<br/>• <b>UC08</b> Review & Publish KB (Diff)<br/>• <b>UC09</b> User & Team Management"]:::colCard
@@ -76,9 +93,148 @@ flowchart TB
     classDef colCard fill:#1d4ed8,color:#ffffff,stroke:#60a5fa,stroke-width:2px;
 ```
 
-For detailed actors, permissions, and business flows, see [Actors, roles, and use cases](docs/f05-workflow-automation/02-use-cases.md).
+#### Subsystem boundary and functional use case diagrams
 
-### Use Case Catalog
+The system has 14 use cases (`UC01` to `UC14`) shared by the three human roles (Requester, Technician, Administrator) and the AI Service. The first diagram shows how the human roles relate; the other three show the use cases by area. Purple nodes call the AI Service.
+
+```mermaid
+flowchart LR
+    req["<b>Requester</b>"]
+    tech["<b>Technician</b>"]
+    admin["<b>Administrator</b>"]
+    user["<b>User</b>"]
+
+    req ==>|"«generalize»"| user
+    tech ==>|"«generalize»"| user
+    admin ==>|"«generalize»"| user
+
+    classDef actor fill:none,stroke:none,color:#111
+    class req,tech,admin,user actor
+```
+
+```mermaid
+flowchart LR
+    subgraph left["Actors"]
+        direction TB
+        user["<b>User</b>"]
+        req["<b>Requester</b>"]
+    end
+
+    subgraph system["System Boundary"]
+        direction TB
+        subgraph access["Access and dashboard"]
+            direction TB
+            uc01["UC01 Login & SSO Authentication"]
+            uc02["UC02 Logout & Session Revocation"]
+            uc03["UC03 View Dashboard & Telemetry"]
+        end
+        subgraph selfservice["Self-service"]
+            direction TB
+            uc04["UC04 Submit Ticket & Evidence"]
+            uc05["UC05 Track Ticket & Clarification"]
+            uc06["UC06 Search KB Solutions"]
+            uc07["UC07 Rate & Report KB Article"]
+        end
+    end
+
+    subgraph right["Systems"]
+        direction TB
+        sso(["Enterprise SSO"])
+        aiSvc(["AI Service"])
+    end
+
+    req ==>|"«generalize»"| user
+
+    user --> uc01 & uc02 & uc03 & uc06 & uc07
+    req --> uc04 & uc05
+    uc01 --> sso
+    uc05 & uc06 --> aiSvc
+
+    classDef actor fill:none,stroke:none,color:#111
+    classDef usecase fill:#1168bd,color:#fff,stroke:#0b4f9e
+    classDef ai fill:#7b3fbf,color:#fff,stroke:#5a2d8c
+    classDef external fill:#666,color:#fff,stroke:#333
+    class user,req actor
+    class uc01,uc02,uc03,uc04,uc07 usecase
+    class uc05,uc06 ai
+    class sso,aiSvc external
+    style left fill:#fff,stroke:#bbb,stroke-dasharray:5 5
+    style right fill:#fff,stroke:#bbb,stroke-dasharray:5 5
+    style system fill:#f8fbff,stroke:#1168bd,stroke-dasharray:5 5
+```
+
+```mermaid
+flowchart LR
+    subgraph left["Actors"]
+        direction TB
+        tech["<b>Technician</b>"]
+    end
+
+    subgraph system["System Boundary"]
+        direction TB
+        subgraph handling["Ticket handling"]
+            direction TB
+            uc08["UC08 Claim & Triage Tickets"]
+            uc09["UC09 Update Fix & Root Cause"]
+            uc12["UC12 Escalate Ticket to Tier 2/3"]
+        end
+    end
+
+    tech --> uc08 & uc09 & uc12
+
+    classDef actor fill:none,stroke:none,color:#111
+    classDef usecase fill:#1168bd,color:#fff,stroke:#0b4f9e
+    class tech actor
+    class uc08,uc09,uc12 usecase
+    style left fill:#fff,stroke:#bbb,stroke-dasharray:5 5
+    style system fill:#f8fbff,stroke:#1168bd,stroke-dasharray:5 5
+```
+
+```mermaid
+flowchart LR
+    subgraph left["Actors"]
+        direction TB
+        tech["<b>Technician</b>"]
+        admin["<b>Administrator</b>"]
+    end
+
+    subgraph system["System Boundary"]
+        direction TB
+        subgraph kb["Knowledge base"]
+            direction TB
+            uc10["UC10 AI Synthesize KB from Ticket"]
+            uc11["UC11 Author & Edit KB Articles"]
+            uc13["UC13 Review & Publish (Diff View)"]
+        end
+        subgraph config["Configuration"]
+            direction TB
+            uc14["UC14 Configure Rules, SLA & Scope"]
+        end
+    end
+
+    subgraph right["Systems"]
+        direction TB
+        aiSvc(["AI Service"])
+    end
+
+    tech --> uc10 & uc11
+    admin --> uc11 & uc13 & uc14
+    uc10 --> aiSvc
+
+    classDef actor fill:none,stroke:none,color:#111
+    classDef usecase fill:#1168bd,color:#fff,stroke:#0b4f9e
+    classDef ai fill:#7b3fbf,color:#fff,stroke:#5a2d8c
+    classDef external fill:#666,color:#fff,stroke:#333
+    class tech,admin actor
+    class uc11,uc13,uc14 usecase
+    class uc10 ai
+    class aiSvc external
+    style left fill:#fff,stroke:#bbb,stroke-dasharray:5 5
+    style right fill:#fff,stroke:#bbb,stroke-dasharray:5 5
+    style system fill:#f8fbff,stroke:#1168bd,stroke-dasharray:5 5
+```
+
+**Use case catalog**
 
 | ID | Use Case Name | Primary Actor | Scope & Description |
 | :--- | :--- | :--- | :--- |
@@ -89,55 +245,213 @@ For detailed actors, permissions, and business flows, see [Actors, roles, and us
 | **UC05** | Track Ticket & Clarification | Requester | View real-time status timeline and respond to AI clarifying questions. |
 | **UC06** | Search KB Solutions | All Roles | Natural language semantic search for verified solutions with instant answer extraction. |
 | **UC07** | Rate & Report KB Article | All Roles | Submit helpfulness votes (Helpful / Unhelpful) or report outdated/inaccurate technical steps. |
-| **UC08** | Claim & Triage Tickets | Technician / Lead | Claim unassigned tickets from team queue or reassign across tiers. |
-| **UC09** | Update Fix & Root Cause | Technician / Lead | Transition ticket states (In Progress, Needs Info, Resolved) and record resolution. |
-| **UC10** | AI Synthesize KB from Ticket | Technician / Lead | 1-click generation of structured KB draft from closed ticket with PII scrubbing. |
+| **UC08** | Claim & Triage Tickets | Technician | Claim tickets from the team queue or from the shared triage queue (tickets the AI could not route), or transfer a misrouted ticket to another team. |
+| **UC09** | Update Fix & Root Cause | Technician | Transition ticket states (In Progress, Needs Info, Resolved) and record resolution and root cause. |
+| **UC10** | AI Synthesize KB from Ticket | Technician | 1-click generation of structured KB draft from closed ticket with PII scrubbing. |
 | **UC11** | Author & Edit KB Articles | Technician / Admin | Author technical guides with rich text, markdown, code blocks, and tags. |
-| **UC12** | Escalate Ticket to Tier 2/3 | Technician / Lead | Transfer complex or blocked tickets to specialized tier with updated priority. |
-| **UC13** | Review & Publish (Diff View) | Lead / Admin | Inspect proposed article revisions side-by-side (Diff View) and approve for release. |
+| **UC12** | Escalate Ticket to Tier 2/3 | Technician | Transfer complex or blocked tickets to a higher support tier with the work done so far. |
+| **UC13** | Review & Publish (Diff View) | Administrator | Inspect proposed article revisions side-by-side (Diff View) and approve for release. |
 | **UC14** | Configure Rules, SLA & Scope | Administrator | Define deterministic assignment rules, SLA policies, and AI auto-approval whitelist. |
 
----
+The use cases per branch (UC-DB, UC-TK, UC-AI, UC-WF, UC-KB, UC-BC, UC-NK) are specified in each branch folder.
 
-## 4. Information Architecture
+## 2. Information Architecture, Screen Hierarchy and UI/UX
+
+The information architecture organizes features around each role's goals and mirrors the mind map groups. Navigation is rendered from the user's role token; every screen must define its access rules and its loading, empty, validation, error, saving and success states.
+
+### 2.1 Information architecture
+
+``` mermaid
+flowchart TB
+    ROOT["**IT Ticket Routing System**<br/>AI-powered ticket routing and automated resolution"]
+
+    ROOT --> PUBLIC["Public area"]
+    ROOT --> SELF["Self-service area<br/>(login required, all roles)"]
+    ROOT --> SUPPORT["Support workspace<br/>(Technician / Administrator)"]
+    ROOT --> GOV["Governance area<br/>(Administrator)"]
+
+    subgraph PUBLIC_PAGES["PUBLIC SCREENS"]
+        direction TB
+        LOGIN["**Login** /login<br/>Enterprise SSO<br/>Role-based workspace loading<br/>Authentication errors"]
+    end
+
+    subgraph SELF_PAGES["SELF-SERVICE SCREENS"]
+        direction TB
+        PORTAL["**Portal** /portal<br/>Announcements<br/>Quick self-help search<br/>Trending resolutions"]
+        NEWREQ["**New request** /requests/new<br/>Category, description<br/>Screenshots and error logs<br/>Real-time KB suggestions"]
+        MYTICKETS["**My tickets** /requests/my-tickets<br/>Status timeline<br/>Filter by status<br/>Resolution verification"]
+        REQDETAIL["**Request detail** /requests/:id<br/>Conversation<br/>AI clarifying questions<br/>Confirm fix and rating"]
+        KBEXPLORE["**KB search** /kb/explore<br/>Semantic search<br/>Category hierarchy"]
+        KBARTICLE["**KB article** /kb/articles/:id<br/>Problem, root cause, steps<br/>Helpful / unhelpful vote<br/>Report outdated content"]
+    end
+
+    subgraph SUPPORT_PAGES["SUPPORT SCREENS"]
+        direction TB
+        INBOX["**Ticket inbox** /tickets/inbox<br/>Assigned tickets<br/>Team queues<br/>Unassigned triage queue"]
+        CONSOLE["**Ticket console** /tickets/:id<br/>AI summary (max 150 words)<br/>Conversation and internal notes<br/>Status, root cause, resolution<br/>History and field diff"]
+        ESCAL["**Escalations** /tickets/escalations<br/>Approaching SLA breach<br/>Tier 2/3 escalation<br/>Transfer to another team"]
+        AIFEED["**AI processing** /ai/*<br/>Classification feed and confidence<br/>Clarification queue<br/>Category overrides (model feedback)"]
+        KBEDITOR["**KB editor** /kb/editor<br/>Rich text / Markdown<br/>Code blocks and screenshots<br/>Tags"]
+        KBAI["**AI drafts** /kb/ai-inbox<br/>Drafts synthesized from resolved tickets<br/>PII scrubbed"]
+        KBFLAG["**Flagged articles** /kb/flagged<br/>Reported and outdated articles"]
+    end
+
+    subgraph GOV_PAGES["GOVERNANCE SCREENS"]
+        direction TB
+        APPROVALS["**KB approvals** /kb/approvals<br/>Side-by-side visual diff<br/>Approve / reject"]
+        ANALYTICS["**Analytics** /analytics/*<br/>AI deflection rate, MTTA, MTTR, SLA %<br/>Team workload and queue depth"]
+        AUTOMATION["**Automation config** /automation/*<br/>Assignment rules<br/>SLA policies P1-P4<br/>AI auto-approval whitelist<br/>Execution runs and fallback alerts"]
+        AUDIT["**Audit log** /audit/activity-log<br/>Immutable workflow and security trail"]
+        USERS["**Users and RBAC** /admin/users-rbac<br/>User directory<br/>Teams and roles"]
+    end
+
+    PUBLIC --> LOGIN
+
+    SELF --> PORTAL
+    PORTAL --> NEWREQ
+    PORTAL --> MYTICKETS
+    MYTICKETS --> REQDETAIL
+    NEWREQ --> REQDETAIL
+    SELF --> KBEXPLORE
+    KBEXPLORE --> KBARTICLE
+    NEWREQ --> KBARTICLE
+
+    SUPPORT --> INBOX
+    INBOX --> CONSOLE
+    SUPPORT --> ESCAL
+    ESCAL --> CONSOLE
+    SUPPORT --> AIFEED
+    CONSOLE --> KBAI
+    KBAI --> KBEDITOR
+    SUPPORT --> KBFLAG
+    KBFLAG --> KBEDITOR
+
+    GOV --> APPROVALS
+    GOV --> ANALYTICS
+    GOV --> AUTOMATION
+    GOV --> AUDIT
+    GOV --> USERS
+
+    classDef root fill:#ffffff,stroke:#222222,stroke-width:2px,color:#111111;
+    classDef public fill:#fff0f0,stroke:#f87171,color:#7f1d1d;
+    classDef self fill:#ecfdf5,stroke:#22c55e,color:#14532d;
+    classDef support fill:#eff6ff,stroke:#60a5fa,color:#1e3a8a;
+    classDef gov fill:#f5f3ff,stroke:#a78bfa,color:#4c1d95;
+    classDef publicArea fill:#fecaca,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+    classDef selfArea fill:#bbf7d0,stroke:#16a34a,stroke-width:2px,color:#14532d;
+    classDef supportArea fill:#bfdbfe,stroke:#2563eb,stroke-width:2px,color:#1e3a8a;
+    classDef govArea fill:#ddd6fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+    class ROOT root;
+    class PUBLIC publicArea;
+    class SELF selfArea;
+    class SUPPORT supportArea;
+    class GOV govArea;
+    class LOGIN public;
+    class PORTAL,NEWREQ,MYTICKETS,REQDETAIL,KBEXPLORE,KBARTICLE self;
+    class INBOX,CONSOLE,ESCAL,AIFEED,KBEDITOR,KBAI,KBFLAG support;
+    class APPROVALS,ANALYTICS,AUTOMATION,AUDIT,USERS gov;
+```
+
+Access per area follows the role matrix: the self-service area is open to every role; the support workspace is for Technicians and Administrators (so an Administrator can open a breached ticket or edit an article) and hidden (403) for Requesters; the governance area (KB approvals, analytics, automation configuration, audit log, user management) is Administrator only. Technicians see figures for their own tickets and teams on their workbench, not the governance screens.
+
+### 2.2 Screen hierarchy
+
+``` mermaid
+flowchart TB
+    Login["Login (SSO)"] --> Shell["Authenticated workspace shell<br/>(sidebar + topbar)"]
+    Shell -->|"Requester"| Portal["Portal"]
+    Shell -->|"Technician"| Inbox["Ticket inbox"]
+    Shell -->|"Administrator"| Analytics["Analytics dashboard"]
+
+    Portal --> NewReq["New request"]
+    NewReq -->|"KB suggestion solves it"| Article["KB article"]
+    NewReq -->|"Submit"| ReqDetail["Request detail"]
+    Portal --> MyTickets["My tickets"]
+    MyTickets --> ReqDetail
+    ReqDetail -->|"AI asks for context"| Clarify["Answer clarifying questions"]
+    Clarify --> ReqDetail
+    ReqDetail -->|"Resolved"| Confirm["Confirm fix and rate"]
+    Portal --> Explore["KB search"]
+    Explore --> Article
+    Article --> Vote["Vote / report outdated"]
+
+    Inbox -->|"Claim"| Console["Ticket console"]
+    Inbox --> Escalations["Escalations"]
+    Escalations --> Console
+    Console -->|"Escalate"| Escalations
+    Console -->|"Resolve"| Synth["AI KB draft (1-click)"]
+    Synth --> Editor["KB editor"]
+    Editor -->|"Submit for review"| Approvals["KB approvals (diff view)"]
+    Approvals -->|"Publish"| Article
+    Shell --> AIFeed["AI processing"]
+    Shell --> Flagged["Flagged articles"]
+    Flagged --> Editor
+
+    Analytics --> Automation["Automation config"]
+    Analytics --> Audit["Audit log"]
+    Analytics --> Users["Users and RBAC"]
+    Shell --> Forbidden["403 Forbidden"]
+    Shell --> NotFound["404 Not Found"]
+```
+
+Each role lands on its own home after login: Requesters on the Portal, Technicians on the ticket inbox and Administrators on analytics. Main requester flow: Portal → New request → KB suggestions (deflection) → Submit → AI classification → auto-execution for whitelisted requests, clarifying questions when context is missing, or routing to a technician team (the shared triage queue when no rule matches) → Track status → Confirm fix and rate. Main technician flow: Inbox → Claim → Ticket console with AI summary → Update status and root cause → Resolve → 1-click AI KB draft → Edit → Administrator review in diff view → Publish.
+
+The ticket console must clearly show the AI summary (at most 150 words, in fixed sections), the AI-assigned category and confidence, the SLA timer, the conversation with internal notes kept separate, and a way to override the AI category (feeding model feedback). Any action executed automatically by the AI must be visible on the ticket timeline with its result, and failed executions must fall back to a technician queue.
+
+Detailed routes, standard component states (loading, empty, validation, saving, success, error, 403) and the role-based navigation matrix are maintained in [Information Architecture](docs/information-architecture.md).
+
+Each branch also has its own information architecture: [F02 Dashboard](docs/f02-dashboard/03-information-architecture.md), [F03 Ticket Management](docs/f03-ticket-management/03-information-architecture.md), [F04 AI Ticket Processing](docs/f04-ai-ticket-processing/information-architecture/README.md), [F05 Workflow & Automation](docs/f05-workflow-automation/information-architecture/README.md), [F06 Knowledge Base](docs/f06-knowledge-base/04-information-architecture.md), [F07 Reports & Analytics](docs/f07-reports-analytics/03-information-architecture.md), [F08 Activity Log](docs/f08-activity-log/03-information-architecture.md).
+
+## Documentation
+
+- System overview: [Mind map outline](docs/mindmap-xmind.md), [Information architecture](docs/information-architecture.md).
+- F02 Dashboard: [Index](docs/f02-dashboard/README.md), [User stories](docs/f02-dashboard/01-user-stories.md), [Use cases](docs/f02-dashboard/02-use-cases.md), [Information architecture](docs/f02-dashboard/03-information-architecture.md).
+- F03 Ticket Management: [Index](docs/f03-ticket-management/README.md), [User stories](docs/f03-ticket-management/01-user-stories.md), [Use cases](docs/f03-ticket-management/02-use-cases.md), [Information architecture](docs/f03-ticket-management/03-information-architecture.md).
+- F04 AI Ticket Processing: [Index](docs/f04-ai-ticket-processing/README.md), [Features](docs/f04-ai-ticket-processing/01-features.md), [Use cases](docs/f04-ai-ticket-processing/02-use-cases.md), [User stories (INVEST)](docs/f04-ai-ticket-processing/03-user-stories-invest.md), [Acceptance criteria](docs/f04-ai-ticket-processing/04-acceptance-criteria.md), [Business rules](docs/f04-ai-ticket-processing/05-business-rules.md), [Information architecture](docs/f04-ai-ticket-processing/information-architecture/README.md).
+- F05 Workflow & Automation: [Index](docs/f05-workflow-automation/README.md), [Features](docs/f05-workflow-automation/01-features.md), [Use cases](docs/f05-workflow-automation/02-use-cases.md), [Acceptance criteria](docs/f05-workflow-automation/03-acceptance-criteria.md), [INVEST backlog](docs/f05-workflow-automation/04-invest-requirements.md), [Information architecture](docs/f05-workflow-automation/information-architecture/README.md).
+- F06 Knowledge Base: [Index](docs/f06-knowledge-base/README.md), [Mind map](docs/f06-knowledge-base/01-mindmap.md), [User stories](docs/f06-knowledge-base/02-user-stories.md), [Use cases](docs/f06-knowledge-base/03-use-cases.md), [Information architecture](docs/f06-knowledge-base/04-information-architecture.md), [Wireframes](docs/f06-knowledge-base/05-wireframes.md).
+- F07 Reports & Analytics: [Index](docs/f07-reports-analytics/README.md), [User stories](docs/f07-reports-analytics/01-user-stories.md), [Use cases](docs/f07-reports-analytics/02-use-cases.md), [Information architecture](docs/f07-reports-analytics/03-information-architecture.md).
+- F08 Activity Log: [Index](docs/f08-activity-log/README.md), [User stories](docs/f08-activity-log/01-user-stories.md), [Use cases](docs/f08-activity-log/02-use-cases.md), [Information architecture](docs/f08-activity-log/03-information-architecture.md).
+- Requirements catalogs: [Business rules](docs/requirements/business-rules.md), [Non-functional requirements](docs/requirements/non-functional-requirements.md).
+- Traceability: [Master traceability matrix](docs/traceability/master-traceability.md).
+
+### Repository layout
+
+No source code exists yet. The repository holds the documents.
 
 ```text
-Public Access Layer
-└── /login                                  - SSO Corporate Authentication Portal & Role Selector
-
-Authenticated Workspace (Fixed 260px Collapsible Sidebar + Sticky 64px Topbar)
-│
-├── [REQUESTER SELF-SERVICE PORTAL]
-│   ├── /portal                             - Requester Home, search bar, and trending resolutions
-│   ├── /requests/new                       - Smart ticket draft form with real-time AI solution deflection
-│   ├── /requests/my-tickets                - Requester ticket tracking, status timeline & verification
-│   └── /requests/:id                       - Ticket conversation, clarifying question answers, feedback rating
-│
-├── [TICKET & TECHNICIAN WORKSPACE]
-│   ├── /tickets/inbox                      - Team queues, assigned tickets, triage unassigned queue
-│   ├── /tickets/:id                        - Unified technician console (AI summary, conversation, internal notes)
-│   └── /tickets/escalations                - Approaching SLA breach tickets & department reassignments
-│
-├── [AI PROCESSING & AUTOMATION]
-│   ├── /ai/classifications                 - Real-time classification feed, intent detection, confidence telemetry
-│   ├── /ai/clarification-queue             - Active clarification interactions with requesters
-│   ├── /automation/rules                   - Assignment rules builder (Round-robin, workload balance, team matching)
-│   └── /automation/sla-policies            - Priority-based SLA policies (P1–P4) & business hour calendar
-│
-├── [KNOWLEDGE MANAGEMENT — KB]
-│   ├── /kb/explore                         - Semantic solution search portal & faceted category hierarchy
-│   ├── /kb/articles/:id                    - Article view (Problem, root cause, step-by-step fix, attachments)
-│   ├── /kb/editor                          - Rich Text/Markdown authoring tool, code blocks & screenshot uploads
-│   ├── /kb/ai-inbox                        - AI-synthesized drafts extracted from resolved tickets (1-click draft)
-│   ├── /kb/approvals                       - Side-by-side Visual Diff inspection for pending article updates
-│   └── /kb/flagged                         - Problematic & outdated article maintenance queue
-│
-├── [GOVERNANCE, ANALYTICS & AUDIT]
-│   ├── /analytics/dashboard                - Executive KPI telemetry, AI deflection rate, MTTA, MTTR, SLA %
-│   ├── /audit/activity-log                 - Immutable security and workflow audit trail (SOC-2 compliant)
-│   └── /admin/users-rbac                   - Enterprise user directory, team assignments & role matrix
-│
-└── [SYSTEM EXCEPTION & FALLBACK]
-    ├── /403                                - Access Forbidden (Role-Based Access Control fallback guard)
-    └── /404                                - Page Not Found (Routing error fallback)
+Fable/
+├── docs/
+│   ├── f02-dashboard/             # Dashboard: user stories, use cases, IA
+│   ├── f03-ticket-management/     # Ticket management: user stories, use cases, IA
+│   ├── f04-ai-ticket-processing/  # AI ticket processing: features, use cases, INVEST, AC, business rules, IA
+│   ├── f05-workflow-automation/   # Workflow and automation: features, use cases, AC, INVEST, IA
+│   ├── f06-knowledge-base/        # Knowledge base: mind map, user stories, use cases, IA, wireframes
+│   ├── f07-reports-analytics/     # Reports and analytics: user stories, use cases, IA
+│   ├── f08-activity-log/          # Activity log: user stories, use cases, IA
+│   ├── requirements/              # Shared business rules and non-functional requirements
+│   ├── traceability/              # Master traceability matrix
+│   ├── information-architecture.md  # System-wide information architecture
+│   ├── mindmap-xmind.md           # Mind map outline for XMind
+│   └── mindmap.png                # Mind map image
+└── README.md
 ```
+
+Every branch folder is named `fNN-<branch>` after its number in the mind map, its files are numbered `NN-<topic>.md`, and its `README.md` lists the files.
+
+## Project Progress
+
+- [x] Draw the product mind map
+- [x] Write the system user stories and use cases, with the use case diagrams
+- [x] Design the system information architecture and screen hierarchy (draft)
+- [x] F02 Dashboard: user stories, use cases, IA (draft)
+- [x] F03 Ticket Management: user stories, use cases, IA (draft)
+- [x] F04 AI Ticket Processing: use cases, INVEST, acceptance criteria, business rules, IA (draft)
+- [x] F05 Workflow & Automation: use cases, INVEST, acceptance criteria, IA (draft)
+- [x] F06 Knowledge Base: user stories, use cases, IA, wireframes (draft)
+- [x] F07 Reports & Analytics: user stories, use cases, IA (draft)
+- [x] F08 Activity Log: user stories, use cases, IA (draft)
+- [ ] Specify F01 Authentication & Authorization and F09 User Management
+- [ ] C4 System Context, Container, Component
+- [ ] Database design (ERD)
+- [ ] OpenAPI 3.0
