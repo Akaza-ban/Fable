@@ -1,8 +1,8 @@
 # Use cases — Activity Log
 
-Roles, ticket visibility scope, permission matrix and `BR-xx` rules are reused from [mvp.md](../mvp.md). AI decisions and workflow runs are reused from the Workflow module ([03-use-cases.md](../03-use-cases.md), `BR-WF-xx` in [business-rules.md](../requirements/business-rules.md)). This file only adds `UC-NK-xx`, `BR-NK-xx` and **proposes** new permissions (section 4). The proposed permissions take effect only once the owner of `mvp.md` accepts them.
+Roles, ticket visibility scope, permission matrix and `BR-xx` rules are reused from [mvp.md](../mvp.md). AI decisions and workflow runs are reused from the Workflow module ([03-use-cases.md](../f05-workflow-automation/02-use-cases.md), `BR-WF-xx` in [business-rules.md](../requirements/business-rules.md)). This file only adds `UC-NK-xx`, `BR-NK-xx` and **proposes** new permissions (section 4). The proposed permissions take effect only once the owner of `mvp.md` accepts them.
 
-Related module: [Reporting & Analytics](../reporting-analytics/02-use-cases.md) (`UC-BC-xx`, `BR-BC-xx`) — report exports are written to this log.
+Related module: [Reporting & Analytics](../f07-reports-analytics/02-use-cases.md) (`UC-BC-xx`, `BR-BC-xx`) — report exports are written to this log.
 
 This module only **reads** data owned by other modules; it never redefines or changes it:
 
@@ -86,7 +86,7 @@ The activity log uses the audit log exactly as defined in **BR-09**: who (`actor
 
 ## 4. Proposed additions to the permission matrix
 
-Proposals for the owner of [mvp.md](../mvp.md) to decide. This file does **not** edit `mvp.md`. Naming convention: see Q-BC-12 in [reporting-analytics](../reporting-analytics/02-use-cases.md).
+Proposals for the owner of [mvp.md](../mvp.md) to decide. This file does **not** edit `mvp.md`. Naming convention: see Q-BC-12 in [reporting-analytics](../f07-reports-analytics/02-use-cases.md).
 
 | Proposed permission | ADMIN | TECHNICIAN | REQUESTER | AI_AGENT | Used in |
 |---|---|---|---|---|---|
@@ -117,4 +117,4 @@ No `audit:write`, `audit:update` or `audit:delete` permission is proposed for an
 - **Q-NK-09**: Workflow lets a technician see AI decisions only for tickets **assigned** to them; `mvp.md` scope is assigned **and group**. Which applies to `approval:read`?
 - **Q-NK-10**: Is exporting the audit log (UC-NK-02) needed? If so, add `audit:export` and log the export.
 
-See also: [01-user-stories.md](01-user-stories.md) · [03-information-architecture.md](03-information-architecture.md) · [Reporting & Analytics](../reporting-analytics/02-use-cases.md)
+See also: [01-user-stories.md](01-user-stories.md) · [03-information-architecture.md](03-information-architecture.md) · [Reporting & Analytics](../f07-reports-analytics/02-use-cases.md)

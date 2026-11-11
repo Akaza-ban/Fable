@@ -1,4 +1,4 @@
-# 04 — Information Architecture
+# F05 Workflow & Automation — Information Architecture
 
 > Design status: V1 — draft, awaiting user review
 >
@@ -8,7 +8,7 @@
 
 The information architecture organizes the screens of the Workflow & Automation feature: a sitemap by role, routes and page permissions, navigation, the screen inventory (**12 pages and 8 modals**; 6 pages are workflow-specific, 6 are shared or belong to F01/F03), six primary user flows, and the UI states (including AI states).
 
-Inputs: [Use cases](../03-use-cases.md), [INVEST backlog](../08-invest-requirements.md), [Business rules](../requirements/business-rules.md). Output for: UI/UX design (wireframes) and API (screen-to-API mapping).
+Inputs: [Use cases](../02-use-cases.md), [INVEST backlog](../04-invest-requirements.md), [Business rules](../../requirements/business-rules.md). Output for: UI/UX design (wireframes) and API (screen-to-API mapping).
 
 Three roles: **Requester** (`REQUESTER`), **Technician** (`TECHNICIAN`, possibly a **Team Lead**), **Admin** (`ADMIN`). The system actor **AI Service** has no screen; its output appears on people's screens and is always labelled **AI**.
 
@@ -22,4 +22,4 @@ Three roles: **Requester** (`REQUESTER`), **Technician** (`TECHNICIAN`, possibly
 | [05-user-flows.md](05-user-flows.md) | 6 flows: AI self-service, AI clarification, human handling, automation failure handling, Admin configures and reviews the AI, Admin configures assignment rules |
 | [06-ui-states-and-accessibility.md](06-ui-states-and-accessibility.md) | UI state contract, status chips, AI and execution states, responsive and accessibility rules |
 
-**Related:** [README](../../README.md) · [Use cases](../03-use-cases.md) · [Acceptance criteria](../06-acceptance-criteria.md) · [Traceability](../traceability/master-traceability.md)
+**Related:** [README](../../../README.md) · [Use cases](../02-use-cases.md) · [Acceptance criteria](../03-acceptance-criteria.md) · [Traceability](../../traceability/master-traceability.md)

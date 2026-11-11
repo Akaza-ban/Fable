@@ -1,8 +1,8 @@
 # Use cases — Reporting & Analytics
 
-Roles, ticket visibility scope, permission matrix and `BR-xx` rules are reused from [mvp.md](../mvp.md). Ticket statuses, SLA policy and AI decisions are reused from the Workflow module ([03-use-cases.md](../03-use-cases.md), `BR-WF-xx` in [business-rules.md](../requirements/business-rules.md)). This file only adds `UC-BC-xx`, `BR-BC-xx`, metrics `M-xx` and **proposes** new permissions (section 5). The proposed permissions take effect only once the owner of `mvp.md` accepts them.
+Roles, ticket visibility scope, permission matrix and `BR-xx` rules are reused from [mvp.md](../mvp.md). Ticket statuses, SLA policy and AI decisions are reused from the Workflow module ([03-use-cases.md](../f05-workflow-automation/02-use-cases.md), `BR-WF-xx` in [business-rules.md](../requirements/business-rules.md)). This file only adds `UC-BC-xx`, `BR-BC-xx`, metrics `M-xx` and **proposes** new permissions (section 5). The proposed permissions take effect only once the owner of `mvp.md` accepts them.
 
-Related module: [Activity log](../activity-log/02-use-cases.md) (`UC-NK-xx`, `BR-NK-xx`) — the audit log that several metrics read from.
+Related module: [Activity log](../f08-activity-log/02-use-cases.md) (`UC-NK-xx`, `BR-NK-xx`) — the audit log that several metrics read from.
 
 This module only **reads** data owned by other modules; it never redefines or changes it:
 
@@ -105,7 +105,7 @@ Reports, the Dashboard and the demo all use **the same calculation** below (BR-B
 
 ## 5. Proposed additions to the permission matrix
 
-Proposals for the owner of [mvp.md](../mvp.md) to decide. This file does **not** edit `mvp.md`. Names follow the `resource:action` style of `mvp.md` (Q-BC-12). Activity log permissions are in [activity-log/02-use-cases.md](../activity-log/02-use-cases.md).
+Proposals for the owner of [mvp.md](../mvp.md) to decide. This file does **not** edit `mvp.md`. Names follow the `resource:action` style of `mvp.md` (Q-BC-12). Activity log permissions are in [activity-log/02-use-cases.md](../f08-activity-log/02-use-cases.md).
 
 | Proposed permission | ADMIN | TECHNICIAN | REQUESTER | AI_AGENT | Used in |
 |---|---|---|---|---|---|
@@ -135,4 +135,4 @@ Proposals for the owner of [mvp.md](../mvp.md) to decide. This file does **not**
 - **Q-BC-11**: Is PDF needed? Can satisfaction comments be exported (they may contain personal information)?
 - **Q-BC-12**: Permission names differ between documents: `mvp.md` uses `user:read`, Workflow uses `workflowConfigManage`, `ticketReassign`. Which convention does the team keep?
 
-See also: [01-user-stories.md](01-user-stories.md) · [03-information-architecture.md](03-information-architecture.md) · [Activity log](../activity-log/02-use-cases.md)
+See also: [01-user-stories.md](01-user-stories.md) · [03-information-architecture.md](03-information-architecture.md) · [Activity log](../f08-activity-log/02-use-cases.md)

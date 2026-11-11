@@ -4,8 +4,8 @@ This document defines the comprehensive Information Architecture (IA) for the **
 It details the sitemap, visual hierarchy, widget component breakdown, role-based visibility matrix, domain data schemas, caching architecture, and REST/WebSocket API specifications.
 
 Related specifications:
-* [dashboard_use_cases.md](dashboard_use_cases.md) — System interaction flows and processing logic.
-* [dashboard_user_stories.md](dashboard_user_stories.md) — Agile Epics, user personas, and BDD acceptance criteria.
+* [dashboard_use_cases.md](02-use-cases.md) — System interaction flows and processing logic.
+* [dashboard_user_stories.md](01-user-stories.md) — Agile Epics, user personas, and BDD acceptance criteria.
 
 ---
 

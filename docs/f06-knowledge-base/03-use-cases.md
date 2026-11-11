@@ -4,7 +4,7 @@
 >
 > Scope: **F06 Knowledge Base — KB (UC-KB-01 … UC-KB-05)**
 >
-> Related: [User Stories](2_user_stories.md) · [Information Architecture](4_information_architecture.md)
+> Related: [User Stories](02-user-stories.md) · [Information Architecture](04-information-architecture.md)
 
 ---
 
