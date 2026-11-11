@@ -46,7 +46,7 @@ The API enforces every row; hiding an element is only for usability. "Scope" mea
 | Technician | Work queues, Reports, Profile | Nothing new; *History* tab and approval chain on SCR-T-02 |
 | Admin | Dashboard, Tickets, …, **Audit** | **Audit** group: Activity log (SCR-NK-02), Workflow runs (SCR-NK-04) |
 
-Contextual navigation: *View log* buttons on user, service account, assignment rule (F05 SCR-WF-01) and SLA policy (SCR-WF-02) pages open SCR-NK-02 pre-filtered; a ticket in any entry opens SCR-T-02; notifications about failed runs (SCR-91) open SCR-NK-05.
+Contextual navigation: *View log* buttons on user, service account, assignment rule (F05 SCR-WF-01) and SLA policy (SCR-WF-02) pages open SCR-NK-02 pre-filtered; a ticket in any entry opens SCR-T-02; notifications about failed runs (SCR-91) or failure alerts on the F02 Dashboard Live Drawer (SCR-DB-10) open SCR-NK-04/SCR-NK-05; clicking "View History" on any critical ticket on the F02 SLA Radar (SCR-DB-11) opens SEC-NK-01 on SCR-T-02.
 
 ## 5. Story-to-screen mapping
 

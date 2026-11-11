@@ -1,4 +1,4 @@
-# User Stories & Acceptance Criteria — Dashboard Subsystem
+# User Stories & Acceptance Criteria — Dashboard Subsystem (F02)
 
 This document outlines the Agile requirement specifications for the **Dashboard** subsystem. Stories are grouped into strategic **Epics**, prioritized via the **MoSCoW** framework, and defined with **BDD (Given - When - Then)** Acceptance Criteria to support automated testing and product verification.
 
@@ -8,151 +8,144 @@ This document outlines the Agile requirement specifications for the **Dashboard*
 
 | Epic | Story ID | User Story Title | Priority | Primary Persona |
 |---|---|---|---|---|
-| **EPIC 1: Executive & Operational Visibility** | **US-DB-01** | Executive KPI Cards & Ticket Pipeline Breakdown | **Must Have** | IT Operations Manager |
-| | **US-DB-02** | AI Automation & Resolution Rate Analytics | **Should Have** | IT Director, System Admin |
-| **EPIC 2: SLA Governance & Bottleneck Mitigation** | **US-DB-03** | SLA Breach Early Warning Radar & Unassigned Backlog | **Must Have** | IT Manager, Team Lead |
-| | **US-DB-04** | Deep Metric Drill-Down & Context Retention | **Must Have** | All IT Internal Staff |
-| **EPIC 3: Workload Balancing & Resource Optimization** | **US-DB-05** | Engineer Capacity Matrix & Overload Warning | **Must Have** | Technical Team Lead |
-| | **US-DB-06** | Intelligent Workload Redistribution Suggestions | **Could Have** | Technical Team Lead |
-| **EPIC 4: Real-Time Situational Awareness & Fast Dispatch** | **US-DB-07** | Live Incident Stream & Critical P1 Broadcast | **Must Have** | On-Duty Engineer, IT Admin |
-| | **US-DB-08** | Personalized Technician Daily Workbench | **Must Have** | Support Technician |
+| **EPIC 1: Real-Time Operational Visibility** | **US-DB-01** | Executive KPI Cards & Ticket Pipeline Breakdown Today | **Must Have** | System Administrator (`ADMIN`) |
+| | **US-DB-02** | Today's AI Automation & Resolution Rate Analytics | **Should Have** | System Administrator (`ADMIN`) |
+| **EPIC 2: SLA Governance & Rapid Intervention** | **US-DB-03** | SLA Breach Early Warning Radar & Active Bottlenecks | **Must Have** | System Administrator, Technician |
+| | **US-DB-04** | Deep Metric Drill-Down to F03 Tickets & F08 Audit Logs | **Must Have** | All IT Internal Staff |
+| **EPIC 3: Engineering Capacity Overview** | **US-DB-05** | Engineering Group Workload Capacity Overview | **Should Have** | System Administrator (`ADMIN`) |
+| **EPIC 4: Real-Time Situational Awareness** | **US-DB-07** | Live Incident Stream, P1 Broadcast & Automation Failure Alert | **Must Have** | On-Duty Engineer, IT Admin |
+| **EPIC 5: Technician Personal Workbench** | **US-DB-08** | Personalized Technician Daily Workbench & 1-Click Claim | **Must Have** | Support Technician (`TECHNICIAN`) |
+| **EPIC 6: Requester Self-Service Hub** | **US-DB-09** | Requester Self-Service Portal & Request Hub | **Must Have** | Requester (`REQUESTER`) |
 
 ---
 
-## EPIC 1: Executive & Operational Visibility
+## EPIC 1: Real-Time Operational Visibility
 
-### US-DB-01: Executive KPI Cards & Ticket Pipeline Breakdown
+### US-DB-01: Executive KPI Cards & Ticket Pipeline Breakdown Today
 * **Story ID:** `US-DB-01` | **Priority:** `Must Have`
 * **User Story:**
-  > **As an** IT Operations Manager,  
-  > **I want to** view high-level KPI cards and priority distribution charts,  
-  > **So that** I can grasp departmental workload and throughput at a glance without generating manual reports.
+  > **As a** System Administrator,  
+  > **I want to** view real-time KPI cards and priority distribution charts for today,  
+  > **So that** I can grasp daily operational workload and throughput without waiting for periodic reports.
 
 #### Acceptance Criteria (BDD):
-* **Scenario 1: Default KPI Rendering**
-  * **Given:** The IT Operations Manager is authenticated and navigates to the Dashboard.
+* **Scenario 1: Default KPI Rendering for Today**
+  * **Given:** The Administrator is authenticated and navigates to `/admin/dashboard`.
   * **When:** The dashboard page finishes loading.
-  * **Then:** The system displays 5 core KPI metric cards: Total Tickets, New (`OPEN`), In Progress (`IN_PROGRESS`), Pending Customer Input (`NEEDS_INFO`), and Completed (`RESOLVED`/`CLOSED`) over the past 24 hours.
+  * **Then:** The system displays 5 core KPI metric cards: Total Ingested Today, New (`OPEN`), In Progress (`IN_PROGRESS`), Waiting for Customer (`NEEDS_INFO`), and Completed (`RESOLVED`/`CLOSED`) over the past 24 hours.
   * **And:** A priority breakdown chart is displayed: P1 (Red), P2 (Orange), P3 (Yellow), P4 (Blue).
-
-* **Scenario 2: Dynamic Time Range Filtering**
-  * **Given:** The user is viewing data for "Today".
-  * **When:** The user selects "Last 7 Days" from the date range dropdown.
-  * **Then:** All KPI cards and charts refresh asynchronously with 7-day aggregated data without triggering a full page reload.
-
-* **Scenario 3: Role-Based Access Enforcement**
-  * **Given:** A user with the `REQUESTER` role attempts to access `/admin/dashboard`.
-  * **When:** The HTTP request reaches the server.
-  * **Then:** The server returns `403 Forbidden` and redirects the user to `/my-tickets`.
 
 ---
 
-### US-DB-02: AI Automation & Resolution Rate Analytics
+### US-DB-02: Today's AI Automation & Resolution Rate Analytics
 * **Story ID:** `US-DB-02` | **Priority:** `Should Have`
 * **User Story:**
-  > **As an** IT Director or Administrator,  
-  > **I want to** track the percentage of tickets autonomously resolved by AI,  
-  > **So that** I can measure ROI on AI investments and verify human workload offloading.
+  > **As a** System Administrator,  
+  > **I want to** track the percentage of tickets autonomously resolved by AI today,  
+  > **So that** I can monitor daily automation efficiency and human workload reduction.
 
 #### Acceptance Criteria:
 * **Scenario 1: Autonomous Resolution Rate Calculation**
-  * **Given:** 1,000 tickets are ingested during the day, with 350 resolved entirely by AI (e.g., automated permission grant, self-service password reset).
+  * **Given:** 1,000 tickets are ingested during the day, with 350 resolved entirely by AI without human intervention.
   * **When:** The administrator views the "AI Automation Rate" card.
-  * **Then:** The card displays `35%` along with a period-over-period trend indicator (+X% vs last week).
-  * **And:** Hovering over the card reveals a tooltip: *"350 automated resolutions / 650 routed to human engineers"*.
+  * **Then:** The card displays `35.0%` with absolute count `350 / 1,000 tickets`.
 
 ---
 
-## EPIC 2: SLA Governance & Bottleneck Mitigation
+## EPIC 2: SLA Governance & Rapid Intervention
 
-### US-DB-03: SLA Breach Early Warning Radar & Unassigned Backlog
+### US-DB-03: SLA Breach Early Warning Radar & Active Bottlenecks
 * **Story ID:** `US-DB-03` | **Priority:** `Must Have`
 * **User Story:**
-  > **As a** Technical Support Team Lead,  
-  > **I want to** pinpoint unassigned tickets and tickets nearing or breaching SLA deadlines,  
-  > **So that** I can intervene before service level commitments are compromised.
+  > **As an** Administrator or Support Technician,  
+  > **I want to** see a live list of active open tickets approaching or exceeding SLA thresholds,  
+  > **So that** I can take immediate mitigation actions before service level agreements are breached.
 
 #### Acceptance Criteria:
-* **Scenario 1: Two-Tier SLA Deadline Badges**
-  * **Given:** Ticket #TK-992 has 25 minutes remaining before resolution deadline ($\le 20\%$ of total SLA duration).
-  * **When:** The team lead reviews the SLA radar widget.
-  * **Then:** The ticket displays a **Yellow Warning** badge with a live countdown `00:24:59`.
-  * **And:** If the ticket exceeds the deadline, the badge turns **Red (Breached)** with the overdue duration `-00:15:20`.
-
-* **Scenario 2: Unassigned Ticket Escalation**
-  * **Given:** A newly created ticket has remained unassigned for over 30 minutes and AI could not auto-resolve it.
-  * **When:** The periodic scan runs.
-  * **Then:** The ticket is automatically highlighted in the "Requires Immediate Assignment" queue with an urgent indicator.
+* **Scenario 1: Two-Tier SLA Warning Indication**
+  * **Given:** Ticket #TK-981 has $\le 20\%$ time remaining and ticket #TK-980 is 15 minutes overdue.
+  * **When:** The user inspects the SLA Watch widget.
+  * **Then:** #TK-981 displays a Yellow Warning badge with live countdown; #TK-980 displays a Red Alert badge with `-15m overdue`.
 
 ---
 
-### US-DB-04: Deep Metric Drill-Down & Context Retention
+### US-DB-04: Deep Metric Drill-Down to F03 Tickets & F08 Audit Logs
 * **Story ID:** `US-DB-04` | **Priority:** `Must Have`
 * **User Story:**
-  > **As a** Support Engineer or Administrator,  
-  > **I want to** click directly on any metric card or chart section to navigate to the filtered ticket list,  
-  > **So that** I can immediately work on those specific tickets without configuring manual search filters.
+  > **As an** IT Internal Staff member,  
+  > **I want to** click directly on any metric card, chart element, or alert to navigate to the underlying ticket list or audit log,  
+  > **So that** I can inspect root causes immediately without re-entering filter criteria.
 
 #### Acceptance Criteria:
-* **Scenario 1: Drill-Down from Overdue SLA Card**
-  * **Given:** The SLA card indicates `"08 Breached Tickets"`.
+* **Scenario 1: Drill-down to Ticket List**
+  * **Given:** The KPI card indicates "8 Breached SLA Tickets".
   * **When:** The user clicks on the card.
-  * **Then:** The browser navigates to `/tickets?filter=sla_breached&scope=all`.
-  * **And:** The table renders exactly the 8 corresponding breached tickets.
+  * **Then:** The browser navigates to `/tickets?sla_status=BREACHED&date=today` (F03).
+* **Scenario 2: Drill-down to Technical Workflow Error Logs**
+  * **Given:** An alert indicates an automated permission granting failure.
+  * **When:** The user clicks "Inspect Failure Log".
+  * **Then:** The browser navigates to `/audit/workflow-runs?status=FAILED` (F08).
 
 ---
 
-## EPIC 3: Workload Balancing & Resource Optimization
+## EPIC 3: Engineering Capacity Overview
 
-### US-DB-05: Engineer Capacity Matrix & Overload Warning
-* **Story ID:** `US-DB-05` | **Priority:** `Must Have`
+### US-DB-05: Engineering Group Workload Capacity Overview
+* **Story ID:** `US-DB-05` | **Priority:** `Should Have`
 * **User Story:**
-  > **As a** Technical Team Lead,  
-  > **I want to** monitor the real-time active workload of each engineer on my team,  
-  > **So that** I can identify bottlenecks and redistribute tasks before engineers become overwhelmed.
-
-#### Acceptance Criteria:
-* **Scenario 1: Threshold-Based Capacity Classification**
-  * **Given:** Engineer Alice is actively working on 8 open tickets (`IN_PROGRESS`).
-  * **When:** The team lead opens the "IT Support Workload" widget.
-  * **Then:** Alice's progress bar is highlighted in Red with an `Overloaded (8/7)` indicator badge.
-  * **And:** Engineer Bob with 2 open tickets is rendered in Green with a `Normal (2/7)` indicator badge.
-
-* **Scenario 2: Peer Privacy Protection**
-  * **Given:** A standard technician logs into the platform.
-  * **When:** Viewing the workload section.
-  * **Then:** They can only see their own workload metric compared against the team's average; individual ticket breakdowns of peers remain hidden.
+  > **As a** System Administrator,  
+  > **I want to** monitor active open ticket volume across technical teams,  
+  > **So that** I can detect department-level backlog bottlenecks and reallocate team shifts.
 
 ---
 
-## EPIC 4: Real-Time Situational Awareness & Fast Dispatch
+## EPIC 4: Real-Time Situational Awareness
 
-### US-DB-07: Live Incident Stream & Critical P1 Broadcast
+### US-DB-07: Live Incident Stream, P1 Broadcast & Automation Failure Alert
 * **Story ID:** `US-DB-07` | **Priority:** `Must Have`
 * **User Story:**
-  > **As an** On-Duty Support Engineer,  
-  > **I want to** receive instant real-time alerts when a critical P1 ticket is logged without refreshing the page,  
-  > **So that** our team can respond immediately to severe outages (minimizing MTTR).
-
-#### Acceptance Criteria:
-* **Scenario 1: Audio & Visual Alert for P1 Tickets**
-  * **Given:** The dashboard is open on the operations monitoring screen.
-  * **When:** A new P1 (Critical) ticket is created in the system.
-  * **Then:** A persistent red alert banner immediately renders at the top of the viewport, accompanied by an audible chime (if enabled).
-  * **And:** The alert remains visible until an engineer clicks "Acknowledge Incident".
+  > **As an** On-Duty Engineer or Administrator,  
+  > **I want** the Dashboard to automatically push critical P1 incidents and automation failures in real time via WebSocket,  
+  > **So that** we achieve sub-second response times for major service outages.
 
 ---
 
-### US-DB-08: Personalized Technician Daily Workbench
+## EPIC 5: Technician Personal Workbench
+
+### US-DB-08: Personalized Technician Daily Workbench & 1-Click Claim
 * **Story ID:** `US-DB-08` | **Priority:** `Must Have`
 * **User Story:**
-  > **As a** Frontline Support Technician,  
-  > **I want to** have a personalized workbench showing my assigned tasks and pending inquiries,  
-  > **So that** I can focus exclusively on my daily duties without getting distracted by global enterprise statistics.
+  > **As a** Support Technician,  
+  > **I want** a dedicated home workspace displaying my prioritized daily tasks and an unassigned team pool with 1-click claim,  
+  > **So that** I can maximize resolution throughput without distraction from company-wide metrics.
 
 #### Acceptance Criteria:
-* **Scenario 1: Priority-Sorted Personal Queue**
-  * **Given:** A technician logs into the system.
-  * **When:** Their default homepage loads.
-  * **Then:** The "My Queue Today" list is automatically ordered by priority: P1 tickets first $\rightarrow$ Nearest SLA deadlines $\rightarrow$ Newly assigned items.
-  * **And:** Quick-action buttons ("Start Working", "Request More Info") are accessible directly on each list item.
+* **Scenario 1: 1-Click Unassigned Ticket Claim**
+  * **Given:** Ticket #TK-1011 is unassigned in the team pool.
+  * **When:** The technician clicks [Claim Ticket].
+  * **Then:** The ticket is assigned to the technician, transitioned to `IN_PROGRESS`, recorded in F08 audit logs, and moved to "My Queue Today" within 500ms.
+
+---
+
+## EPIC 6: Requester Self-Service Hub
+
+### US-DB-09: Requester Self-Service Portal & Request Hub
+* **Story ID:** `US-DB-09` | **Priority:** `Must Have`
+* **User Story:**
+  > **As a** Requester,  
+  > **I want** a personal self-service dashboard highlighting actions awaiting my input, progress on open tickets, instant KB solution search, and IT broadcast announcements,  
+  > **So that** I can resolve issues independently or unblock pending requests without contacting IT support.
+
+#### Acceptance Criteria (BDD):
+* **Scenario 1: Pinned Action-Needed Notifications**
+  * **Given:** The requester has 1 ticket awaiting clarification (`NEEDS_INFO`) and 1 resolved ticket awaiting confirmation (`RESOLVED`).
+  * **When:** The requester navigates to `/portal`.
+  * **Then:** An "Action Needed" container is prominently displayed with [Answer Question] and [Confirm Resolution] action buttons.
+* **Scenario 2: Instant Knowledge Base Deflection Search**
+  * **Given:** The requester inputs a query into the portal search box.
+  * **When:** Keystroke pauses for 300ms.
+  * **Then:** Up to 3 relevant verified KB articles are rendered in a dropdown to deflect ticket submission.
+* **Scenario 3: IT Operational Maintenance Notices**
+  * **Given:** IT has scheduled system maintenance.
+  * **When:** The requester views the portal.
+  * **Then:** An informational announcement banner indicates maintenance schedules and affected services.

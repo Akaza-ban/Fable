@@ -1,138 +1,152 @@
-# Use Case Specification — Dashboard Subsystem
+# Use Case Specification — Dashboard Subsystem (F02)
 
 This document specifies the Use Cases for the **Dashboard** subsystem of the AI-Powered Automated Ticket Dispatching & Resolution System.  
-Focus: Detailed interactions between **Actors** and the **System**, processing logic, preconditions, postconditions, alternative flows, and exception scenarios.
+Focus: Detailed interactions between **Actors** and the **System**, processing logic, clear boundary separation from F07 (Reports & Analytics) and F08 (Activity Log), real-time operational monitoring, inclusion of the **Requester (`REQUESTER`)** self-service workspace, and alignment with the three standardized human roles (`ADMIN`, `TECHNICIAN`, `REQUESTER`).
 
 ---
 
 ## 1. Actors & Use Case Catalog
 
 ### 1.1. Participating Actors
-* **System Administrator (`ADMIN`):** Oversees end-to-end system operations, ticket allocation, engineering team workloads, and overall platform KPIs.
-* **Technical Team Lead (`TECHNICIAN_LEAD`):** Monitors team performance, unassigned ticket queues, and workload capacity of team members.
-* **Support Technician (`TECHNICIAN`):** Tracks personal assigned tickets, approaching SLA deadlines, and team queue status.
-* **AI Service (`AI_AGENT`):** Serves as an automated system actor delivering classification, confidence scores, and workload rebalancing recommendations.
+* **System Administrator (`ADMIN`):** Oversees macro-level real-time operations, monitors today's ticket intake and AI automation rate, intervenes in active SLA bottlenecks, and tracks team capacity.
+* **Support Technician (`TECHNICIAN`):** Operates on a personalized workbench, claims unassigned team tickets (1-click Claim), tracks individual SLA deadlines, and receives live critical incident alerts.
+* **Requester (`REQUESTER`):** Tracks personal submitted tickets, acts on clarification requests (`NEEDS_INFO`), confirms resolution and rates CSAT (`RESOLVED`), searches knowledge base with instant deflection, and views IT maintenance announcements.
+* **AI Service (`AI_AGENT`):** Automated background system providing spike detection, workflow execution failure alerts, and deflection matching.
 
 ### 1.2. Use Case Catalog
 
-| UC ID | Use Case Name | Primary Actor | Business Objective |
-|---|---|---|---|
-| **UC-DB-01** | Monitor Overall Operations & Ticket Distribution | `ADMIN` | Gain macro-level visibility into ticket intake, status progression, and AI resolution rates. |
-| **UC-DB-02** | Track Bottlenecks & Manage SLA Breaches | `ADMIN`, `TECHNICIAN_LEAD` | Proactively identify at-risk and breached tickets to take timely mitigation actions. |
-| **UC-DB-03** | Monitor & Rebalance Technician Workload | `ADMIN`, `TECHNICIAN_LEAD` | Assess real-time engineer capacity, detect workload bottlenecks, and redistribute tasks. |
-| **UC-DB-04** | Real-Time Incident Alerting & Event Feed | `ADMIN`, `TECHNICIAN` | Receive immediate real-time notifications for critical P1 tickets, volume spikes, and workflow failures. |
-| **UC-DB-05** | Technician Personal Workspace & Queue Operations | `TECHNICIAN` | Manage personal daily work queues, review personal SLA countdowns, and claim unassigned group tickets. |
+| UC ID | Use Case Name | Primary Actor | Business Objective | Boundary & Scope |
+|---|---|---|---|---|
+| **UC-DB-01** | Real-Time Operations Monitoring | `ADMIN` | Gain live visibility into today's ticket intake, status progression, and AI resolution rate. | Live operational data for today (24h); historical trends and long-term BI belong to F07 (`UC-BC-01`). |
+| **UC-DB-02** | Live SLA Radar & Rapid Intervention | `ADMIN`, `TECHNICIAN` | Proactively identify active tickets at-risk or breached to dispatch immediate reminders or reassignments. | Active open tickets only; historical SLA compliance rates belong to F07 (`UC-BC-02`). |
+| **UC-DB-03** | Real-Time Incident Alerting & Event Feed | `ADMIN`, `TECHNICIAN` | Receive immediate WebSocket notifications for critical P1 tickets, volume surges (spikes), and workflow failures. | Real-time live alerting; full immutable audit logging and API trace logs belong to F08 (`UC-NK-02`, `UC-NK-04`). |
+| **UC-DB-04** | Technician Personal Workspace & Queue Operations | `TECHNICIAN` | Manage daily assigned tasks, review personal SLA countdowns, and claim unassigned group backlog tickets. | Daily engineer cockpit; conversation updates and ticket lifecycle transitions belong to F03. |
+| **UC-DB-05** | Requester Self-Service Portal & Dashboard | `REQUESTER` | Track personal requests, answer clarifying questions, confirm resolutions, and search KB solutions. | One-stop self-service hub; ticket creation forms and deep KB authoring belong to F03 & F06. |
 
 ---
 
 ## 2. Detailed Use Case Specifications
 
-### UC-DB-01: Monitor Overall Operations & Ticket Distribution
+### UC-DB-01: Real-Time Operations Monitoring
 
-* **Goal:** Provide System Administrators with a comprehensive overview of ticket volume, lifecycle distribution, and AI automation performance.
-* **Preconditions:** The user is authenticated with the `ADMIN` role.
-* **Postconditions:** Visual analytics and KPI metrics are rendered; deep drill-down navigation to `/tickets` is enabled.
+* **Goal:** Provide System Administrators with a comprehensive real-time view of ticket intake, lifecycle distribution, and AI automation performance for the current operating day (Today / Past 24 Hours).
+* **Preconditions:** Authenticated with the `ADMIN` role.
+* **Postconditions:** Visual telemetry is rendered; deep drill-down navigation to `/tickets` or F08 `/audit/activity-log` is enabled with preserved query parameters.
 
 #### Main Success Scenario (Main Flow):
-1. **Actor:** Navigates to the `Dashboard` via the primary navigation sidebar.
+1. **Actor:** Navigates to `/admin/dashboard` via the primary navigation sidebar.
 2. **System:**
-   - Validates user role and data scope (`ADMIN` -> global enterprise-wide scope).
-   - Queries cached statistics for the default time window (Today / Past 24 Hours).
+   - Validates user role and data scope (`ADMIN` $\rightarrow$ global enterprise-wide scope).
+   - Queries cached statistics for the current operating window (Today / Past 24 Hours).
    - Renders the dashboard layout:
-     - **Summary KPI Cards:** Total tickets received, New (`OPEN`), In Progress (`IN_PROGRESS`), Waiting for Customer (`NEEDS_INFO`), and Closed (`CLOSED`).
-     - **AI Automation Rate:** Percentage and count of tickets resolved end-to-end by AI without manual engineer intervention.
-     - **Distribution Charts:** Breakdown by priority (P1 Critical -> P4 Low) and incident category (Hardware, Network, Access & Permissions, Software, etc.).
-     - **Hourly Trend Line Chart:** Ticket intake volume distributed across hourly intervals.
-3. **Actor:** Modifies the time range filter (e.g., selects "Last 7 Days", "This Month", or "Custom Date Range").
-4. **System:** Validates the date parameters and asynchronously reloads all KPI cards and charts.
-5. **Actor:** Clicks on a specific chart element (e.g., the "P1 - Critical" slice on the breakdown chart).
-6. **System:** Navigates to the Ticket Management screen (`/tickets`) with preset URL query parameters: `priority=P1&date_range=...`.
+     - **Summary KPI Cards:** Total tickets received today, New (`OPEN`), In Progress (`IN_PROGRESS`), Waiting for Customer (`NEEDS_INFO`), and Completed (`RESOLVED`/`CLOSED`).
+     - **AI Automation Rate:** Percentage and count of tickets resolved end-to-end today by AI without human intervention.
+     - **Distribution Charts:** Breakdown by priority (P1 Critical $\rightarrow$ P4 Low) and incident category.
+     - **Hourly Intake Trend Line:** Intake volume distributed across hourly intervals to detect daily peak loads.
+     - **Team Workload Overview:** Count of active open tickets per engineering group.
+3. **Actor:** Clicks on a specific chart element or KPI card (e.g., "P1 - Critical" slice or "8 Breached Tickets").
+4. **System:** Navigates to Ticket Management (`/tickets`) with preset query parameters: `priority=P1&date=today`.
+5. **Actor:** Clicks the link "View Long-Term Analytical Reports".
+6. **System:** Navigates to F07 Reports (`/reports/volume` - `UC-BC-01`).
 
 #### Alternative & Exception Flows:
-* **A1 - Invalid Custom Date Range:** At step 3, if the start date is after the end date or the interval exceeds 365 days, the system displays an inline validation error: *"Invalid date range. Range cannot exceed 1 year."* and retains the current data view.
-* **E1 - Aggregation Service Failure:** If the analytics database or cache is unreachable, the system displays an isolated error widget: *"Failed to load metric data. Please click to Retry."* without blocking the rest of the application.
+* **E1 - Aggregation Service Failure:** If the analytics cache is unreachable, the system displays an isolated error widget: *"Failed to load live metrics. Please click to Retry."* without blocking the page.
 
 ---
 
-### UC-DB-02: Track Bottlenecks & Manage SLA Breaches
+### UC-DB-02: Live SLA Radar & Rapid Intervention
 
-* **Goal:** Locate stagnant tickets and identify tickets nearing or exceeding Service Level Agreement (SLA) response/resolution deadlines.
-* **Preconditions:** The user is logged in as `ADMIN` or `TECHNICIAN_LEAD`.
-* **Postconditions:** At-risk tickets are surfaced for immediate escalation, reminder dispatch, or re-assignment.
+* **Goal:** Locate active open tickets nearing or exceeding SLA response/resolution deadlines and enable rapid intervention.
+* **Preconditions:** Authenticated as `ADMIN` or `TECHNICIAN`.
+* **Postconditions:** Critical tickets are surfaced for immediate reminder dispatch or reassignment.
 
 #### Main Success Scenario (Main Flow):
 1. **Actor:** Views the **SLA & Bottleneck Watch** widget on the dashboard.
 2. **System:**
-   - Scans all active tickets and matches them against active SLA policies:
-     - **Yellow Warning (Near Breach):** Remaining time $\le 20\%$ of the total SLA commitment.
-     - **Red Alert (Breached):** Actual time exceeds initial response deadline or resolution deadline.
-   - Displays a prioritized list of the Top 10 critical tickets sorted by priority descending (P1 $\rightarrow$ P4) and longest overdue time.
-   - Renders real-time countdown timers or overdue badges beside each ticket.
+   - Scans active open tickets against SLA policies (governed by F05):
+     - **Yellow Warning (Near Breach):** Remaining time $\le 20\%$ of total SLA commitment.
+     - **Red Alert (Breached):** Overdue response or resolution deadline (`sla_breached = true`).
+   - Displays Top 10 critical active tickets sorted by priority descending (P1 $\rightarrow$ P4) and longest overdue time.
+   - Renders real-time countdown timers or overdue badges.
 3. **Actor:** Clicks "Quick View" on a breached ticket.
-4. **System:** Opens a summary modal containing: AI-generated problem summary, current assigned technician, and recent activity logs.
-5. **Actor:** Selects an action: "Send Reminder to Assignee" or "Reassign Ticket".
-6. **System:** Dispatches the notification/reassignment, updates the ticket state, and logs the action in the `AuditLog`.
+4. **System:** Opens summary modal `SCR-DB-11` displaying AI problem summary, current assigned engineer, and recent activity logs from F08.
+5. **Actor:** Selects action: "Send Reminder" or "Reassign Ticket".
+6. **System:** Updates ticket assignment, sends an instant notification, and writes an audit event `SLA_REASSIGNED` to F08 (`UC-NK-05`).
 
 #### Alternative Flows:
-* **A1 - 100% SLA Compliance:** If no tickets are nearing or exceeding deadlines, the widget displays a positive state card: *"All active tickets are currently meeting SLA targets."*
+* **A1 - 100% SLA Compliance:** If no tickets are nearing or exceeding deadlines, the widget displays: *"All active tickets currently meet SLA targets."*
 
 ---
 
-### UC-DB-03: Monitor & Rebalance Technician Workload
+### UC-DB-03: Real-Time Incident Alerting & Event Feed
 
-* **Goal:** Provide team leads and admins with visibility into individual engineer workload to prevent burnout and ensure balanced distribution.
-* **Preconditions:** The user holds the `ADMIN` or `TECHNICIAN_LEAD` role.
-* **Postconditions:** Overloaded personnel are flagged, enabling rapid manual or AI-assisted task rebalancing.
+* **Goal:** Instantly notify support staff of severe operational incidents, volume surges (spikes), and workflow automation failures with sub-second latency.
+* **Preconditions:** Dashboard is open in the user's browser.
+* **Postconditions:** High-priority incidents are acknowledged, dispatched, or investigated.
 
 #### Main Success Scenario (Main Flow):
-1. **Actor:** Accesses the **Technician Workload Monitor** widget.
+1. **System:** Maintains an active WebSocket connection (`WS /api/v1/dashboard/live-feed`) to the event streaming service.
+2. **System:** Upon detecting an incoming critical event:
+   - **P1 Ticket Ingestion:** Triggers optional chime and displays a persistent pulsing red banner across the top viewport with incident details and an [Acknowledge - ACK] button.
+   - **Outage Surge / Spike Detection:** AI detects $> 5$ tickets matching identical keywords/categories within 15 minutes $\rightarrow$ Displays a clustered outage alert banner.
+   - **Workflow Automation Failure:** AI auto-execution API fails after retries $\rightarrow$ Pushes an urgent intervention banner.
+3. **Actor:** Clicks the alert banner.
+4. **System:** Opens incident drawer `SCR-DB-10` containing telemetry, AI root-cause hypothesis, and quick-action buttons (Acknowledge, Dispatch Team, Open War Room).
+5. **Actor:** Clicks "Inspect Failure Log" on an automation failure alert.
+6. **System:** Navigates to F08 Technical Workflow Runs (`/audit/workflow-runs?status=FAILED` - `UC-NK-04`).
+
+---
+
+### UC-DB-04: Technician Personal Workspace & Queue Operations
+
+* **Goal:** Provide frontline engineers with a focused personal cockpit displaying daily assigned tasks, personal SLA countdowns, and 1-click group ticket claiming.
+* **Preconditions:** Authenticated with the `TECHNICIAN` role.
+* **Postconditions:** Engineer prioritizes tasks and claims unassigned work smoothly.
+
+#### Main Success Scenario (Main Flow):
+1. **Actor:** Logs in and is routed to `/technician/dashboard` (`SCR-DB-02`).
 2. **System:**
-   - Retrieves active technicians within the actor's authorized scope.
-   - Computes the workload index for each technician:
-     $$\text{Workload Index} = \text{Active Open Tickets} + (\text{Count of P1/P2 Tickets} \times 2)$$
-   - Categorizes capacity status:
-     - **Normal (Green):** $\le 4$ active tickets.
-     - **Busy (Yellow):** $5 - 7$ active tickets.
-     - **Overloaded (Red):** $> 7$ active tickets OR $\ge 2$ unresolved P1/P2 tickets.
-   - Displays comparative horizontal bar charts showing individual load versus team capacity.
-3. **Actor:** Filters the view by a specific engineering team (e.g., "IT Support Team", "Cloud Infrastructure Team").
-4. **System:** Updates the list and recalculates the team's average workload metric.
-5. **Actor:** Clicks on an "Overloaded" engineer to inspect their ticket backlog.
-6. **System:** Renders their active tickets along with an AI recommendation: *"Technician B currently has Low capacity (1 ticket). Suggest reassigning #TK-1082"*.
-
----
-
-### UC-DB-04: Real-Time Incident Alerting & Event Feed
-
-* **Goal:** Instantly notify support staff of severe operational incidents, volume surges, and automation failures as they happen.
-* **Preconditions:** The dashboard page is open in the user's browser.
-* **Postconditions:** High-priority incidents are acknowledged or acted upon with minimal latency.
-
-#### Main Success Scenario (Main Flow):
-1. **System:** Maintains an active WebSocket connection to the event streaming service.
-2. **System:** Upon detection of an incoming high-severity event:
-   - **New P1 Ticket Ingestion:** Triggers an optional audio chime and displays a persistent pulsing red banner at the top of the viewport with incident details.
-   - **Ticket Surge / Spike Detection:** AI detects $> 5$ tickets matching identical keywords/categories within a 15-minute window (potential outage) $\rightarrow$ Displays a clustered outage alert banner.
-   - **Automation / API Failure:** AI workflow execution fails (e.g., permission granting API timeout) $\rightarrow$ Pushes an urgent fallback intervention alert.
-3. **Actor:** Clicks on the alert banner.
-4. **System:** Slides open a detailed incident drawer containing context telemetry and quick-action buttons ("Acknowledge Alert", "Dispatch Dedicated Incident Team").
-
----
-
-### UC-DB-05: Technician Personal Workspace & Queue Operations
-
-* **Goal:** Provide frontline technicians with a focused personal cockpit displaying only tasks directly relevant to their duties.
-* **Preconditions:** The user is authenticated with the `TECHNICIAN` role.
-* **Postconditions:** The technician prioritizes and claims work items efficiently.
-
-#### Main Success Scenario (Main Flow):
-1. **Actor:** Logs in and is directed to `/technician/dashboard`.
-2. **System:**
-   - Applies the default scope: `assigned_to = me` OR `group_id IN (my_groups)`.
+   - Applies default scope: `assigned_to = me` OR `group_id IN (my_groups)`.
    - Renders personalized operational modules:
-     - **My Queue Today:** Assigned tickets pending action, ordered by nearest SLA deadline.
-     - **Personal SLA Watch:** Real-time countdowns for the actor's own tickets.
-     - **Personal Productivity KPI:** Tickets resolved today/this week, customer satisfaction rating.
-     - **Unassigned Team Queue:** Open group tickets awaiting an engineer.
-3. **Actor:** Clicks "Claim Ticket" on an unassigned ticket belonging to their group.
-4. **System:** Assigns the ticket to the actor, transitions status to `IN_PROGRESS`, and immediately refreshes the queue counter.
+     - **My Queue Today:** Assigned tickets pending action, ordered by nearest SLA deadline with live countdown timers.
+     - **Unassigned Team Pool:** Open group tickets awaiting an engineer, with a **[Claim Ticket]** 1-click button.
+     - **Personal Productivity KPI:** Tickets resolved today/this week, customer satisfaction rating (CSAT).
+3. **Actor:** Clicks [Claim Ticket] on an unassigned ticket.
+4. **System:** Assigns ticket to Actor, transitions status to `IN_PROGRESS`, emits an audit log event to F08, and immediately refreshes queue counters.
+5. **Actor:** Clicks on a task in "My Queue Today".
+6. **System:** Opens Ticket Details (`/tickets/:id` in F03).
+
+---
+
+### UC-DB-05: Requester Self-Service Portal & Dashboard
+
+* **Goal:** Provide enterprise requesters with a one-stop self-service hub to track personal requests, act promptly on clarification requests (`NEEDS_INFO`), confirm completed fixes (`RESOLVED`), search knowledge base solutions with instant deflection, and view IT announcements.
+* **Preconditions:** Authenticated with the `REQUESTER` role.
+* **Postconditions:** Requester resolves inquiries faster or unblocks stagnant tickets awaiting their feedback.
+
+#### Main Success Scenario (Main Flow):
+1. **Actor:** Logs in and is directed to `/portal` (`SCR-DB-03`).
+2. **System:**
+   - Validates `REQUESTER` role and scopes queries to `requester_id = current_user.id`.
+   - Renders 4 primary operational sections:
+     - **Action Needed (Pinned at top):**
+       - Yellow warning cards for tickets in `NEEDS_INFO` status with [Answer Question] button.
+       - Green success cards for tickets in `RESOLVED` status with [Confirm & Rate] button.
+     - **My Requests Tracker:**
+       - Summary count of active open tickets and completed tickets this month.
+       - Recent 5 tickets with visual progress indicators (Submitted $\rightarrow$ AI Classified $\rightarrow$ In Progress $\rightarrow$ Resolved).
+     - **Smart Search & KB Deflection:**
+       - Natural language search bar with real-time auto-suggested verified KB solutions (Deflection).
+       - 1-click service shortcuts (Access Request, Password Reset, Software Bug, Equipment).
+     - **IT Operational Announcements:**
+       - Broadcast maintenance schedules and known wide-area outage notices.
+3. **Actor:** Clicks [Answer Question] on a ticket requiring clarification.
+4. **System:** Navigates directly to `/requests/:id#clarification`, highlighting the pending question from AI or support staff.
+
+#### Alternative & Exception Flows:
+* **A1 - Zero Open Requests:** The ticket tracker displays a friendly empty state card: *"You have no open IT requests"*, accompanied by a primary [Submit New Request] button.
+* **A2 - Resolution Confirmation:** On a `RESOLVED` ticket card, Actor clicks [Confirm Resolution] $\rightarrow$ System displays CSAT star-rating modal (1–5 stars) $\rightarrow$ Updates ticket status to `CLOSED`.
+
+---
+
+**Related Specifications:** [Features](01-features.md) · [Acceptance Criteria](04-acceptance-criteria.md) · [User Stories](02-user-stories.md) · [Information Architecture](information-architecture/README.md)

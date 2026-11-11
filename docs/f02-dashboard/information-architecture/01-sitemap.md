@@ -1,6 +1,6 @@
 # Sitemap — F02 Dashboard
 
-> Design status: V1 — draft, awaiting user review  
+> Design status: TARGET V1  
 > Implementation status: NOT STARTED  
 
 **Notation (D-IA-DB-01):**
@@ -17,8 +17,8 @@
 ```mermaid
 flowchart TB
     admin["<span style='font-size:40px'>👤</span><br/><b>Admin</b>"]:::actor
-    techLead["<span style='font-size:40px'>👤</span><br/><b>Technician Lead</b>"]:::actor
     tech["<span style='font-size:40px'>👤</span><br/><b>Technician</b>"]:::actor
+    req["<span style='font-size:40px'>👤</span><br/><b>Requester</b>"]:::actor
 
     subgraph gateway["Routing Gateway"]
         direction TB
@@ -27,10 +27,10 @@ flowchart TB
 
     subgraph exec["Executive Dashboard (SCR-DB-01) — /admin/dashboard"]
         direction TB
-        kpi["<b>KPI Summary Cards</b><br/>• Total, Open, In Progress, Closed<br/>• AI Automation Rate (%)"]:::ai
+        kpi["<b>Live KPI Summary Cards</b><br/>• Ingested Today, Open, In Progress, Closed<br/>• Today's AI Automation Rate (%)"]:::ai
         charts["<b>Distribution Analytics</b><br/>• Priority breakdown (P1-P4)<br/>• Incident category bar chart<br/>• Hourly volume intake trend"]
-        sla["<b>SLA & Bottleneck Watch</b><br/>• Top 10 critical tickets<br/>• Live countdown timers<br/>• Overdue breach badges"]
-        workload["<b>Team Workload Matrix</b><br/>• Active load index per team<br/>• Overloaded engineer alerts"]
+        sla["<b>SLA & Bottleneck Watch</b><br/>• Top 10 critical active tickets<br/>• Live countdown timers<br/>• Overdue breach badges"]
+        workload["<b>Team Workload Overview</b><br/>• Active ticket count per group"]
         alertStream["<b>Live Alert Feed</b><br/>• P1 critical incident banner<br/>• Spike detection alerts"]:::ai
     end
 
@@ -39,44 +39,58 @@ flowchart TB
         myQueue["<b>My Active Queue</b><br/>• Assigned tickets due today<br/>• Ordered by SLA urgency"]
         unassignedPool["<b>Unassigned Team Pool</b><br/>• 1-click Claim Ticket button<br/>• Team ticket intake"]
         slaWatch["<b>Personal SLA Tracker</b><br/>• Live countdown per ticket"]
-        csat["<b>Performance Metrics</b><br/>• Weekly output & CSAT rating"]
+        csat["<b>Performance Metrics</b><br/>• Daily/weekly output & CSAT rating"]
+    end
+
+    subgraph reqPortal["Requester Self-Service Portal (SCR-DB-03) — /portal"]
+        direction TB
+        actionNeeded["<b>Action Needed Section</b><br/>• NEEDS_INFO tickets (Answer Question)<br/>• RESOLVED tickets (Confirm & Rate)"]:::ai
+        reqTracker["<b>My Requests Tracker</b><br/>• Recent 5 tickets with milestone timeline"]
+        kbDeflection["<b>Smart Search & KB</b><br/>• Real-time auto-suggested solutions"]:::ai
+        itAnnounce["<b>IT Announcements</b><br/>• Maintenance notices & outage alerts"]
     end
 
     subgraph modals["Modals & Drawers"]
         direction TB
         draw10["<b>SCR-DB-10 Live Incident Drawer</b><br/>• Context telemetry, quick dispatch<br/>• Incident acknowledgement"]:::ai
-        modal11["<b>SCR-DB-11 SLA Escalation Modal</b><br/>• Fast reassignment & reminder"]
-        modal12["<b>SCR-DB-12 AI Rebalance Modal</b><br/>• Automated redistribution suggestion"]:::ai
+        modal11["<b>SCR-DB-11 SLA Intervention Modal</b><br/>• Fast reassignment & reminder"]
     end
 
     subgraph external["Connected Subsystems"]
         direction TB
-        tList["<b>SCR-T-03 Ticket List</b><br/>• Deep drill-down destination<br/>• Filter parameters retained"]
-        tDetail["<b>SCR-T-02 Ticket Detail</b><br/>• Action execution target"]
-        notif["<b>SCR-91 Notification Center</b>"]
+        tList["<b>SCR-T-03 Ticket List (F03)</b><br/>• Deep drill-down destination<br/>• Filter parameters retained"]
+        tDetail["<b>SCR-T-02 Ticket Detail (F03)</b><br/>• Action execution target"]
+        tHistory["<b>SCR-NK-01 Ticket History (F08)</b><br/>• Full chronological timeline"]
+        wfRuns["<b>SCR-NK-04 Workflow Runs (F08)</b><br/>• Technical API failure trace"]
+        repVolume["<b>SCR-BC-01 Reports (F07)</b><br/>• Long-term historical analysis"]
     end
 
     %% Role connections
     admin -.-> gate
-    techLead -.-> gate
     tech -.-> gate
+    req -.-> gate
 
     gate --> exec
     gate --> techWork
+    gate --> reqPortal
 
-    %% Intra-dashboard flows
+    %% Internal dashboard navigation
     alertStream --> draw10
     sla --> modal11
-    workload --> modal12
 
-    %% Deep drill-down linkages
+    %% Drill-down flows
     kpi --> tList
     charts --> tList
     sla --> tList
     myQueue --> tDetail
     unassignedPool --> tDetail
     draw10 --> tDetail
+    draw10 --> wfRuns
     modal11 --> tDetail
+    modal11 --> tHistory
+    actionNeeded --> tDetail
+    reqTracker --> tDetail
+    charts -.-> repVolume
 
     classDef actor fill:none,stroke:none,color:#111
     classDef ai fill:#7b3fbf,color:#fff,stroke:#5a2d8c
@@ -84,14 +98,12 @@ flowchart TB
 
 ---
 
-## Screens by Role
+## Role-Based Page Access
 
-| Role | Default Landing Route | Accessible Dashboard Views |
+| Role | Default Landing Page | Dashboard Surface Permissions |
 |---|---|---|
-| **Admin** | `/admin/dashboard` (`SCR-DB-01`) | Full executive view, all engineering teams, company-wide KPI analytics, live incident broadcast, AI rebalancing proposals. |
-| **Technician Lead** | `/technician/dashboard` (`SCR-DB-02`) | Frontline workbench plus team-scoped workload capacity matrix and SLA escalation controls. |
-| **Technician** | `/technician/dashboard` (`SCR-DB-02`) | Personal daily task queue, unassigned group intake pool, personal SLA countdowns, individual throughput metrics. |
-| **Requester** | `/my-tickets` (`SCR-T-03`) | **Access Denied (`403`)** for Dashboard routes. Redirected to personal ticket tracker. |
+| **System Administrator (`ADMIN`)** | `/admin/dashboard` (`SCR-DB-01`) | Full company-wide operational visibility for the current operating day, SLA radar, real-time P1 broadcasts. |
+| **Support Technician (`TECHNICIAN`)** | `/technician/dashboard` (`SCR-DB-02`) | Personal workbench: daily tasks sorted by SLA, 1-click team queue claiming, live SLA counters, productivity stats. |
+| **Requester (`REQUESTER`)** | `/portal` (`SCR-DB-03`) | Personalized self-service hub: action-needed alerts (`NEEDS_INFO`, confirm `RESOLVED`), request progress milestones, KB deflection, IT notices. |
 
-**Related:** [Decisions and Defaults](00-decisions.md) · [Routes and Permissions](02-routes-and-permissions.md) · [Screen Inventory](04-screen-inventory.md)
-
+**Related:** [Architecture Decisions](00-decisions.md) · [Routes & Permissions](02-routes-and-permissions.md) · [Screen Inventory](04-screen-inventory.md)
