@@ -5,6 +5,8 @@
 > System name: **AI-Powered IT Ticket Routing and Automated Resolution System**
 >
 > Scope: **F06 Knowledge Base — KB**
+>
+> Sub-specifications: [IA Overview](information-architecture/README.md) · [Screens & Navigation](information-architecture/01-screens-and-navigation.md) · [User Flows](information-architecture/02-user-flows.md) · [UI States & Accessibility](information-architecture/03-ui-states-and-accessibility.md) · [ERD & Data Dictionary](information-architecture/04-data-dictionary-and-erd.md)
 
 ---
 

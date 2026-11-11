@@ -32,12 +32,12 @@ The mind map is an early outline and is out of date in a few places. The system 
 
 **Actors**
 
-The system has four actors: three human roles and the AI Service.
+The system has four actors: three human roles (Requester, Technician, Administrator) and the AI Service.
 
-*   **Requester:** Business employee who raises tickets and looks for self-service fixes.
-*   **AI Service:** Background actor that classifies and routes every ticket, asks for missing context, resolves in-scope requests through backend APIs, summarizes tickets for technicians and drafts KB articles. It also does the triage and reassignment work: tickets it cannot route go to a shared triage queue.
-*   **Technician:** Support engineer who handles what the AI cannot resolve: troubleshooting, fixing, escalating to a higher tier and writing KB articles.
-*   **Administrator:** System owner who configures routing rules, SLA policies and the AI auto-approval scope, reviews KB articles before they are published, and watches operations, reports and the audit log. The Administrator is also the approver for elevated permissions (the "Manager" in the mind map). Design goal: the AI handles routing and approval wherever it safely can, and the Administrator widens or narrows the AI's scope instead of routing tickets by hand.
+*   **Requester (Người gửi ticket):** Business employee who submits tickets, tracks status, answers AI clarifying questions, verifies KB solutions, and confirms resolution.
+*   **Technician (Kỹ thuật viên):** Support engineer who handles what the AI cannot resolve: troubleshooting, fixing, updating states and solutions, escalating to a higher tier, and authoring KB articles.
+*   **Administrator (Admin):** System owner who configures routing rules, SLA policies, and AI auto-approval whitelists, reviews KB revisions via visual diff, and monitors operational dashboards and audit logs. The Administrator is also the approver for elevated permissions (the "Manager" in the mind map).
+*   **AI Service (Hệ thống AI):** Intelligent background service that classifies and routes tickets, auto-resolves whitelisted requests, prompts for missing context, summarizes conversations, links duplicate cases, and synthesizes KB drafts from resolved tickets.
 
 In the use case diagrams, **User** is the common parent of the three human roles (login, dashboard, KB search).
 
@@ -74,7 +74,44 @@ Each branch keeps its detailed backlog with acceptance criteria in its own folde
 
 ### 1.3 Use cases
 
-The system has 22 use cases (`UC01` to `UC22`) shared by the three human roles (Requester, Technician, Administrator) and the AI Service. The first diagram shows how the human roles relate; the other four show the use cases by area. Purple nodes call the AI Service.
+#### Role-based use case allocation
+
+The system organizes capabilities across discrete use cases mapped to the 4 operational roles (Admin, Requester, Technician, AI Service):
+
+```mermaid
+flowchart TB
+    subgraph actors["System Actors & Roles"]
+        direction LR
+        admin(["1. Admin"]):::actorPill
+        requester(["2. Requester"]):::actorPill
+        tech(["3. Technician"]):::actorPill
+        ai(["4. AI"]):::actorPill
+    end
+
+    subgraph systemBoundary["AI-Powered IT Service Desk — System Boundary (Role-Based Use Case Allocation)"]
+        direction LR
+
+        cardAdmin["<b>1. Admin</b><br/><br/>• <b>UC01</b> Login & SSO Auth<br/>• <b>UC02</b> Logout<br/>• <b>UC03</b> View Operational Dashboard<br/>• <b>UC11</b> Author & Edit KB Articles<br/>• <b>UC13</b> Review & Publish KB (Diff View)<br/>• <b>UC14</b> Configure Rules, SLA & Scope<br/>• <b>UC21</b> Operational Reports & Analytics<br/>• <b>UC22</b> System Audit Trail & Logs"]:::colCard
+
+        cardReq["<b>2. Requester</b><br/><br/>• <b>UC01</b> Login & SSO Auth<br/>• <b>UC02</b> Logout<br/>• <b>UC03</b> View Personal Dashboard<br/>• <b>UC04</b> Submit Ticket & Evidence<br/>• <b>UC05</b> Track, Confirm & Reopen Ticket<br/>• <b>UC06</b> Search KB Solutions (Self-Service)<br/>• <b>UC07</b> Rate & Report KB Article<br/>• <b>UC20</b> Communicate on Ticket"]:::colCard
+
+        cardTech["<b>3. Technician</b><br/><br/>• <b>UC01</b> Login & SSO Auth<br/>• <b>UC02</b> Logout<br/>• <b>UC03</b> View Team Dashboard & Workload<br/>• <b>UC08</b> Claim & Triage Tickets<br/>• <b>UC09</b> Update Fix & Root Cause<br/>• <b>UC10</b> AI Synthesize KB from Ticket<br/>• <b>UC11</b> Author & Edit KB Articles<br/>• <b>UC12</b> Escalate Ticket to Tier 2/3<br/>• <b>UC19</b> SLA Reminders & Breach Alerts<br/>• <b>UC20</b> Communicate on Ticket"]:::colCard
+
+        cardAI["<b>4. AI</b><br/><br/>• <b>UC10</b> AI Synthesize KB from Ticket<br/>• <b>UC15</b> Classify & Route Ticket<br/>• <b>UC16</b> Auto-Resolve & Execute Request<br/>• <b>UC17</b> Verify Result & Hand Off on Failure<br/>• <b>UC18</b> Summarize Ticket & Draft Reply<br/>• <b>UC06</b> Semantic KB Solution Matching"]:::colCard
+    end
+
+    admin --> cardAdmin
+    requester --> cardReq
+    tech --> cardTech
+    ai --> cardAI
+
+    classDef actorPill fill:#334155,color:#ffffff,stroke:#64748b,stroke-width:2px;
+    classDef colCard fill:#1d4ed8,color:#ffffff,stroke:#60a5fa,stroke-width:2px;
+```
+
+#### Subsystem boundary and functional use case diagrams
+
+The system has 22 use cases (`UC01` to `UC22`) shared by the three human roles (Requester, Technician, Administrator) and the AI Service. The first diagram shows how the human roles relate; the other four show the use cases grouped by functional domain. Purple nodes call the AI Service.
 
 ```mermaid
 flowchart LR
@@ -452,7 +489,7 @@ Each branch also has its own information architecture: [F02 Dashboard](docs/f02-
 - F03 Ticket Management: [Index](docs/f03-ticket-management/README.md), [User stories](docs/f03-ticket-management/01-user-stories.md), [Use cases](docs/f03-ticket-management/02-use-cases.md), [Information architecture](docs/f03-ticket-management/03-information-architecture.md).
 - F04 AI Ticket Processing: [Index](docs/f04-ai-ticket-processing/README.md), [Features](docs/f04-ai-ticket-processing/01-features.md), [Use cases](docs/f04-ai-ticket-processing/02-use-cases.md), [User stories (INVEST)](docs/f04-ai-ticket-processing/03-user-stories-invest.md), [Acceptance criteria](docs/f04-ai-ticket-processing/04-acceptance-criteria.md), [Business rules](docs/f04-ai-ticket-processing/05-business-rules.md), [Information architecture](docs/f04-ai-ticket-processing/information-architecture/README.md).
 - F05 Workflow & Automation: [Index](docs/f05-workflow-automation/README.md), [Features](docs/f05-workflow-automation/01-features.md), [Use cases](docs/f05-workflow-automation/02-use-cases.md), [Acceptance criteria](docs/f05-workflow-automation/03-acceptance-criteria.md), [INVEST backlog](docs/f05-workflow-automation/04-invest-requirements.md), [Information architecture](docs/f05-workflow-automation/information-architecture/README.md).
-- F06 Knowledge Base: [Index](docs/f06-knowledge-base/README.md), [Mind map](docs/f06-knowledge-base/01-mindmap.md), [User stories](docs/f06-knowledge-base/02-user-stories.md), [Use cases](docs/f06-knowledge-base/03-use-cases.md), [Information architecture](docs/f06-knowledge-base/04-information-architecture.md), [Wireframes](docs/f06-knowledge-base/05-wireframes.md).
+- F06 Knowledge Base: [Index](docs/f06-knowledge-base/README.md), [Mind map](docs/f06-knowledge-base/01-mindmap.md), [User stories](docs/f06-knowledge-base/02-user-stories.md), [Use cases](docs/f06-knowledge-base/03-use-cases.md), [Information architecture](docs/f06-knowledge-base/04-information-architecture.md).
 - F07 Reports & Analytics: [Index](docs/f07-reports-analytics/README.md), [Features](docs/f07-reports-analytics/01-features.md), [Use cases](docs/f07-reports-analytics/02-use-cases.md), [User stories (INVEST)](docs/f07-reports-analytics/03-user-stories-invest.md), [Acceptance criteria](docs/f07-reports-analytics/04-acceptance-criteria.md), [Business rules](docs/f07-reports-analytics/05-business-rules.md), [Information architecture](docs/f07-reports-analytics/information-architecture/README.md).
 - F08 Activity Log: [Index](docs/f08-activity-log/README.md), [Features](docs/f08-activity-log/01-features.md), [Use cases](docs/f08-activity-log/02-use-cases.md), [User stories (INVEST)](docs/f08-activity-log/03-user-stories-invest.md), [Acceptance criteria](docs/f08-activity-log/04-acceptance-criteria.md), [Business rules](docs/f08-activity-log/05-business-rules.md), [Information architecture](docs/f08-activity-log/information-architecture/README.md).
 - Requirements catalogs (F05 Workflow & Automation so far): [Business rules](docs/requirements/business-rules.md), [Non-functional requirements](docs/requirements/non-functional-requirements.md).
@@ -491,7 +528,7 @@ Every branch folder is named `fNN-<branch>` after its feature branch number (F01
 - [x] F03 Ticket Management: user stories, use cases, IA (TARGET V1)
 - [x] F04 AI Ticket Processing: features, use cases, INVEST, acceptance criteria, business rules, IA (TARGET V1, draft for team review)
 - [x] F05 Workflow & Automation: features, use cases, INVEST, acceptance criteria, IA (TARGET V1)
-- [x] F06 Knowledge Base: mind map, user stories, use cases, IA, wireframes (TARGET V1)
+- [x] F06 Knowledge Base: mind map, user stories, use cases, IA (TARGET V1)
 - [x] F07 Reports & Analytics: features, use cases, INVEST, acceptance criteria, business rules, IA (TARGET V1, draft for team review)
 - [x] F08 Activity Log: features, use cases, INVEST, acceptance criteria, business rules, IA (TARGET V1, draft for team review)
 - [ ] Align the branch docs with the four actors (remove Team Lead) and the system IA role matrix
