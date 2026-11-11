@@ -4,156 +4,193 @@
 >
 > Related: [IA overview](README.md) · [Screens and navigation](01-screens-and-navigation.md) · [Screen content](02-screen-content.md) · [UI states](04-ui-states-and-accessibility.md)
 
-Six flows follow a ticket from creation to a final state. Flows 1–2 are the main path; flows 3–6 are the branches people use most. Blue: an F03 page or dialog. Grey: done by another branch (F04 AI, F05 Workflow). Red: a final state. Statuses are the names in the [use cases](../02-use-cases.md#4-ticket-lifecycle-f03-view).
+Seven flows, one per leaf of the **Ticket Management** branch of the mind map. Blue: an F03 page, dialog or email. Grey: done by another branch (F02, F04, F05). Red: a final state. Statuses are the names in the [use cases](../02-use-cases.md#4-ticket-lifecycle-f03-view).
 
-## Flow 1 — Create a ticket with evidence
+| Flow | Mind-map leaf | Use case |
+|---|---|---|
+| 1 | Raise ticket by email or free text, no category form | UC-TK-01 |
+| 2 | View / search / filter tickets | UC-TK-02 |
+| 3 | View ticket summary on handoff and approval | UC-TK-03 |
+| 4 | Transfer / escalate within the same division | UC-TK-04 |
+| 5 | Add missing information to on-hold tickets | UC-TK-05 |
+| 6 | Update status and resolution | UC-TK-06 |
+| 7 | Confirm / close / reopen / cancel ticket | UC-TK-07 |
 
-*Lan (Sales) cannot open the shared Accounting folder and attaches a screenshot.* · US-TK-01, US-TK-02, US-TK-04 · UC-TK-01
+## Flow 1 — Raise a ticket by email or free text
+
+*Lan (Sales) cannot open the shared Accounting folder. She emails IT; the next day she uses the portal for another request.* · US-TK-01 … 03 · UC-TK-01
 
 ```mermaid
 flowchart LR
-    a["SCR-T-03<br/>+ New ticket"] --> b["SCR-T-01<br/>title, description"]
-    b --> c["Paste screenshot<br/>scan: Clean"]
-    c --> d{"Similar own<br/>open ticket?"}
-    d -- "Yes: Add my info" --> e["SCR-T-02 of the<br/>existing ticket"]
-    d -- "No: Submit" --> f["SCR-T-02 new ticket<br/>NEW, 'assistant reviewing'"]
-    f --> g["F05 routing<br/>A / B / C"]
+    a["Email to<br/>it-support@…"] --> b["Mailbox intake<br/>ticket NEW, source EMAIL"]
+    c["SCR-T-01<br/>free text, no category"] --> d["createTicket<br/>NEW, source PORTAL"]
+    b --> e["EML-T-01<br/>acknowledgement [TK-…]"]
+    d --> e
+    d --> f["SCR-T-02<br/>'assistant reviewing'"]
+    b & d --> g["F05 analysis:<br/>fields Filled by AI,<br/>priority, route"]
 
     classDef f03 fill:#e8f1fc,color:#111,stroke:#1168bd
     classDef other fill:#f3f3f3,color:#333,stroke:#999,stroke-dasharray:4 3
-    class a,b,c,e,f f03
-    class g other
+    class b,c,d,e,f f03
+    class a,g other
 ```
 
-1. Lan clicks **+ New ticket** and fills title and description on **SCR-T-01**; category stays *I'm not sure*.
-2. She pastes a screenshot; it uploads at once and shows *Scanning…* then *✔ Clean*. *Submit* stays disabled until the scan ends.
-3. The suggestions panel shows no matching own ticket; she clicks *Submit* (`createTicket` with `Idempotency-Key`).
-4. **SCR-T-02** opens with *"Submitted — the assistant is reviewing your request"*; within seconds F05 shows the routing outcome.
-5. **Branches:** a similar own open ticket → *Add my info here* → no new ticket (UC-TK-01 A2); file blocked → removed with *"This file was blocked for security reasons"*; 21st ticket in an hour → `429` banner.
+1. Lan writes *"I get Access denied on \\fs01\accounting since this morning"* with a screenshot to the support mailbox. Within 2 minutes the ticket exists (`EMAIL`) and she receives **EML-T-01** with its code.
+2. F05 fills request type, category, support level and priority (*"Filled by AI"*) and routes it. Lan never picked a category.
+3. Next day, on **SCR-T-01**, she types her request in the description box only, pastes a screenshot (*✔ Clean*), and clicks *Submit*; **SCR-T-02** shows *"Submitted — the assistant is reviewing your request"*, then the outcome.
+4. **Branches:** she replies to EML-T-01 → the reply is added to the same ticket (no new ticket); she emails the same request twice → F05 merges it (*Not the same problem* within 7 days); an auto-reply → ignored; file blocked → *"This file was blocked for security reasons"*; 21st ticket in an hour → `429` (portal) or added to her latest open ticket (email).
 
-## Flow 2 — Technician handles, resolves; requester confirms
+## Flow 2 — Find a ticket
 
-*Minh (Network L1) picks up Lan's VPN ticket.* · US-TK-06, US-TK-11, US-TK-14, US-TK-17, US-TK-18, US-TK-20 · UC-TK-03, UC-TK-05, UC-TK-06
+*Minh (IT Helpdesk › Network) starts his day; Lan checks her requests.* · US-TK-05 … 09 · UC-TK-02
 
 ```mermaid
 flowchart LR
-    a["SCR-T-04<br/>Team unassigned"] --> b["Claim<br/>ASSIGNED"]
-    b --> c["SCR-T-02<br/>Start work<br/>IN_PROGRESS"]
-    c --> d["Notes and<br/>public replies"]
-    d --> e["DLG-T-05 Resolve<br/>RESOLVED"]
-    e --> f["Requester: SCR-T-02<br/>'Is it working now?'"]
-    f -- "Yes" --> g["DLG-T-08<br/>Confirm and rate"]
-    g --> h(["CLOSED"])
-    f -- "No reply 5 days" --> h
-    f -- "No" --> flow5(["Flow 5"])
-
-    classDef f03 fill:#e8f1fc,color:#111,stroke:#1168bd
-    classDef final fill:#fdecea,color:#5a1a14,stroke:#d9534f
-    class a,b,c,d,e,f,g f03
-    class h,flow5 final
-```
-
-1. Minh opens **SCR-T-04** *My team — unassigned*, sorted by SLA due; he clicks *Claim* (a second claimer gets `409 ALREADY_ASSIGNED`).
-2. On **SCR-T-02** he reads the AI summary, clicks *Start work* → `IN_PROGRESS`; Lan sees *In progress*.
-3. He writes an internal note (🔒, never sent to Lan) and a public reply; Lan is notified by e-mail.
-4. He clicks *Resolve* → **DLG-T-05**: code `FIXED`, note *"Updated your VPN client to 5.2"* → `RESOLVED`.
-5. Lan gets *"Resolved — please confirm"*; on SCR-T-02 she clicks *Yes, it's solved* → **DLG-T-08**, rates 5 stars → `CLOSED` (`CONFIRMED`).
-6. **Branch:** no answer → reminders day 1 and N−1, auto-close on day 5 (`AUTO_CONFIRMED`, BR-TK-12).
-
-## Flow 3 — Technician asks the requester for information
-
-*Minh needs Lan's VPN client version.* · US-TK-16 · UC-TK-04 A1–A3
-
-```mermaid
-flowchart LR
-    a["SCR-T-02<br/>Ask requester"] --> b["DLG-T-04<br/>question"]
-    b --> c["NEEDS_INFO<br/>waiting_on = TECHNICIAN<br/>SLA paused"]
-    c --> d["Requester: banner<br/>'needs more information'"]
-    d --> e["Public reply"]
-    e --> f["IN_PROGRESS<br/>same assignee"]
-    c -- "Found it elsewhere" --> g["Resume work<br/>+ reason"]
-    g --> f
-    c -- "No reply N days" --> h["F05 reminders,<br/>auto-close"]
+    a["F02 workbench"] --> b["SCR-T-04<br/>Assigned to me"]
+    b --> c["Filters: source EMAIL,<br/>SLA at risk, P1–P2"]
+    c --> d["Save view"]
+    c --> e["SCR-T-02"]
+    f["SCR-T-03<br/>Needs my action"] --> e
 
     classDef f03 fill:#e8f1fc,color:#111,stroke:#1168bd
     classDef other fill:#f3f3f3,color:#333,stroke:#999,stroke-dasharray:4 3
-    class a,b,c,d,e,f,g f03
-    class h other
+    class b,c,d,e,f f03
+    class a other
 ```
 
-1. Minh clicks *Ask requester* → **DLG-T-04** with *"SLA will pause until the requester replies"*.
-2. The ticket goes to `NEEDS_INFO`; the SLA badge shows *⏸ Paused*; the ticket appears in *Waiting for requester*.
-3. Lan sees the banner on SCR-T-02 and in *Needs my action* on SCR-T-03; any public reply or attachment resumes the ticket to `IN_PROGRESS` with Minh as assignee.
-4. **Branches:** Minh finds the answer himself → *Resume work* with a reason; no reply → F05 reminders and auto-close (UC-WF-06). An AI question (`waiting_on = AI`) looks the same to Lan, but her answer goes back to F05 routing.
+1. Minh opens **SCR-T-04** *Assigned to me*, sorted by SLA due; he filters *Due soon* and *P1–P2* and saves the view.
+2. He searches `TK-2026-004871` and gets that ticket only. A ticket outside his sub-groups → `/403`.
+3. Lan opens **SCR-T-03** *Needs my action*: one ticket *Waiting for your reply*, one *Resolved — please confirm*.
 
-## Flow 4 — Transfer a misrouted ticket, escalate a hard one
+## Flow 3 — Read the summary on handoff and on approval
 
-*A printer ticket reached Network L1; later a server fault needs L2.* · US-TK-10, US-TK-12, US-TK-13 · UC-TK-03
+*The Helpdesk AI agent could not fix Lan's VPN; F05 hands it to Minh. Later, an access request outside the catalog waits for the Admin's approval.* · US-TK-10 … 12 · UC-TK-03
 
 ```mermaid
 flowchart LR
-    a["SCR-T-02<br/>wrong team"] --> b["DLG-T-02 Transfer<br/>WRONG_TEAM"]
-    b --> c["ASSIGNED to target team<br/>no assignee"]
-    c --> d["F05 picks a member<br/>or Admin assigns DLG-T-01"]
-    b -. "routing correction" .-> ai["F04 learning"]
+    a["Handoff: F05 assigns,<br/>re-route, agent escalation,<br/>transfer, reopen"] --> b["AI Service writes<br/>summary v1"]
+    b --> c["Notification<br/>with summary"]
+    c --> d["SCR-T-02<br/>SEC-T-01 on top"]
+    d --> e["Click fact →<br/>source message"]
+    f["New requester message"] --> g["Summary v2<br/>'Updated after a new message'"]
+    g --> d
+    h["Ticket waits<br/>for approval"] --> i["Summary + Requested action<br/>+ Why approval is needed"]
+    i --> j["Approver decides<br/>(owner per Q-TK-10)"]
+
+    classDef f03 fill:#e8f1fc,color:#111,stroke:#1168bd
+    classDef other fill:#f3f3f3,color:#333,stroke:#999,stroke-dasharray:4 3
+    class b,c,d,e,g,i f03
+    class a,f,h,j other
+```
+
+1. F05 assigns the ticket to Minh. The notification already contains the summary: *Problem — VPN disconnects every ~60 min · Already tried — AI guided reinstall, not fixed · Why it came to you — the agent could not resolve*.
+2. On **SCR-T-02**, **SEC-T-01** is on top; Minh clicks *"not fixed"* and the conversation scrolls to Lan's answer to the agent.
+3. Lan adds a log file; within 30 s the summary becomes v2 *"Updated after a new message"*; v1 stays viewable.
+4. **Approval:** a ticket waiting for a human approval shows the summary with *Requested action* (grant `FI-Admin` on SAP for 30 days to Lan) and *Why approval is needed* (*"FI-Admin is not in Sales' catalog"*); the approver decides with this context (decision owned outside F03, Q-TK-10).
+5. **Branches:** summary not ready → *"Summary is being prepared"*; AI down → *"Summary unavailable"* + the original description; Lan never sees the summary.
+
+## Flow 4 — Transfer or escalate within the division
+
+*Minh's printer ticket needs the Printers sub-group; a hard network fault needs L2.* · US-TK-13, 14 · UC-TK-04
+
+```mermaid
+flowchart LR
+    a["SCR-T-02<br/>IT Helpdesk › Network"] --> b["DLG-T-02 Transfer<br/>within IT Helpdesk"]
+    b --> c["ASSIGNED to<br/>IT Helpdesk › Printers"]
+    c --> d["F05 picks a member<br/>(ON, lowest load)"]
+    d --> s["New owner gets<br/>the summary"]
+    b -. "other group?" .-> r["F05 SCR-WF-24<br/>Return for re-routing"]
     e["SCR-T-02<br/>too hard for L1"] --> f["DLG-T-03 Escalate"]
-    f -- "Higher tier" --> g["ASSIGNED to L2 team<br/>escalation_level + 1"]
-    f -- "Admin" --> h["Same owner<br/>Admins notified"]
+    f -- "Higher tier in group" --> g["ASSIGNED to L2 sub-group<br/>escalation_level + 1"]
+    f -- "Admin" --> h["Same owner<br/>Admins notified + summary"]
 
     classDef f03 fill:#e8f1fc,color:#111,stroke:#1168bd
     classDef other fill:#f3f3f3,color:#333,stroke:#999,stroke-dasharray:4 3
-    class a,b,c,e,f,g,h f03
-    class d,ai other
+    class a,b,c,e,f,g,h,s f03
+    class d,r other
 ```
 
-1. **Transfer:** Minh clicks *Transfer* → **DLG-T-02**: target team *Hardware*, reason `WRONG_TEAM`, note. The ticket is `ASSIGNED` to Hardware with no individual; F05 picks a member, otherwise it waits in the Hardware queue and Admins are notified. `WRONG_TEAM` is stored as a routing correction for F04. The SLA clock is not reset (BR-TK-06).
-2. **Escalate to a higher tier:** **DLG-T-03** proposes only teams with a higher `support_tier` covering the category; *work done so far* (≥ 20 chars) becomes an internal note.
-3. **Escalate to Admin:** the owner stays; Admins see the ticket in *Escalated to me* and may reassign (**DLG-T-01**) or raise the priority (**DLG-T-09**).
-4. **Exceptions:** same team or no higher tier → `400`, UI suggests *Admin*; ticket `AUTOMATING` → actions hidden (BR-TK-08).
+1. **Transfer:** Minh clicks *Transfer* → **DLG-T-02** shows only sub-groups and technicians of *IT Helpdesk*; he picks *Printers*, reason `NEEDS_OTHER_SKILL`, note. F05 picks a member; the new owner is notified with the summary. The SLA is not reset.
+2. **Wrong group:** the problem is an SAP authorization, not IT Helpdesk → the dialog's link opens F05 **SCR-WF-24** *Return for re-routing*; F05 routes it again.
+3. **Escalate to a higher tier:** **DLG-T-03** lists only higher-tier sub-groups of IT Helpdesk; *work done so far* becomes an internal note.
+4. **Escalate to Admin:** the owner stays; Admins get the ticket in *Escalated to me* with the summary.
+5. **Exceptions:** target in another group → `400 OUTSIDE_DIVISION`; no higher tier → *"Escalate to Admin instead"*; ticket owned by the AI agent or `AUTOMATING` → actions hidden.
 
-## Flow 5 — Not fixed, reopen, follow-up
+## Flow 5 — Add missing information to an on-hold ticket
 
-*The VPN drops again two days after closure.* · US-TK-21 · UC-TK-06 A2–A5
+*The AI needs to know which folder; later Minh needs Lan's VPN version.* · US-TK-15 … 18 · UC-TK-05
 
 ```mermaid
 flowchart LR
-    a["RESOLVED:<br/>No, still a problem"] --> c["DLG-T-07<br/>reason + evidence"]
-    b["CLOSED ≤ 7 days:<br/>Reopen"] --> c
-    c --> d{"Assignee<br/>available?"}
-    d -- "Yes" --> e["IN_PROGRESS<br/>same assignee"]
-    d -- "No" --> f["ASSIGNED<br/>team queue"]
-    c -- "3rd reopen" --> g["Escalated to Admin"]
-    h["CLOSED > 7 days"] --> i["Create follow-up<br/>SCR-T-01 pre-filled"]
+    a["F05 asks<br/>(waiting_on = AI)"] --> c["NEEDS_INFO<br/>SLA paused"]
+    b["DLG-T-04 Ask requester<br/>(waiting_on = TECHNICIAN)"] --> c
+    c --> d["EML-T-02 +<br/>SEC-T-02 banner"]
+    d --> e["Lan replies:<br/>portal or email"]
+    e -- "AI" --> f["F05 re-routes<br/>NEW"]
+    e -- "TECHNICIAN" --> g["IN_PROGRESS<br/>same assignee"]
+    c -- "Found it elsewhere" --> h["Resume work<br/>+ reason"]
+    h --> g
+    c -- "No reply N days" --> i["F05 reminders,<br/>auto-close"]
 
     classDef f03 fill:#e8f1fc,color:#111,stroke:#1168bd
-    class a,b,c,e,f,g,h,i f03
+    classDef other fill:#f3f3f3,color:#333,stroke:#999,stroke-dasharray:4 3
+    class b,c,d,e,g,h f03
+    class a,f,i other
 ```
 
-1. From `RESOLVED`, Lan clicks *No, still a problem*; from `CLOSED` within 7 days, *Reopen*. Both open **DLG-T-07** (reason ≥ 10 chars, attachments, remaining window shown).
-2. The ticket returns to Minh (`IN_PROGRESS`) or, if he is unavailable, to the team queue; `reopen_count` + 1.
-3. The 3rd reopen escalates to Admin with *"Reopened 3 times"*.
-4. After the window, *Reopen* is replaced by *Create follow-up ticket* → **SCR-T-01** pre-filled with a `FOLLOW_UP_OF` link.
+1. F05 is not confident about the folder and asks; the ticket is on hold. Lan gets **EML-T-02** and simply **replies to the email**: *"\\fs01\accounting\2026"*. The reply is threaded, passed to F05 and the ticket is routed again.
+2. Later Minh clicks *Ask requester* → **DLG-T-04** (*"The ticket goes on hold and the SLA pauses"*). Lan sees **SEC-T-02** on SCR-T-02 and answers there with a screenshot; the ticket returns to `IN_PROGRESS` with Minh, the SLA resumes, the summary refreshes.
+3. **Branches:** Minh finds the answer in AD → *Resume work* with a reason; no reply → F05 reminders day 1 and N−1, auto-close day N (Lan can reopen within 7 days); a reply from an unknown address → held for staff review, the ticket stays on hold.
 
-## Flow 6 — Cancel a request
+## Flow 6 — Update status and resolution
 
-*Lan's problem disappears after a restart; a technician also finds a duplicate.* · US-TK-22 · UC-TK-06 A6–A7
+*Minh fixes the VPN.* · US-TK-19 … 21 · UC-TK-06
 
 ```mermaid
 flowchart LR
-    a["Requester: NEW … ASSIGNED<br/>Cancel request"] --> b["DLG-T-06<br/>optional note"]
-    b --> z(["CANCELLED"])
-    c["Requester: IN_PROGRESS<br/>Ask to cancel"] --> d["Public message<br/>to technician"]
-    d --> e["Staff: DLG-T-06<br/>reason code + note"]
-    f["Staff: duplicate"] --> e
-    e --> z
+    a["SCR-T-02<br/>ASSIGNED"] --> b["Start work<br/>IN_PROGRESS"]
+    b --> c["Replies, notes,<br/>on hold (Flow 5)"]
+    c --> d["DLG-T-05 Resolve<br/>F04 drafts Resolution + reply"]
+    d --> e["RESOLVED<br/>EML-T-03 sent"]
+    f["F04 resolves<br/>(KB, guided, API)"] --> e
+    d -. "related tickets" .-> g["Resolve related too"]
+
+    classDef f03 fill:#e8f1fc,color:#111,stroke:#1168bd
+    classDef other fill:#f3f3f3,color:#333,stroke:#999,stroke-dasharray:4 3
+    class a,b,c,d,e,g f03
+    class f other
+```
+
+1. Minh clicks *Start work* → `IN_PROGRESS`; Lan sees *In progress*.
+2. He clicks *Resolve* → **DLG-T-05** opens with the Resolution (*"Root cause: client 4.8 timeout bug; updated to 5.2"*) and the reply drafted by F04; he edits and confirms with code `FIXED`.
+3. The ticket is `RESOLVED`; Lan gets **EML-T-03** with *Confirm / Not fixed*.
+4. **Branches:** duplicate → code `DUPLICATE` + original code; related tickets in SEC-T-03 → *Resolve the related tickets too*, each with its own reply; `AUTOMATING` → no *Resolve*, F04 verifies; when the AI agent resolves a ticket, F04 uses the same operation with author `AI` and `ANSWERED_BY_KB` / `SOLVED_BY_KB` / `GUIDED_BY_AI`.
+
+## Flow 7 — Confirm, close, reopen, cancel
+
+*Lan confirms; two days later the VPN drops again; a test ticket is cancelled.* · US-TK-22 … 24 · UC-TK-07
+
+```mermaid
+flowchart LR
+    a["EML-T-03 or SCR-T-02<br/>'Is it working now?'"] -- "Yes" --> b["DLG-T-08<br/>confirm + rate"]
+    b --> c(["CLOSED"])
+    a -- "No reply 5 days" --> c
+    a -- "No" --> d["DLG-T-07<br/>reason + evidence"]
+    c -- "≤ 7 days: Reopen" --> d
+    d --> e{"Assignee ON?"}
+    e -- "Yes" --> f["IN_PROGRESS<br/>same assignee"]
+    e -- "No" --> g["ASSIGNED<br/>F05 picks a member"]
+    d -- "3rd reopen" --> h["Escalated to Admin"]
+    c -- "> 7 days" --> i["Create follow-up<br/>SCR-T-01"]
+    j["NEW … ASSIGNED:<br/>Cancel request"] --> k["DLG-T-06"]
+    k --> z(["CANCELLED"])
 
     classDef f03 fill:#e8f1fc,color:#111,stroke:#1168bd
     classDef final fill:#fdecea,color:#5a1a14,stroke:#d9534f
-    class a,b,c,d,e,f f03
-    class z final
+    class a,b,d,f,g,h,i,j,k f03
+    class c,z final
 ```
 
-1. Before work starts, Lan clicks *Cancel request* → **DLG-T-06** → `CANCELLED` (`REQUESTER_WITHDREW`); the assignee, if any, is notified.
-2. Once `IN_PROGRESS`, the button becomes *Ask to cancel*, which posts a public message; the technician cancels with a reason.
-3. Staff cancel duplicates and spam with a reason code; `DUPLICATE` needs the original ticket code. The requester is notified with the reason.
-4. `AUTOMATING` tickets cannot be cancelled (*"This request is being executed automatically and cannot be cancelled now"*); `CANCELLED` is never reopenable.
+1. Lan clicks *Yes, it's solved* in **EML-T-03**; SCR-T-02 opens **DLG-T-08**; she rates 5 stars → `CLOSED` (`CONFIRMED`). No answer → reminders and auto-close on day 5 (`AUTO_CONFIRMED`).
+2. Two days later she clicks *Reopen* → **DLG-T-07**; the ticket returns to Minh, who receives the summary again; `reopen_count` + 1. The 3rd reopen escalates to Admin. After 7 days → *Create follow-up ticket*.
+3. Before work starts, Lan cancels a request she no longer needs → **DLG-T-06** → `CANCELLED`. Once `IN_PROGRESS`, she can only *Ask to cancel*; staff cancel test or spam tickets with a reason code. `AUTOMATING` tickets cannot be cancelled.
