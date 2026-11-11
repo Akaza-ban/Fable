@@ -110,4 +110,4 @@ These criteria describe target product behavior. The UI may satisfy a criterion 
 
 ## Definition of Ready
 
-A backend work item is ready only when it names its OpenAPI operationId, application service, repository dependencies, RBAC rule, validation/error outcomes and unit-test cases. The [traceability matrix](traceability/master-traceability.md) provides this mapping.
+A backend work item is ready only when it names its OpenAPI operationId, application service, repository dependencies, RBAC rule, validation/error outcomes and unit-test cases. The [traceability matrix](../traceability/master-traceability.md) provides this mapping.

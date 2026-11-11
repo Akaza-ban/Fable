@@ -4,7 +4,7 @@
 >
 > Implementation status: NOT STARTED
 
-Six flows cover a ticket's path through the three processing flows (A — AI self-service, B — clarification, C — human handling), automation failure handling, and two Admin configuration flows. In every flow a **purple** step is performed by the AI, and every AI step has a failure path that lets a person continue. Each flow starts from its actors (person icon). A step performed by a person begins with 👤 and an abbreviation: **RQ** Requester, **TE** Technician, **TL** Team Lead, **AD** Admin. Steps without a prefix are done by the system or the AI. State names are the exact names in the [use cases](../03-use-cases.md#related-states).
+Six flows cover a ticket's path through the three processing flows (A — AI self-service, B — clarification, C — human handling), automation failure handling, and two Admin configuration flows. In every flow a **purple** step is performed by the AI, and every AI step has a failure path that lets a person continue. Each flow starts from its actors (person icon). A step performed by a person begins with 👤 and an abbreviation: **RQ** Requester, **TE** Technician, **TL** Team Lead, **AD** Admin. Steps without a prefix are done by the system or the AI. State names are the exact names in the [use cases](../02-use-cases.md#related-states).
 
 ## Flow 1: Basic request — AI self-service (flow A)
 

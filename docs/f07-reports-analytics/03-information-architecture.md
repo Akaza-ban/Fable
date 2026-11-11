@@ -1,6 +1,6 @@
 # Information architecture — Reporting & Analytics
 
-Screens, role-based navigation, data and API of the module. Flows: [02-use-cases.md](02-use-cases.md); stories: [01-user-stories.md](01-user-stories.md); roles and `BR-xx`: [mvp.md](../mvp.md); Workflow data: [03-use-cases.md](../03-use-cases.md).
+Screens, role-based navigation, data and API of the module. Flows: [02-use-cases.md](02-use-cases.md); stories: [01-user-stories.md](01-user-stories.md); roles and `BR-xx`: [mvp.md](../mvp.md); Workflow data: [03-use-cases.md](../f05-workflow-automation/02-use-cases.md).
 
 > Status: **draft for the team IA meeting.** Routes, menu placement and screens shared with other modules (Dashboard, Workflow) are proposals until the team merges all IA documents. Proposed permissions are in section 5 of the use case document.
 
@@ -81,6 +81,6 @@ Prefix `/api/v1`. Errors use `{ "code": "...", "message": "..." }`. Every endpoi
 
 ## 6. Points to settle in the IA meeting
 
-- **Dashboard vs Reports:** the Dashboard ([dashboard](../dashboard/)) shows open / overdue counts too. Proposal: the Dashboard calls the same `/reports/*` endpoints with a short default period, so the numbers always match (BR-BC-01).
+- **Dashboard vs Reports:** the Dashboard ([dashboard](../f02-dashboard/README.md)) shows open / overdue counts too. Proposal: the Dashboard calls the same `/reports/*` endpoints with a short default period, so the numbers always match (BR-BC-01).
 - **Route and screen IDs:** `feature/author` uses plain paths (`/admin/users`), Workflow uses `SCR-WF-xx` IDs and hash routes (`#/403`). This file uses both (path + `SCR-BC-xx`) until the team chooses.
 - **Team lead view:** if `is_lead` is accepted (Q-BC-01), leads get per-technician columns on SCR-BC-02 and SCR-BC-04 for their group.

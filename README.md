@@ -2,26 +2,28 @@
 
 The system helps an enterprise receive, classify, and dispatch internal IT support requests — processing approximately **8,000 tickets per day** across corporate departments. The AI Service evaluates incoming requests: basic requests within scope are **approved by the AI and executed automatically through backend APIs**; requests requiring hands-on human intervention are routed directly to technicians with an AI summary; when context is missing, it **asks the requester for clarification**.
 
----
+## 1. Requirements — User Stories and Use Cases
 
-## 1. Mindmap
+Requirements define what the system must do, who uses it, and the value delivered. Each branch of the mind map (F01–F09) is specified in its own folder under `docs/`; this section gives the overview across branches.
+
+### 1.1 Product mind map
 
 ![System Mind Map](docs/mindmap.png)
 
-> **XMind Outline:** A complete hierarchical outline for XMind import is provided in [XMind Outline Documentation](docs/mindmap-xmind.md).
+The outline for XMind import is in [the mind map outline](docs/mindmap-xmind.md).
 
----
+### 1.2 User stories
 
-## 2. User Stories
+**Personas and roles**
 
-### Personas & Roles
+
 *   **Requester:** Business employee seeking quick self-service or IT assistance.
 *   **Technician:** Support engineer troubleshooting issues, executing fixes, and authoring KB articles.
 *   **Operations Lead:** Team supervisor overseeing triage queues, escalations, and article reviews.
 *   **Administrator:** System owner configuring routing rules, SLA policies, and AI auto-approval scopes.
 *   **AI Service:** Intelligent background actor classifying requests, extracting context, and synthesizing articles.
 
-### Core Backlog User Stories
+**Core backlog**
 
 | Story ID | Role | User Story (`As a... I want to... So that...`) | Priority |
 | :--- | :--- | :--- | :---: |
@@ -40,9 +42,9 @@ The system helps an enterprise receive, classify, and dispatch internal IT suppo
 | **US13** | `ADMINISTRATOR` | **As an** Administrator, **I want to** configure rule-based routing and SLA timers (P1–P4), **So that** ticket allocation matches team capacity. | **Must** |
 | **US14** | `ADMINISTRATOR` | **As an** Administrator, **I want to** define the AI auto-execution whitelist and entitlement matrix, **So that** automated actions are strictly governed. | **Must** |
 
----
+Each branch keeps its detailed backlog with acceptance criteria in its own folder; see [Documentation](#documentation).
 
-## 3. Use Cases
+### 1.3 Use cases
 
 The system has 14 use cases (`UC01` to `UC14`) shared by 4 roles. The first diagram shows how the roles relate; the other three show the use cases by area. Purple nodes call the AI Service.
 
@@ -189,7 +191,7 @@ flowchart LR
     style system fill:#f8fbff,stroke:#1168bd,stroke-dasharray:5 5
 ```
 
-### Use Case Catalog
+**Use case catalog**
 
 | ID | Use Case Name | Primary Actor | Scope & Description |
 | :--- | :--- | :--- | :--- |
@@ -208,13 +210,13 @@ flowchart LR
 | **UC13** | Review & Publish (Diff View) | Lead / Admin | Inspect proposed article revisions side-by-side (Diff View) and approve for release. |
 | **UC14** | Configure Rules, SLA & Scope | Administrator | Define deterministic assignment rules, SLA policies, and AI auto-approval whitelist. |
 
----
+The use cases per branch (UC-DB, UC-TK, UC-AI, UC-WF, UC-KB, UC-BC, UC-NK) are specified in each branch folder.
 
-## 4. Information Architecture, Screen Hierarchy and UI/UX
+## 2. Information Architecture, Screen Hierarchy and UI/UX
 
 The information architecture organizes features around each role's goals and mirrors the mind map groups. Navigation is rendered from the user's role token; every screen must define its access rules and its loading, empty, validation, error, saving and success states.
 
-### 4.1 Information Architecture
+### 2.1 Information architecture
 
 ``` mermaid
 flowchart TB
@@ -309,7 +311,7 @@ flowchart TB
 
 Access per area follows the role matrix: the self-service area is open to every role; the support workspace is hidden (403) for Requesters; KB approvals and analytics require Operations Lead or Administrator; automation configuration is view/dry-run for Operations Leads and full configuration for Administrators; the audit log and user management are Administrator only.
 
-### 4.2 Screen Hierarchy
+### 2.2 Screen hierarchy
 
 ``` mermaid
 flowchart TB
@@ -354,3 +356,59 @@ Each role lands on its own home after login: Requesters on the Portal, Technicia
 The ticket console must clearly show the AI summary (3 lines), the AI-assigned category and confidence, the SLA timer, the conversation with internal notes kept separate, and a way to override the AI category (feeding model feedback). Any action executed automatically by the AI must be visible on the ticket timeline with its result, and failed executions must fall back to a technician queue.
 
 Detailed routes, standard component states (loading, empty, validation, saving, success, error, 403) and the role-based navigation matrix are maintained in [Information Architecture](docs/information-architecture.md).
+
+Each branch also has its own information architecture: [F02 Dashboard](docs/f02-dashboard/03-information-architecture.md), [F03 Ticket Management](docs/f03-ticket-management/03-information-architecture.md), [F04 AI Ticket Processing](docs/f04-ai-ticket-processing/information-architecture/README.md), [F05 Workflow & Automation](docs/f05-workflow-automation/information-architecture/README.md), [F06 Knowledge Base](docs/f06-knowledge-base/04-information-architecture.md), [F07 Reports & Analytics](docs/f07-reports-analytics/03-information-architecture.md), [F08 Activity Log](docs/f08-activity-log/03-information-architecture.md).
+
+## Documentation
+
+- System overview: [Mind map outline](docs/mindmap-xmind.md), [Information architecture](docs/information-architecture.md).
+- F02 Dashboard: [Index](docs/f02-dashboard/README.md), [User stories](docs/f02-dashboard/01-user-stories.md), [Use cases](docs/f02-dashboard/02-use-cases.md), [Information architecture](docs/f02-dashboard/03-information-architecture.md).
+- F03 Ticket Management: [Index](docs/f03-ticket-management/README.md), [User stories](docs/f03-ticket-management/01-user-stories.md), [Use cases](docs/f03-ticket-management/02-use-cases.md), [Information architecture](docs/f03-ticket-management/03-information-architecture.md).
+- F04 AI Ticket Processing: [Index](docs/f04-ai-ticket-processing/README.md), [Features](docs/f04-ai-ticket-processing/01-features.md), [Use cases](docs/f04-ai-ticket-processing/02-use-cases.md), [User stories (INVEST)](docs/f04-ai-ticket-processing/03-user-stories-invest.md), [Acceptance criteria](docs/f04-ai-ticket-processing/04-acceptance-criteria.md), [Business rules](docs/f04-ai-ticket-processing/05-business-rules.md), [Information architecture](docs/f04-ai-ticket-processing/information-architecture/README.md).
+- F05 Workflow & Automation: [Index](docs/f05-workflow-automation/README.md), [Features](docs/f05-workflow-automation/01-features.md), [Use cases](docs/f05-workflow-automation/02-use-cases.md), [Acceptance criteria](docs/f05-workflow-automation/03-acceptance-criteria.md), [INVEST backlog](docs/f05-workflow-automation/04-invest-requirements.md), [Information architecture](docs/f05-workflow-automation/information-architecture/README.md).
+- F06 Knowledge Base: [Index](docs/f06-knowledge-base/README.md), [Mind map](docs/f06-knowledge-base/01-mindmap.md), [User stories](docs/f06-knowledge-base/02-user-stories.md), [Use cases](docs/f06-knowledge-base/03-use-cases.md), [Information architecture](docs/f06-knowledge-base/04-information-architecture.md), [Wireframes](docs/f06-knowledge-base/05-wireframes.md).
+- F07 Reports & Analytics: [Index](docs/f07-reports-analytics/README.md), [User stories](docs/f07-reports-analytics/01-user-stories.md), [Use cases](docs/f07-reports-analytics/02-use-cases.md), [Information architecture](docs/f07-reports-analytics/03-information-architecture.md).
+- F08 Activity Log: [Index](docs/f08-activity-log/README.md), [User stories](docs/f08-activity-log/01-user-stories.md), [Use cases](docs/f08-activity-log/02-use-cases.md), [Information architecture](docs/f08-activity-log/03-information-architecture.md).
+- Requirements catalogs: [Business rules](docs/requirements/business-rules.md), [Non-functional requirements](docs/requirements/non-functional-requirements.md).
+- Traceability: [Master traceability matrix](docs/traceability/master-traceability.md).
+
+### Repository layout
+
+No source code exists yet. The repository holds the documents.
+
+```text
+Fable/
+├── docs/
+│   ├── f02-dashboard/             # Dashboard: user stories, use cases, IA
+│   ├── f03-ticket-management/     # Ticket management: user stories, use cases, IA
+│   ├── f04-ai-ticket-processing/  # AI ticket processing: features, use cases, INVEST, AC, business rules, IA
+│   ├── f05-workflow-automation/   # Workflow and automation: features, use cases, AC, INVEST, IA
+│   ├── f06-knowledge-base/        # Knowledge base: mind map, user stories, use cases, IA, wireframes
+│   ├── f07-reports-analytics/     # Reports and analytics: user stories, use cases, IA
+│   ├── f08-activity-log/          # Activity log: user stories, use cases, IA
+│   ├── requirements/              # Shared business rules and non-functional requirements
+│   ├── traceability/              # Master traceability matrix
+│   ├── information-architecture.md  # System-wide information architecture
+│   ├── mindmap-xmind.md           # Mind map outline for XMind
+│   └── mindmap.png                # Mind map image
+└── README.md
+```
+
+Every branch folder is named `fNN-<branch>` after its number in the mind map, its files are numbered `NN-<topic>.md`, and its `README.md` lists the files.
+
+## Project Progress
+
+- [x] Draw the product mind map
+- [x] Write the system user stories and use cases, with the use case diagrams
+- [x] Design the system information architecture and screen hierarchy (draft)
+- [x] F02 Dashboard: user stories, use cases, IA (draft)
+- [x] F03 Ticket Management: user stories, use cases, IA (draft)
+- [x] F04 AI Ticket Processing: use cases, INVEST, acceptance criteria, business rules, IA (draft)
+- [x] F05 Workflow & Automation: use cases, INVEST, acceptance criteria, IA (draft)
+- [x] F06 Knowledge Base: user stories, use cases, IA, wireframes (draft)
+- [x] F07 Reports & Analytics: user stories, use cases, IA (draft)
+- [x] F08 Activity Log: user stories, use cases, IA (draft)
+- [ ] Specify F01 Authentication & Authorization and F09 User Management
+- [ ] C4 System Context, Container, Component
+- [ ] Database design (ERD)
+- [ ] OpenAPI 3.0

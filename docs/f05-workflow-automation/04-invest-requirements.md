@@ -15,7 +15,7 @@ Each user story is small enough to implement and test independently. Authenticat
 | **Valuable** | Every story names the benefit to the user or the business. |
 | **Estimable** | Inputs, outputs, roles, dependencies and failure outcomes are explicit. |
 | **Small** | Each story targets one capability and can be split into API, application, persistence, UI and test tasks. |
-| **Testable** | Every story links to observable acceptance criteria in [06-acceptance-criteria.md](06-acceptance-criteria.md). |
+| **Testable** | Every story links to observable acceptance criteria in [06-acceptance-criteria.md](03-acceptance-criteria.md). |
 
 ## Product backlog
 
@@ -95,4 +95,4 @@ US-WF-19–20   UC-WF-09  Verify / hand off on failure
 - Times are stored in UTC; SLAs are computed in business hours of the configured calendar.
 - The system must sustain the reference load of **8,000 tickets per day** (see NFRs).
 
-**Related:** [Use cases](03-use-cases.md) · [Acceptance criteria](06-acceptance-criteria.md) · [Business rules](requirements/business-rules.md)
+**Related:** [Use cases](02-use-cases.md) · [Acceptance criteria](03-acceptance-criteria.md) · [Business rules](../requirements/business-rules.md)

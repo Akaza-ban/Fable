@@ -48,4 +48,4 @@ System name: **AI-Powered IT Ticket Routing and Automated Resolution System**.
 - AI self-resolution rate and SLA breach statistics → F07 Reports & Analytics.
 - Managing technical teams, departments and members → F09 User Management.
 
-**Related:** [Use cases](03-use-cases.md) · [INVEST backlog](08-invest-requirements.md) · [Acceptance criteria](06-acceptance-criteria.md)
+**Related:** [Use cases](02-use-cases.md) · [INVEST backlog](04-invest-requirements.md) · [Acceptance criteria](03-acceptance-criteria.md)

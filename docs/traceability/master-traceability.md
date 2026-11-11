@@ -32,7 +32,7 @@ Screens (`SCR-*`), operationIds, tables and components are **proposed names**; t
 
 ## Screen inventory
 
-The full screen inventory (12 pages and 8 modals), routes, permissions and screen-to-API mapping are maintained in the [information architecture](../04-information-architecture/04-screen-inventory.md). `SCR-91` is the shared notification centre.
+The full screen inventory (12 pages and 8 modals), routes, permissions and screen-to-API mapping are maintained in the [information architecture](../f05-workflow-automation/information-architecture/04-screen-inventory.md). `SCR-91` is the shared notification centre.
 
 ## Quality / NFR traceability
 

@@ -1,6 +1,6 @@
 # Information architecture — Activity Log
 
-Screens, role-based navigation, data and API of the module. Flows: [02-use-cases.md](02-use-cases.md); stories: [01-user-stories.md](01-user-stories.md); roles and `BR-xx`: [mvp.md](../mvp.md); Workflow data: [03-use-cases.md](../03-use-cases.md).
+Screens, role-based navigation, data and API of the module. Flows: [02-use-cases.md](02-use-cases.md); stories: [01-user-stories.md](01-user-stories.md); roles and `BR-xx`: [mvp.md](../mvp.md); Workflow data: [03-use-cases.md](../f05-workflow-automation/02-use-cases.md).
 
 > Status: **draft for the team IA meeting.** Routes, menu placement and screens shared with other modules (Ticket detail, Workflow) are proposals until the team merges all IA documents. Proposed permissions are in section 4 of the use case document.
 
@@ -74,6 +74,6 @@ Prefix `/api/v1`. Errors use `{ "code": "...", "message": "..." }`. Every endpoi
 
 ## 6. Points to settle in the IA meeting
 
-- **Ticket detail page:** owned by the Ticket module ([ticket-management](../ticket-management/)). This module only adds the History tab and the Approval panel; Workflow adds its Automation tab. The three should be placed together in one design.
+- **Ticket detail page:** owned by the Ticket module ([ticket-management](../f03-ticket-management/README.md)). This module only adds the History tab and the Approval panel; Workflow adds its Automation tab. The three should be placed together in one design.
 - **Workflow runs:** Workflow's ticket tab *Automation* (SCR-T-02) and SCR-NK-05 show the same run. Proposal: one component, reused in both places.
-- **Route and screen IDs:** this file uses path + `SCR-NK-xx` until the team chooses a convention (see the same point in [reporting-analytics](../reporting-analytics/03-information-architecture.md)).
+- **Route and screen IDs:** this file uses path + `SCR-NK-xx` until the team chooses a convention (see the same point in [reporting-analytics](../f07-reports-analytics/03-information-architecture.md)).

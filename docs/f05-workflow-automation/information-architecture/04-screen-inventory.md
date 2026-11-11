@@ -89,4 +89,4 @@ operationIds are **proposed** and will be finalized with the OpenAPI contract.
 | SCR-WF-30 AI decisions | `listAiDecisions`, `getAiDecisionMetrics` |
 | SCR-WF-31 AI decision detail | `getAiDecision`, `listWorkflowRuns` |
 
-**Related:** [Information architecture index](README.md) · [Sitemap](01-sitemap.md) · [Routes and permissions](02-routes-and-permissions.md) · [Traceability](../traceability/master-traceability.md)
+**Related:** [Information architecture index](README.md) · [Sitemap](01-sitemap.md) · [Routes and permissions](02-routes-and-permissions.md) · [Traceability](../../traceability/master-traceability.md)
