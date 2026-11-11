@@ -337,324 +337,147 @@ The use cases per branch (UC-DB, UC-TK, UC-AI, UC-WF, UC-KB, UC-BC, UC-NK) are s
 
 ## 2. Information Architecture, Screen Hierarchy and UI/UX
 
-This section is the **single map of every screen** for UI work. It follows the latest mind map: one sidebar area per branch, one ticket page shared by everyone. Each screen keeps the ID and route of the branch that owns it. **Where a branch's own IA disagrees with this section, this section wins until that branch is updated** (see [2.7](#27-decisions-that-settle-conflicts-between-branch-docs)). Every screen must define its access rule and its loading, empty, validation, error, saving and success states (see [2.8](#28-shared-ui-rules)).
+The information architecture organizes features around each role's goals and follows the latest mind map. Navigation is rendered from the user's role token; every screen must define its access rules and its loading, empty, validation, error, saving and success states.
 
-### 2.1 Global layout
+### 2.1 Information architecture
 
-Every role uses the same shell: a **top bar** and a **left sidebar** that shows only the items the role may open (never a disabled item).
-
-| Top bar element | Content | Owner |
-|---|---|---|
-| **+ New request** | Primary button for every role → SCR-T-01 | F03 |
-| Notifications | "Notifications N" with the unread count → SCR-91 | F05 |
-| Status switch | *ON / OFF*, technicians only (used by automatic assignment) | F05 |
-| User menu | Name and role → *Profile* (SCR-PF-01), *Log out* | F10, F01 |
-
-Login is **Microsoft SSO only** (SCR-01). After login, `/dashboard` sends each role to its home: Requester → `/portal`, Technician → `/technician/dashboard`, Admin → `/admin/dashboard`.
-
-### 2.2 Information architecture
-
-Colours follow the branch that owns the screen. Dashed boxes: modals and dialogs. The ticket detail page (SCR-T-02) is shared and detailed in [2.5](#25-ticket-detail-scr-t-02-who-owns-each-zone).
-
-```mermaid
+``` mermaid
 flowchart TB
-    ROOT["<b>AI-Powered Ticket Routing System</b><br/>Microsoft SSO"]
+    ROOT["**IT Ticket Routing System**<br/>AI-powered ticket routing and processing"]
 
-    subgraph AUTH["F01 Login & Authorization"]
+    ROOT --> PUBLIC["Public area"]
+    ROOT --> SELF["Self-service area<br/>(login required, all roles)"]
+    ROOT --> SUPPORT["Support workspace<br/>(Technician / Administrator)"]
+    ROOT --> GOV["Governance area<br/>(Administrator)"]
+
+    subgraph PUBLIC_PAGES["PUBLIC SCREENS"]
         direction TB
-        S01["SCR-01 Login /login"]
-        S90["SCR-90 Access denied /403"]
-        S92["SCR-92 Not found /404 (proposed)"]
+        LOGIN["**Login** /login<br/>Microsoft SSO<br/>Role-based home after login<br/>Authentication errors"]
     end
 
-    subgraph DASH["F02 Dashboard"]
+    subgraph SELF_PAGES["SELF-SERVICE SCREENS"]
         direction TB
-        DB03["SCR-DB-03 Requester portal /portal"]
-        DB02["SCR-DB-02 Technician workbench<br/>/technician/dashboard"]
-        DB01["SCR-DB-01 Admin dashboard<br/>/admin/dashboard"]
+        PORTAL["**Portal** /portal<br/>Action needed: answer the AI, confirm a result<br/>My open requests<br/>Announcements, KB search"]
+        NEWREQ["**New request** /tickets/new<br/>Free text, no category form<br/>For someone else, attachments<br/>Real-time KB suggestions"]
+        MYTICKETS["**My tickets** /my-tickets<br/>Open, needs my action<br/>Resolved and closed, cancelled"]
+        REQDETAIL["**Request detail** /tickets/:code<br/>Conversation with the AI and IT<br/>Guided troubleshooting steps<br/>Confirm and rate / not fixed"]
+        KBEXPLORE["**KB search** /kb<br/>Semantic search<br/>Category browsing"]
+        KBARTICLE["**KB article** /kb/articles/:id<br/>Step-by-step fix<br/>Helpful vote, report inaccurate"]
+        PROFILE["**Profile** /profile<br/>Account information<br/>Role and permissions<br/>Change password (Microsoft account)"]
     end
 
-    subgraph TICK["F03 Ticket Management"]
+    subgraph SUPPORT_PAGES["SUPPORT SCREENS"]
         direction TB
-        T01["SCR-T-01 New request /tickets/new"]
-        T03["SCR-T-03 My tickets /my-tickets"]
-        T04["SCR-T-04 Work queues /tickets"]
-        T02["SCR-T-02 Ticket detail /tickets/:code<br/>(shared, see 2.5)"]
+        WORKBENCH["**Workbench** /technician/dashboard<br/>My queue by SLA<br/>Claim from the sub-group queue<br/>Personal figures"]
+        QUEUES["**Work queues** /tickets<br/>Assigned to me, sub-group queue<br/>On hold, due soon, breached<br/>Suspected bugs, failed automation"]
+        CONSOLE["**Ticket console** /tickets/:code<br/>AI summary, escalation reason<br/>Fields filled by AI, domain form<br/>Cited KB steps, internal notes<br/>Transfer, escalate, resolve with AI draft<br/>Automation tab: retry, resolve manually"]
+        KBEDITOR["**KB editor** /kb/editor<br/>Rich text / Markdown<br/>AI draft from a resolved ticket"]
+        KBFLAG["**Flagged articles** /kb/flagged<br/>Low-rated and reported articles"]
+        REPORTS["**Reports** /analytics/*<br/>Tickets, SLA, satisfaction<br/>(own scope for technicians)"]
     end
 
-    subgraph KB["F06 Knowledge Base"]
+    subgraph GOV_PAGES["GOVERNANCE SCREENS"]
         direction TB
-        KB01["SCR-KB-01 KB search /kb"]
-        KB02["SCR-KB-02 Article /kb/articles/:id"]
-        KB03["SCR-KB-03 Article editor /kb/editor"]
-        KB05["SCR-KB-05 Approvals and diff /kb/approvals"]
-        KB06["SCR-KB-06 Flagged articles /kb/flagged"]
+        DASHBOARD["**Dashboard** /admin/dashboard<br/>Volume and AI resolution rate<br/>SLA breach radar, P1 alerts<br/>Team workload"]
+        AIWF["**AI and workflow** /workflow/*<br/>AI decisions and their grounds<br/>AI scope, whitelist, entitlements<br/>Workload scoring, SLA and calendar<br/>Learning examples"]
+        APPROVALS["**KB approvals** /kb/approvals<br/>Side-by-side visual diff<br/>Approve / request changes"]
+        ANALYTICS["**Analytics** /analytics/*<br/>AI self-resolution rate<br/>Report settings, CSV / XLSX export"]
+        AUDIT["**Audit** /audit/*<br/>Activity log<br/>Workflow runs"]
+        USERS["**Users and teams** /admin/users, /admin/teams<br/>Add, edit, enable / disable users<br/>Roles and access scope<br/>Teams, sub-groups and members"]
     end
 
-    subgraph REP["F07 Reports & Analytics"]
-        direction TB
-        BC["SCR-BC-01 … 04 Tickets · SLA · AI · Satisfaction<br/>/analytics/tickets · sla · ai · satisfaction"]
-        BC05["SCR-BC-05 Report settings /analytics/settings"]
-    end
+    PUBLIC --> LOGIN
 
-    subgraph WF["F05 Workflow & Automation (AI and workflow)"]
-        direction TB
-        WF30["SCR-WF-30 AI decisions /workflow/ai-decisions"]
-        WF31["SCR-WF-31 AI decision detail<br/>/workflow/ai-decisions/:id"]
-        WF03["SCR-WF-03 AI scope /workflow/ai-scope"]
-        WF01["SCR-WF-01 Workload /workflow/workload"]
-        WF02["SCR-WF-02 SLA and calendar /workflow/sla"]
-    end
+    SELF --> PORTAL
+    PORTAL --> NEWREQ
+    PORTAL --> MYTICKETS
+    MYTICKETS --> REQDETAIL
+    NEWREQ --> REQDETAIL
+    NEWREQ --> KBARTICLE
+    SELF --> KBEXPLORE
+    KBEXPLORE --> KBARTICLE
+    SELF --> PROFILE
 
-    subgraph AIP["F04 AI Ticket Processing"]
-        direction TB
-        AI01["SCR-AI-01 Learning examples<br/>/admin/ai/learning-examples"]
-    end
+    SUPPORT --> WORKBENCH
+    WORKBENCH --> CONSOLE
+    SUPPORT --> QUEUES
+    QUEUES --> CONSOLE
+    CONSOLE --> KBEDITOR
+    SUPPORT --> KBFLAG
+    KBFLAG --> KBEDITOR
+    SUPPORT --> REPORTS
 
-    subgraph LOG["F08 Activity Log"]
-        direction TB
-        NK02["SCR-NK-02 Activity log /audit/activity-log"]
-        NK04["SCR-NK-04 Workflow runs /audit/workflow-runs"]
-        NK05["SCR-NK-05 Run detail /audit/workflow-runs/:id"]
-    end
-
-    subgraph USERS["F09 User Management (proposed)"]
-        direction TB
-        UM01["SCR-UM-01 Users /admin/users"]
-        UM02["SCR-UM-02 User detail /admin/users/:id"]
-        UM03["SCR-UM-03 Teams and sub-groups /admin/teams"]
-    end
-
-    subgraph PROF["F10 Personal Profile (proposed)"]
-        direction TB
-        PF01["SCR-PF-01 Profile /profile"]
-    end
-
-    S91["SCR-91 Notifications /notifications"]
-
-    ROOT --> AUTH
-    ROOT --> DASH
-    DASH --> TICK
-    DASH --> KB
-    DASH --> REP
-    ROOT --> WF
-    ROOT --> AIP
-    ROOT --> LOG
-    ROOT --> USERS
-    ROOT --> PROF
-    ROOT --> S91
-    T03 --> T02
-    T04 --> T02
-    T01 --> T02
-    KB01 --> KB02
-    WF30 --> WF31
-    NK04 --> NK05
-    UM01 --> UM02
+    GOV --> DASHBOARD
+    GOV --> AIWF
+    GOV --> APPROVALS
+    GOV --> ANALYTICS
+    GOV --> AUDIT
+    GOV --> USERS
 
     classDef root fill:#ffffff,stroke:#222222,stroke-width:2px,color:#111111;
-    classDef f01 fill:#fee2e2,stroke:#dc2626,color:#7f1d1d;
-    classDef f02 fill:#ffedd5,stroke:#ea580c,color:#7c2d12;
-    classDef f03 fill:#d1fae5,stroke:#059669,color:#064e3b;
-    classDef f04 fill:#ccfbf1,stroke:#0d9488,color:#134e4a;
-    classDef f05 fill:#dbeafe,stroke:#2563eb,color:#1e3a8a;
-    classDef f06 fill:#fecdd3,stroke:#e11d48,color:#881337;
-    classDef f07 fill:#f3e8ff,stroke:#9333ea,color:#581c87;
-    classDef f08 fill:#fef3c7,stroke:#d97706,color:#78350f;
-    classDef f09 fill:#e0f2fe,stroke:#0284c7,color:#0c4a6e;
-    classDef f10 fill:#f1f5f9,stroke:#64748b,color:#1e293b;
+    classDef public fill:#fff0f0,stroke:#f87171,color:#7f1d1d;
+    classDef self fill:#ecfdf5,stroke:#22c55e,color:#14532d;
+    classDef support fill:#eff6ff,stroke:#60a5fa,color:#1e3a8a;
+    classDef gov fill:#f5f3ff,stroke:#a78bfa,color:#4c1d95;
+    classDef publicArea fill:#fecaca,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+    classDef selfArea fill:#bbf7d0,stroke:#16a34a,stroke-width:2px,color:#14532d;
+    classDef supportArea fill:#bfdbfe,stroke:#2563eb,stroke-width:2px,color:#1e3a8a;
+    classDef govArea fill:#ddd6fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
     class ROOT root;
-    class S01,S90,S92 f01;
-    class DB01,DB02,DB03 f02;
-    class T01,T02,T03,T04 f03;
-    class AI01 f04;
-    class WF01,WF02,WF03,WF30,WF31,S91 f05;
-    class KB01,KB02,KB03,KB05,KB06 f06;
-    class BC,BC05 f07;
-    class NK02,NK04,NK05 f08;
-    class UM01,UM02,UM03 f09;
-    class PF01 f10;
+    class PUBLIC publicArea;
+    class SELF selfArea;
+    class SUPPORT supportArea;
+    class GOV govArea;
+    class LOGIN public;
+    class PORTAL,NEWREQ,MYTICKETS,REQDETAIL,KBEXPLORE,KBARTICLE,PROFILE self;
+    class WORKBENCH,QUEUES,CONSOLE,KBEDITOR,KBFLAG,REPORTS support;
+    class DASHBOARD,AIWF,APPROVALS,ANALYTICS,AUDIT,USERS gov;
 ```
 
-### 2.3 Sidebar per role
+Access per area follows the role matrix: the self-service area is open to every role; the support workspace is for Technicians and Administrators and hidden (403) for Requesters; the governance area is Administrator only. Request detail and ticket console are the same page (`/tickets/:code`): requesters see the conversation, the AI's answers and guidance, and the confirm actions; staff also see the summary, the AI data, internal notes and the automation tab. The top bar of every role has *+ New request*, notifications (`/notifications`), the user menu (Profile, Log out) and, for technicians, the ON / OFF availability switch.
 
-The first item is the home page. Badges are counts computed by the server.
+### 2.2 Screen hierarchy
 
-| Sidebar item | Route | Requester | Technician | Admin |
-|---|---|:---:|:---:|:---:|
-| Home: Portal / Workbench / Dashboard | `/portal` · `/technician/dashboard` · `/admin/dashboard` | ✅ portal | ✅ workbench | ✅ dashboard |
-| My tickets (badge: needs my action) | `/my-tickets` | ✅ | ✅ | ✅ |
-| Work queues: Assigned to me · Sub-group queue · On hold · Due soon / Breached · saved views | `/tickets?view=…` | | ✅ | ✅ |
-| Work queues: Escalated to me · All open | `/tickets?view=escalated-to-me` · `all-open` | | | ✅ |
-| Knowledge base: Search | `/kb` | ✅ public articles | ✅ + internal | ✅ |
-| Knowledge base: New article · Flagged | `/kb/editor` · `/kb/flagged` | | ✅ | ✅ |
-| Knowledge base: Approvals | `/kb/approvals` | | | ✅ |
-| Reports: Tickets · SLA · Satisfaction | `/analytics/…` | | ✅ own scope | ✅ |
-| Reports: AI · Settings | `/analytics/ai` · `/analytics/settings` | | | ✅ |
-| AI & workflow: AI decisions · AI scope · Workload · SLA · Learning examples | `/workflow/…` · `/admin/ai/learning-examples` | | | ✅ |
-| Audit: Activity log · Workflow runs | `/audit/…` | | | ✅ |
-| Users & teams: Users · Teams and sub-groups | `/admin/users` · `/admin/teams` | | | ✅ |
+``` mermaid
+flowchart TB
+    Login["Login (Microsoft SSO)"] --> Shell["Workspace shell<br/>(sidebar + top bar)"]
+    Shell -->|"Requester"| Portal["Portal"]
+    Shell -->|"Technician"| Workbench["Workbench"]
+    Shell -->|"Administrator"| Dashboard["Dashboard"]
 
-Saved filters that F04 adds to the work queues: *Suspected bugs*, *Failed automation*.
+    Portal --> NewReq["New request"]
+    NewReq -->|"KB suggestion solves it"| Article["KB article"]
+    NewReq -->|"Submit"| ReqDetail["Request detail"]
+    Portal --> MyTickets["My tickets"]
+    MyTickets --> ReqDetail
+    ReqDetail -->|"AI asks for missing data"| Answer["Answer in the conversation"]
+    Answer --> ReqDetail
+    ReqDetail -->|"Resolved"| Confirm["Confirm and rate / Not fixed"]
+    Portal --> Explore["KB search"]
+    Explore --> Article
 
-### 2.4 Screen inventory
+    Workbench -->|"Claim"| Console["Ticket console"]
+    Workbench --> Queues["Work queues"]
+    Queues --> Console
+    Console -->|"Transfer / escalate / return"| Queues
+    Console -->|"Resolve"| Synth["AI KB draft (1-click)"]
+    Synth --> Editor["KB editor"]
+    Editor -->|"Submit for review"| Approvals["KB approvals (diff view)"]
+    Approvals -->|"Publish"| Article
 
-Pages and modals by owner branch. "Proposed" screens come from the mind map leaves and are not specified in a branch folder yet.
-
-| ID | Screen | Type | Route / opened from | Roles | Owner |
-|---|---|---|---|---|---|
-| SCR-01 | Login (Microsoft SSO) | Page | `/login` | Public | F01 |
-| SCR-90 | Access denied | Page | `/403` | All | F01 |
-| SCR-92 | Not found *(proposed)* | Page | `/404` | All | F01 |
-| SCR-91 | Notifications | Page | `/notifications`, top bar | All | F05 |
-| SCR-DB-03 | Requester portal: action needed (questions to answer, results to confirm), my open requests, announcements, KB search | Page | `/portal` | All (requester home) | F02 |
-| SCR-DB-02 | Technician workbench: my queue by SLA, sub-group queue with claim, personal figures | Page | `/technician/dashboard` | Technician | F02 |
-| SCR-DB-01 | Admin dashboard: volume, open by status, daily AI resolution rate, SLA breach radar, P1 alerts, workload | Page | `/admin/dashboard` | Admin | F02 |
-| SCR-DB-10 | Live incident / P1 drawer | Drawer | Alert banner on the dashboards | Admin, on-duty technician | F02 |
-| SCR-DB-11 | SLA escalation: nudge the assignee; reassign (Admin only) | Modal | SLA widget | Admin; technician (nudge only) | F02 |
-| SCR-T-01 | New request: free text, *for someone else*, attachments; no category form; KB suggestions | Page | `/tickets/new` | All | F03 |
-| SCR-T-03 | My tickets: Open · Needs my action · Resolved & closed · Cancelled | Page | `/my-tickets` | All | F03 |
-| SCR-T-04 | Work queues: views, filters, saved views | Page | `/tickets` | Technician, Admin | F03 |
-| SCR-T-02 | Ticket detail (see 2.5) | Page | `/tickets/:code` | Per ticket scope | F03 (host) |
-| DLG-T-02 … 08 | Transfer within the group · Escalate · Ask requester · Resolve · Cancel · Not fixed / reopen · Confirm & rate | Dialogs | SCR-T-02, email links | Per action | F03 |
-| SCR-WF-11 · 23 · 24 | Reassign (Admin) · Unlink tickets · Return for re-routing | Modals | SCR-T-02 | Admin; assignee | F05 |
-| SCR-AI-04 · 06 · 07 | Review requirement brief · Resolve run manually · Correct domain form | Modals | SCR-T-02, email link | Requester; assignee; technician | F04 |
-| SCR-AI-05 | *This article solved my problem* on an open ticket (closes it as `SOLVED_BY_KB`) | Modal | SEC-AI-04, acknowledgement email EML-AI-01 | Requester (own ticket) | F04 |
-| SCR-KB-01 | KB search | Page | `/kb` | All (requesters see public articles only) | F06 |
-| SCR-KB-02 | Article | Page | `/kb/articles/:id` | All | F06 |
-| SCR-KB-03 | Article editor | Page | `/kb/editor`, `/kb/editor/:id` | Technician, Admin | F06 |
-| SCR-KB-04 | AI draft from a resolved ticket | Modal | Resolve dialog | Technician | F06 |
-| SCR-KB-05 | Approvals with visual diff | Page | `/kb/approvals` | Admin | F06 |
-| SCR-KB-06 | Flagged articles | Page | `/kb/flagged` | Technician, Admin | F06 |
-| SCR-KB-07 | Report an inaccurate article | Modal | SCR-KB-02 | All | F06 |
-| SCR-BC-01 … 04 | Reports: Tickets · SLA · AI (Admin only) · Satisfaction | Tabs | `/analytics/tickets` · `sla` · `ai` · `satisfaction` | Admin; technician in scope | F07 |
-| SCR-BC-05 | Report settings | Page | `/analytics/settings` | Admin | F07 |
-| SCR-BC-10 | Export CSV / XLSX | Modal | Any report tab | Admin | F07 |
-| SCR-WF-30 | AI decisions | Page | `/workflow/ai-decisions` | Admin | F05 |
-| SCR-WF-31 | AI decision detail | Page | `/workflow/ai-decisions/:id` | Admin | F05 |
-| SCR-WF-03 | AI scope: AI actions, automation actions (whitelist), entitlement catalog | Page | `/workflow/ai-scope` | Admin | F05 |
-| SCR-WF-01 | Workload settings | Page | `/workflow/workload` | Admin | F05 |
-| SCR-WF-02 | SLA and business calendar | Page | `/workflow/sla` | Admin | F05 |
-| SCR-WF-05 · 06 · 07 | Assignment preview · Automation action form · Department entitlement form | Modals | SCR-WF-01, SCR-WF-03 | Admin | F05 |
-| SCR-AI-01 | Learning examples | Page | `/admin/ai/learning-examples` | Admin | F04 |
-| SCR-NK-02 | Activity log | Page | `/audit/activity-log` | Admin | F08 |
-| SCR-NK-04 | Workflow runs | Page | `/audit/workflow-runs` | Admin | F08 |
-| SCR-NK-05 | Workflow run detail | Page | `/audit/workflow-runs/:id` | Admin | F08 |
-| SCR-UM-01 | Users: list, add, edit, enable / disable *(proposed)* | Page | `/admin/users` | Admin | F09 |
-| SCR-UM-02 | User detail: role and access scope, groups *(proposed)* | Page | `/admin/users/:id` | Admin | F09 |
-| SCR-UM-03 | Teams and sub-groups: members, domain and subcategories, support tier *(proposed)* | Page | `/admin/teams` | Admin | F09 |
-| SCR-PF-01 | Profile: account information, role and permissions, change password *(proposed)* | Page | `/profile`, user menu | All | F10 |
-
-Emails are part of the UI for most tickets: F03 sends EML-T-01 … 04 (acknowledgement, information needed, resolved – please confirm, update); F04 writes the AI emails EML-AI-01, 03 … 08 that F03 sends.
-
-### 2.5 Ticket detail (SCR-T-02): who owns each zone
-
-One page for every role, hosted by F03; the other branches plug their sections into it. Requesters never see the staff-only items (summary, escalation banner, agent results, run attempts, email tab, AI tab).
-
-| Zone | Requester / beneficiary | Technician, Admin | Owner |
-|---|---|---|---|
-| Header | Code, title, plain-language status, owner shown as *AI Assistant* or the team | Code, title, internal status, source (`EMAIL` / `PORTAL`), support level, priority, SLA countdown, group › sub-group, owner (AI agent or technician) | F03 (fields from F05) |
-| Action bar | Confirm (DLG-T-08), Not fixed / Reopen (DLG-T-07), Cancel (DLG-T-06), follow-up ticket | Start work, Ask requester (DLG-T-04), Resolve (DLG-T-05), Transfer (DLG-T-02), Escalate (DLG-T-03), Cancel; Return for re-routing (SCR-WF-24); Reassign (SCR-WF-11, Admin) | F03, F05 |
-| Banners | On hold: the question and *Waiting for your reply* (SEC-T-02); *Resolved — is it working now?*; merge banner (*Not the same problem*) | Summary (SEC-T-01); escalation banner (SEC-AI-05); *On hold since …*; *Automation running — actions locked* | F03, F04, F05 |
-| Conversation tab | Messages, AI messages (SEC-AI-03), guidance step card (SEC-AI-17), reply box | + internal notes, public / internal toggle, `@mention` | F03, F04 |
-| KB panel | Up to 3 articles with *This solved my problem* → SCR-AI-05 (SEC-KB-02 + SEC-AI-04) | Cited solution steps with *Insert into reply* (SEC-AI-09) | F06, F04 |
-| Details panel | Submitted on, source, team, Resolution when resolved, related tickets (SEC-T-03) | Requester, beneficiary, fields marked *Filled by AI* with *Correct*, domain form (SEC-AI-07), related tickets with *Unlink* (SCR-WF-23) | F03, F05, F04 |
-| Tab *Attachments* | Public attachments | + internal ones, blocked files | F03 |
-| Tab *Email* | — | Original email (`EMAIL` tickets) | F03 |
-| Tab *History* | Allowlisted events (SEC-NK-01) | Full timeline, routing history | F08 |
-| Tab *Automation* | One status line (*Being processed* / *Done* / *A technician is taking over*) | Run, attempts, verification, *Retry*, *Resolved manually* (SEC-AI-16, SCR-AI-06); approval chain (SEC-NK-02) | F04, F08 |
-| Tab *AI* | — | AI decision and policy check (F05); agent results (SEC-AI-18, Admin) | F05, F04 |
-| Tab *Brief* (business requirements only) | Review and confirm (SEC-AI-11, SCR-AI-04) | Read, edit | F04 |
-| Resolve dialog (DLG-T-05) | — | Resolution and reply drafted by AI (SEC-AI-13); *Suggest a KB article* (SCR-KB-04) | F03, F04, F06 |
-
-### 2.6 Main flows per role
-
-**Requester**
-
-```mermaid
-flowchart LR
-    A["Email to the support mailbox<br/>or SCR-T-01 New request"] --> B["KB suggestions<br/>This solved my problem?"]
-    B -- "yes" --> Z["No ticket / closed"]
-    B -- "no" --> C["AI routes the ticket (F05)"]
-    C --> D["AI agent answers, guides<br/>or executes (F04)"]
-    C --> E["Question from the AI<br/>Portal: action needed"]
-    E --> C
-    C --> F["Technician works on it"]
-    D --> G["Resolved — please confirm<br/>email or SCR-T-02"]
-    F --> G
-    G -- "Confirm & rate (DLG-T-08)" --> H["CLOSED"]
-    G -- "Not fixed (DLG-T-07)" --> F
-
-    classDef step fill:#ecfdf5,stroke:#22c55e,color:#14532d;
-    class A,B,C,D,E,F,G,H,Z step;
+    Dashboard --> AIWF["AI and workflow"]
+    Dashboard --> Analytics["Analytics"]
+    Dashboard --> Audit["Audit"]
+    Dashboard --> Users["Users and teams"]
+    Shell --> Forbidden["403 Forbidden"]
+    Shell --> NotFound["404 Not Found"]
 ```
 
-**Technician**
+Each role lands on its own home after login: Requesters on the Portal, Technicians on the workbench and Administrators on the dashboard. Main requester flow: Portal → New request (free text) → KB suggestions → Submit → the AI routes the ticket (F05) → the domain AI agent answers from the KB, guides the requester, or executes an approved request and verifies it (F04); missing data is asked in the conversation; tickets the agent cannot resolve go to a technician → Confirm and rate. Main technician flow: Workbench → Claim → Ticket console with the AI summary and what the agent already tried → Resolve with the AI-drafted Resolution and reply → 1-click AI KB draft → Edit → Administrator review in diff view → Publish.
 
-```mermaid
-flowchart LR
-    A["Workbench /technician/dashboard"] --> B["Work queues<br/>Assigned to me, sub-group queue"]
-    A -- "claim" --> C["SCR-T-02 Ticket detail"]
-    B --> C
-    C --> D["Read summary, escalation banner,<br/>what the agent tried"]
-    D --> E["Ask requester / transfer /<br/>escalate / return for re-routing"]
-    D --> F["Resolve (DLG-T-05)<br/>AI-drafted Resolution and reply"]
-    F --> G["Optional: AI draft of a KB article<br/>→ KB editor"]
-    C --> H["Automation tab: Retry /<br/>Resolved manually"]
+The ticket console must clearly show the AI summary, the reason the ticket came to a person, the fields filled by the AI (correctable with a reason), the SLA timer and the conversation with internal notes kept separate. Anything the AI did (answer, guidance step, executed action) is visible on the ticket with its result, and failed executions fall back to a technician. Email links never change a ticket with one click; they open the ticket with the action pre-selected.
 
-    classDef step fill:#eff6ff,stroke:#60a5fa,color:#1e3a8a;
-    class A,B,C,D,E,F,G,H step;
-```
-
-**Admin**
-
-```mermaid
-flowchart LR
-    A["Dashboard /admin/dashboard"] --> B["Breach radar, P1 alerts<br/>→ ticket or SLA escalation"]
-    A --> C["AI decisions → decision detail"]
-    C --> D["AI scope, workload, SLA settings"]
-    A --> E["Reports /analytics"]
-    A --> F["KB approvals and flagged articles"]
-    A --> G["Audit: activity log, workflow runs"]
-    A --> H["Users, teams and sub-groups"]
-
-    classDef step fill:#f5f3ff,stroke:#a78bfa,color:#4c1d95;
-    class A,B,C,D,E,F,G,H step;
-```
-
-### 2.7 Decisions that settle conflicts between branch docs
-
-| Topic | Branch docs say | Decision for UI | Basis |
-|---|---|---|---|
-| Home pages | F03, F05: requester → *My tickets*; F05: technician → *Assigned to me*, Admin → *AI decisions* | Requester → `/portal` (SCR-DB-03), technician → workbench (SCR-DB-02), Admin → dashboard (SCR-DB-01) | Mind map: Dashboard leaves (*Requester self-service portal*, *Technician personal workbench*, *Real-time operational overview*) |
-| Ticket routes | F02 and the older system IA: `/requests/*`; F05: one list for all roles | F03's routes: `/tickets/new`, `/my-tickets`, `/tickets`, `/tickets/:code` | F03 owns the ticket pages |
-| **SCR-T-03** | F03: *My tickets*; F05: *Ticket list* for all roles | **SCR-T-03 = My tickets.** Staff lists are SCR-T-04 *Work queues* | F03 owns the ticket pages |
-| Triage queue, assignment rules | Still in the F02 sidebar | Removed: no triage queue, no assignment rules | F05 D-IA-07, D-IA-13 |
-| Login | F05 SCR-01: email and password | Microsoft SSO only | Mind map: *Log in / log out (SSO)* |
-| Confirm / not fixed **on a resolved ticket** | F03 DLG-T-07/08, F04 SCR-AI-05, F05 SCR-WF-22 | **One pair: DLG-T-08 Confirm & rate, DLG-T-07 Not fixed**, also for AI resolutions and email links. SCR-AI-05 stays only for *This article solved my problem* on an open ticket | Mind map: Ticket Management › *Confirm / close / reopen / cancel ticket* |
-| Manual reassignment | F02 SCR-DB-11 lets technicians reassign | **Admin only** (SCR-WF-11 or SCR-DB-11); technicians can only nudge | F05: the Admin is the only person who reassigns by hand |
-| Automation tab | F05: tab with SCR-WF-20 Retry, SCR-WF-21 Resolved manually | F04 SEC-AI-16 with *Retry* and SCR-AI-06 | Mind map: AI Ticket Processing › *Execute*, *Verify* |
-| AI analysis, ticket fields, priority, duplicates | Some docs still name F04 | F05 | Mind map: Workflow & Automation leaves |
-| KB, reports, audit routes | `/kb/explore`, `/reports/*`, `/analytics/executive-dashboard` in older docs | `/kb`, `/analytics/*`, `/audit/*` | Owners F06, F07, F08 |
-| Personal Profile | No branch number | **F10** | F05 feature catalog |
-
-**Open — do not design a screen for these yet:**
-
-- **Who approves an access request outside the catalog, and where.** The mind map no longer has an approval leaf under Ticket Management, but F03 US-TK-12 and F08 SEC-NK-02 still show approvals (F03 Q-TK-10, F04 Q-AI-16).
-- **Change password with SSO-only login.** There is no local password. Proposal: SCR-PF-01 links to the Microsoft account page instead of a form.
-- **F09 and F10 screens** are proposed from the mind map leaves until those branches are specified.
-
-### 2.8 Shared UI rules
-
-- **States:** every page and section defines loading (skeleton), empty, validation, error, saving and success. AI sections load on their own; the ticket page never waits for them.
-- **Access:** a page the role may not open shows SCR-90 and never reveals whether the object exists; a missing route shows SCR-92. The API enforces every permission; hiding a button is only for usability.
-- **Email links never act on one click.** A link opens the ticket with the action pre-selected; nothing changes until the user clicks in the dialog (mail scanners open links first).
-- **Who did it:** every AI or workflow output shows a marker with text and icon: *AI*, *Filled by AI*, *Drafted by AI*, *Executed by AI · Verified*, *Decided by workflow*, *Corrected by {name}*.
-- **Language:** Vietnamese by default, English available; content carries the right `lang` attribute.
-- **Accessibility:** WCAG 2.1 AA: contrast ≥ 4.5:1, never colour alone, keyboard for every action, dialogs trap focus and close with Esc, live regions for content that updates.
-- **Layout:** works from 360 px wide; below 768 px one column, the requester view shows only the conversation, the current step and the actions.
-- **Design system:** one shared UI kit for every branch, because the sections of F04, F05, F06 and F08 live inside the F03 pages.
-
-Each branch keeps the detail of its screens: [F02 Dashboard](docs/f02-dashboard/information-architecture/README.md), [F03 Ticket Management](docs/f03-ticket-management/information-architecture/README.md), [F04 AI Ticket Processing](docs/f04-ai-ticket-processing/information-architecture/README.md), [F05 Workflow & Automation](docs/f05-workflow-automation/information-architecture/README.md), [F06 Knowledge Base](docs/f06-knowledge-base/information-architecture/README.md), [F07 Reports & Analytics](docs/f07-reports-analytics/information-architecture/README.md), [F08 Activity Log](docs/f08-activity-log/information-architecture/README.md). The older system-wide draft [docs/information-architecture.md](docs/information-architecture.md) is superseded by this section.
+Each branch details its own screens: [F02 Dashboard](docs/f02-dashboard/information-architecture/README.md), [F03 Ticket Management](docs/f03-ticket-management/information-architecture/README.md), [F04 AI Ticket Processing](docs/f04-ai-ticket-processing/information-architecture/README.md), [F05 Workflow & Automation](docs/f05-workflow-automation/information-architecture/README.md), [F06 Knowledge Base](docs/f06-knowledge-base/information-architecture/README.md), [F07 Reports & Analytics](docs/f07-reports-analytics/information-architecture/README.md), [F08 Activity Log](docs/f08-activity-log/information-architecture/README.md). Where a branch uses another route or home page, the routes and homes above apply. Users and teams (F09) and Profile (F10) are not specified yet; who approves access outside the catalog, and where, is still open.
 
 ## Documentation
 
