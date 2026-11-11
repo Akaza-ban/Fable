@@ -87,8 +87,9 @@ flowchart LR
     tech ==>|"«generalize»"| user
     admin ==>|"«generalize»"| user
 
-    classDef actor fill:none,stroke:none,color:#111
+    classDef actor fill:#e2e8f0,stroke:#64748b,color:#0f172a
     class req,tech,admin,user actor
+    linkStyle default stroke:#94a3b8,stroke-width:1.5px
 ```
 
 ```mermaid
@@ -130,7 +131,7 @@ flowchart LR
     uc01 --> sso
     uc04 & uc05 & uc06 --> aiSvc
 
-    classDef actor fill:none,stroke:none,color:#111
+    classDef actor fill:#e2e8f0,stroke:#64748b,color:#0f172a
     classDef usecase fill:#1168bd,color:#fff,stroke:#0b4f9e
     classDef ai fill:#7b3fbf,color:#fff,stroke:#5a2d8c
     classDef external fill:#666,color:#fff,stroke:#333
@@ -138,9 +139,12 @@ flowchart LR
     class uc01,uc02,uc03,uc07,uc20 usecase
     class uc04,uc05,uc06 ai
     class sso,aiSvc external
-    style left fill:#fff,stroke:#bbb,stroke-dasharray:5 5
-    style right fill:#fff,stroke:#bbb,stroke-dasharray:5 5
-    style system fill:#f8fbff,stroke:#1168bd,stroke-dasharray:5 5
+    style left fill:transparent,stroke:#94a3b8,stroke-dasharray:5 5
+    style right fill:transparent,stroke:#94a3b8,stroke-dasharray:5 5
+    style system fill:transparent,stroke:#3b82f6,stroke-dasharray:5 5
+    style access fill:transparent,stroke:#94a3b8
+    style selfservice fill:transparent,stroke:#94a3b8
+    linkStyle default stroke:#94a3b8,stroke-width:1.5px
 ```
 
 ```mermaid
@@ -164,12 +168,14 @@ flowchart LR
 
     tech --> uc08 & uc09 & uc12 & uc20 & uc19
 
-    classDef actor fill:none,stroke:none,color:#111
+    classDef actor fill:#e2e8f0,stroke:#64748b,color:#0f172a
     classDef usecase fill:#1168bd,color:#fff,stroke:#0b4f9e
     class tech actor
     class uc08,uc09,uc12,uc20,uc19 usecase
-    style left fill:#fff,stroke:#bbb,stroke-dasharray:5 5
-    style system fill:#f8fbff,stroke:#1168bd,stroke-dasharray:5 5
+    style left fill:transparent,stroke:#94a3b8,stroke-dasharray:5 5
+    style system fill:transparent,stroke:#3b82f6,stroke-dasharray:5 5
+    style handling fill:transparent,stroke:#94a3b8
+    linkStyle default stroke:#94a3b8,stroke-width:1.5px
 ```
 
 ```mermaid
@@ -200,15 +206,17 @@ flowchart LR
     uc16 & uc17 --> apis
     uc17 & uc18 --> tech
 
-    classDef actor fill:none,stroke:none,color:#111
+    classDef actor fill:#e2e8f0,stroke:#64748b,color:#0f172a
     classDef ai fill:#7b3fbf,color:#fff,stroke:#5a2d8c
     classDef external fill:#666,color:#fff,stroke:#333
     class ai,tech actor
     class uc15,uc16,uc17,uc18 ai
     class apis external
-    style left fill:#fff,stroke:#bbb,stroke-dasharray:5 5
-    style right fill:#fff,stroke:#bbb,stroke-dasharray:5 5
-    style system fill:#f8fbff,stroke:#1168bd,stroke-dasharray:5 5
+    style left fill:transparent,stroke:#94a3b8,stroke-dasharray:5 5
+    style right fill:transparent,stroke:#94a3b8,stroke-dasharray:5 5
+    style system fill:transparent,stroke:#3b82f6,stroke-dasharray:5 5
+    style aiwork fill:transparent,stroke:#94a3b8
+    linkStyle default stroke:#94a3b8,stroke-width:1.5px
 ```
 
 ```mermaid
@@ -245,7 +253,7 @@ flowchart LR
     admin --> uc11 & uc13 & uc14 & uc19 & uc21 & uc22
     uc10 --> aiSvc
 
-    classDef actor fill:none,stroke:none,color:#111
+    classDef actor fill:#e2e8f0,stroke:#64748b,color:#0f172a
     classDef usecase fill:#1168bd,color:#fff,stroke:#0b4f9e
     classDef ai fill:#7b3fbf,color:#fff,stroke:#5a2d8c
     classDef external fill:#666,color:#fff,stroke:#333
@@ -253,9 +261,12 @@ flowchart LR
     class uc11,uc13,uc14,uc19,uc21,uc22 usecase
     class uc10 ai
     class aiSvc external
-    style left fill:#fff,stroke:#bbb,stroke-dasharray:5 5
-    style right fill:#fff,stroke:#bbb,stroke-dasharray:5 5
-    style system fill:#f8fbff,stroke:#1168bd,stroke-dasharray:5 5
+    style left fill:transparent,stroke:#94a3b8,stroke-dasharray:5 5
+    style right fill:transparent,stroke:#94a3b8,stroke-dasharray:5 5
+    style system fill:transparent,stroke:#3b82f6,stroke-dasharray:5 5
+    style kb fill:transparent,stroke:#94a3b8
+    style config fill:transparent,stroke:#94a3b8
+    linkStyle default stroke:#94a3b8,stroke-width:1.5px
 ```
 
 **Use case catalog**
