@@ -8,6 +8,8 @@
 
 Host pages belong to other branches. F04 only adds the sections listed here. Routes of host pages are **proposed** until their owners publish them.
 
+SEC-AI-01 and SEC-AI-04 extend F06's KB sections on the same pages (SEC-KB-01 on SCR-T-01, SEC-KB-02 on SCR-T-02): F06 returns and shows the authorized articles, F04 adds the one-line AI reason and *This solved my problem*. SEC-AI-09 builds its cited steps from the same F06 results. They render as one panel per page, not two.
+
 | Host page | Owner | Proposed route | F04 sections |
 |---|---|---|---|
 | SCR-T-01 Create ticket | F03 | `/tickets/new` | SEC-AI-01 |

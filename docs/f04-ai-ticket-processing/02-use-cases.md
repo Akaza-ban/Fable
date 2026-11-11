@@ -194,6 +194,7 @@ The use cases are listed in the order of the mind-map leaves.
 - **Actors:** Requester; Technician; AI Service
 - **Trigger:** (a) the requester has typed at least 20 characters in the title and description of the portal create form; (b) F05 routing of a submitted ticket completes, including every `EMAIL` ticket; (c) the agent chooses `KB_ANSWER` (UC-AI-10); (d) a technician opens the ticket or clicks *Find solutions again*
 - **Preconditions:** `SUGGEST_KB` is on (F05 UC-WF-03); the KB (F06) has published articles
+- **Split with F06:** F06 owns the search and the audience filter, and shows the article links (SEC-KB-01 on the create form, SEC-KB-02 on the ticket). F04 adds what the AI writes on top of those results: the one-line reason, the cited steps, the auto-reply, and *This solved my problem*. F04 never searches articles outside F06's authorized results
 - **Main flow — email requester** (most tickets):
   1. After routing, the system searches published articles for all users, as below.
   2. If at least one article is above the threshold, the acknowledgement email that F03 sends ("We received your request #T-…") lists up to 3 articles, each with a link, plus *This solved my problem* and *I still need help* (EML-AI-01).
@@ -224,7 +225,7 @@ The use cases are listed in the order of the mind-map leaves.
 ### UC-AI-10 Domain Agent Handles the Ticket (Agent-First)
 
 - **Actors:** AI Service (domain agents); Requester; Technician of the domain team
-- **Trigger:** F05 routes a ticket to the AI agent of its domain (`route = AI_AGENT`), first or after the requester answered a question F05 asked
+- **Trigger:** F05 routes a ticket to the AI agent of its domain (`route = AI_AGENT`), first or after the requester answered a question F05 asked. F05 does this only when `AGENT_FIRST` is on for the domain (F05 UC-WF-03); otherwise no agent owns the ticket and UC-AI-10 does not run
 - **Idea (decision D-AI-01):** today the requester must pick a category and fill in that category's form in ManageEngine. Here the requester writes free text, F05 routes it, and the **AI agent** of the domain **resolves the ticket itself** wherever it can. A technician receives a ticket only in one of three cases: the agent cannot resolve it, it is a system bug, or it is a request to design software.
 
 #### Agent-first handling
@@ -314,7 +315,7 @@ Taken over from F05 UC-WF-08 (D-AI-02).
   4. Success → the run goes to `VERIFYING` and UC-AI-13 starts.
   5. If the access is time-bound, its revocation is scheduled (`expires_at`).
 - **Alternative flows:**
-  - `CHECK_ACCOUNT` (read only) → the result (exists, locked, current access) is the answer; UC-AI-08 writes the reply, the ticket is `RESOLVED`, no verification step.
+  - `CHECK_ACCOUNT` (read only) → the result (exists, locked, current access) is the answer; UC-AI-08 writes the reply, the ticket is `RESOLVED` with resolution code `INFORMATION_PROVIDED` (F03), no verification step.
   - Transient error (timeout, `5xx`, `429`) → `RETRY_WAIT` → up to 3 retries, 1 / 5 / 15 minutes apart.
   - Permanent error (business `4xx`, permission denied) or retries exhausted → `FAILED` → UC-AI-13 failure branch.
   - Revocation due → a `workflow_run` with `REVOKE_ACCESS`; the user is notified 1 day before (BR-WF-14).
@@ -333,7 +334,7 @@ Taken over from F05 UC-WF-09 (D-AI-02).
 - **Trigger:** UC-AI-12 reports a successful call
 - **Main flow — verification:**
   1. The system calls the connector's check operation (the account exists, the user is in the access group, the expiry date is right).
-  2. Match → run `SUCCEEDED` → ticket `RESOLVED` → UC-AI-08 writes the result reply and the Resolution from the run data.
+  2. Match → run `SUCCEEDED` → ticket `RESOLVED` with resolution code `ACCESS_GRANTED` (F03) → UC-AI-08 writes the result reply and the Resolution from the run data.
   3. The requester clicks *Confirm* → F05 `confirmTicketResolution` → `CLOSED`.
 - **Alternative — requester reports not fixed:** F05 `reopenTicket` → a technician of the owning team.
 - **Alternative — failure:** the run is `FAILED`, or the check does not match (`VERIFICATION_MISMATCH`), or the check operation keeps failing after 3 retries (`VERIFICATION_UNAVAILABLE`):
