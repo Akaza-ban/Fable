@@ -4,13 +4,29 @@ The system helps an enterprise receive, classify, and dispatch internal IT suppo
 
 ## 1. Requirements — User Stories and Use Cases
 
-Requirements define what the system must do, who uses it, and the value delivered. Each branch of the mind map (F01–F09) is specified in its own folder under `docs/`; this section gives the overview across branches.
+Requirements define what the system must do, who uses it, and the value delivered. The detailed specification is split into feature branches F01–F09; F02–F08 each have a folder under `docs/`, while F01 Authentication & Authorization and F09 User Management are not specified yet. This section gives the overview across branches.
 
 ### 1.1 Product mind map
 
 ![System Mind Map](docs/mindmap.png)
 
 The outline for XMind import is in [the mind map outline](docs/mindmap-xmind.md).
+
+The mind map groups features by area (8 groups); the specification folders are organized by feature branch. The groups map to the branches as follows:
+
+| Mind map group | Specified in | Branch design status |
+| :--- | :--- | :--- |
+| 1. Requester Self-Service | [F03 Ticket Management](docs/f03-ticket-management/README.md); KB deflection in [F06](docs/f06-knowledge-base/README.md) | TARGET V1 |
+| 2. Technician Workspace | [F03 Ticket Management](docs/f03-ticket-management/README.md); AI summary in [F04](docs/f04-ai-ticket-processing/README.md) | TARGET V1 |
+| 3. Administration & Coordination | [F05 Workflow & Automation](docs/f05-workflow-automation/README.md) (rules, SLA, AI scope); RBAC and user directory in F09 (not specified) | TARGET V1 |
+| 4. Knowledge Base | [F06 Knowledge Base](docs/f06-knowledge-base/README.md) | TARGET V1 |
+| 5. AI Intelligent Processing | [F04 AI Ticket Processing](docs/f04-ai-ticket-processing/README.md) | TARGET V1 (draft for team review) |
+| 6. Automation Workflow Engine | [F05 Workflow & Automation](docs/f05-workflow-automation/README.md) | TARGET V1 |
+| 7. Approval & Automated Execution | [F05 Workflow & Automation](docs/f05-workflow-automation/README.md) | TARGET V1 |
+| 8. Dashboard & Governance Telemetry | [F02 Dashboard](docs/f02-dashboard/README.md), [F07 Reports & Analytics](docs/f07-reports-analytics/README.md), [F08 Activity Log](docs/f08-activity-log/README.md) | draft |
+| Login (no group) | F01 Authentication & Authorization (not specified) | — |
+
+The mind map is an early outline. Where it differs from the branch docs, the branch docs apply: there is no Team Lead role (see the actors below), the technician summary is at most 150 words rather than 3 lines, and a closed ticket can be reopened within 7 days rather than 48 hours. Manager approval for elevated permissions (groups 7.2 and 7.3) is still an open question in F05 (US-WF-15).
 
 ### 1.2 User stories
 
@@ -58,7 +74,7 @@ Each branch keeps its detailed backlog with acceptance criteria in its own folde
 
 ### 1.3 Use cases
 
-The system has 14 use cases (`UC01` to `UC14`) shared by the three human roles (Requester, Technician, Administrator) and the AI Service. The first diagram shows how the human roles relate; the other three show the use cases by area. Purple nodes call the AI Service.
+The system has 22 use cases (`UC01` to `UC22`) shared by the three human roles (Requester, Technician, Administrator) and the AI Service. The first diagram shows how the human roles relate; the other four show the use cases by area. Purple nodes call the AI Service.
 
 ```mermaid
 flowchart LR
@@ -94,9 +110,10 @@ flowchart LR
         subgraph selfservice["Self-service"]
             direction TB
             uc04["UC04 Submit Ticket & Evidence"]
-            uc05["UC05 Track Ticket & Clarification"]
+            uc05["UC05 Track, Confirm & Reopen Ticket"]
             uc06["UC06 Search KB Solutions"]
             uc07["UC07 Rate & Report KB Article"]
+            uc20["UC20 Communicate on Ticket"]
         end
     end
 
@@ -109,17 +126,17 @@ flowchart LR
     req ==>|"«generalize»"| user
 
     user --> uc01 & uc02 & uc03 & uc06 & uc07
-    req --> uc04 & uc05
+    req --> uc04 & uc05 & uc20
     uc01 --> sso
-    uc05 & uc06 --> aiSvc
+    uc04 & uc05 & uc06 --> aiSvc
 
     classDef actor fill:none,stroke:none,color:#111
     classDef usecase fill:#1168bd,color:#fff,stroke:#0b4f9e
     classDef ai fill:#7b3fbf,color:#fff,stroke:#5a2d8c
     classDef external fill:#666,color:#fff,stroke:#333
     class user,req actor
-    class uc01,uc02,uc03,uc04,uc07 usecase
-    class uc05,uc06 ai
+    class uc01,uc02,uc03,uc07,uc20 usecase
+    class uc04,uc05,uc06 ai
     class sso,aiSvc external
     style left fill:#fff,stroke:#bbb,stroke-dasharray:5 5
     style right fill:#fff,stroke:#bbb,stroke-dasharray:5 5
@@ -140,16 +157,57 @@ flowchart LR
             uc08["UC08 Claim & Triage Tickets"]
             uc09["UC09 Update Fix & Root Cause"]
             uc12["UC12 Escalate Ticket to Tier 2/3"]
+            uc20["UC20 Communicate on Ticket"]
+            uc19["UC19 Receive SLA Reminders & Breach Alerts"]
         end
     end
 
-    tech --> uc08 & uc09 & uc12
+    tech --> uc08 & uc09 & uc12 & uc20 & uc19
 
     classDef actor fill:none,stroke:none,color:#111
     classDef usecase fill:#1168bd,color:#fff,stroke:#0b4f9e
     class tech actor
-    class uc08,uc09,uc12 usecase
+    class uc08,uc09,uc12,uc20,uc19 usecase
     style left fill:#fff,stroke:#bbb,stroke-dasharray:5 5
+    style system fill:#f8fbff,stroke:#1168bd,stroke-dasharray:5 5
+```
+
+```mermaid
+flowchart LR
+    subgraph left["Actors"]
+        direction TB
+        ai["<b>AI Service</b>"]
+    end
+
+    subgraph system["System Boundary"]
+        direction TB
+        subgraph aiwork["AI processing and automation"]
+            direction TB
+            uc15["UC15 Classify & Route Ticket"]
+            uc16["UC16 Auto-resolve & Execute Request"]
+            uc17["UC17 Verify Result & Hand Off on Failure"]
+            uc18["UC18 Summarize Ticket & Draft Reply"]
+        end
+    end
+
+    subgraph right["Actors and systems"]
+        direction TB
+        tech["<b>Technician</b>"]
+        apis(["Backend APIs<br/>(identity and access systems)"])
+    end
+
+    ai --> uc15 & uc16 & uc17 & uc18
+    uc16 & uc17 --> apis
+    uc17 & uc18 --> tech
+
+    classDef actor fill:none,stroke:none,color:#111
+    classDef ai fill:#7b3fbf,color:#fff,stroke:#5a2d8c
+    classDef external fill:#666,color:#fff,stroke:#333
+    class ai,tech actor
+    class uc15,uc16,uc17,uc18 ai
+    class apis external
+    style left fill:#fff,stroke:#bbb,stroke-dasharray:5 5
+    style right fill:#fff,stroke:#bbb,stroke-dasharray:5 5
     style system fill:#f8fbff,stroke:#1168bd,stroke-dasharray:5 5
 ```
 
@@ -169,9 +227,12 @@ flowchart LR
             uc11["UC11 Author & Edit KB Articles"]
             uc13["UC13 Review & Publish (Diff View)"]
         end
-        subgraph config["Configuration"]
+        subgraph config["Configuration and oversight"]
             direction TB
             uc14["UC14 Configure Rules, SLA & Scope"]
+            uc19["UC19 Receive SLA Reminders & Breach Alerts"]
+            uc21["UC21 View & Export Reports"]
+            uc22["UC22 View Activity Log"]
         end
     end
 
@@ -181,7 +242,7 @@ flowchart LR
     end
 
     tech --> uc10 & uc11
-    admin --> uc11 & uc13 & uc14
+    admin --> uc11 & uc13 & uc14 & uc19 & uc21 & uc22
     uc10 --> aiSvc
 
     classDef actor fill:none,stroke:none,color:#111
@@ -189,7 +250,7 @@ flowchart LR
     classDef ai fill:#7b3fbf,color:#fff,stroke:#5a2d8c
     classDef external fill:#666,color:#fff,stroke:#333
     class tech,admin actor
-    class uc11,uc13,uc14 usecase
+    class uc11,uc13,uc14,uc19,uc21,uc22 usecase
     class uc10 ai
     class aiSvc external
     style left fill:#fff,stroke:#bbb,stroke-dasharray:5 5
@@ -199,24 +260,32 @@ flowchart LR
 
 **Use case catalog**
 
-| ID | Use Case Name | Primary Actor | Scope & Description |
-| :--- | :--- | :--- | :--- |
-| **UC01** | Login & SSO Authentication | All Roles | Authenticate via enterprise SSO and load role-based workspace permissions. |
-| **UC02** | Logout & Session Revocation | All Roles | Terminate session tokens and clear client-side caches. |
-| **UC03** | View Dashboard & Telemetry | All Roles | View role-scoped metrics (personal tickets, team backlog, or enterprise KPIs). |
-| **UC04** | Submit Ticket & Evidence | Requester | Submit support requests with category, error logs, and screenshots. |
-| **UC05** | Track Ticket & Clarification | Requester | View real-time status timeline and respond to AI clarifying questions. |
-| **UC06** | Search KB Solutions | All Roles | Natural language semantic search for verified solutions with instant answer extraction. |
-| **UC07** | Rate & Report KB Article | All Roles | Submit helpfulness votes (Helpful / Unhelpful) or report outdated/inaccurate technical steps. |
-| **UC08** | Claim & Triage Tickets | Technician | Claim tickets from the team queue or from the shared triage queue (tickets the AI could not route), or transfer a misrouted ticket to another team. |
-| **UC09** | Update Fix & Root Cause | Technician | Transition ticket states (In Progress, Needs Info, Resolved) and record resolution and root cause. |
-| **UC10** | AI Synthesize KB from Ticket | Technician | 1-click generation of structured KB draft from closed ticket with PII scrubbing. |
-| **UC11** | Author & Edit KB Articles | Technician / Admin | Author technical guides with rich text, markdown, code blocks, and tags. |
-| **UC12** | Escalate Ticket to Tier 2/3 | Technician | Transfer complex or blocked tickets to a higher support tier with the work done so far. |
-| **UC13** | Review & Publish (Diff View) | Administrator | Inspect proposed article revisions side-by-side (Diff View) and approve for release. |
-| **UC14** | Configure Rules, SLA & Scope | Administrator | Define deterministic assignment rules, SLA policies, and AI auto-approval whitelist. |
+| ID | Use Case Name | Primary Actor | Scope & Description | Branch use cases |
+| :--- | :--- | :--- | :--- | :--- |
+| **UC01** | Login & SSO Authentication | All human roles | Authenticate via enterprise SSO and load role-based workspace permissions. | — (F01 not specified) |
+| **UC02** | Logout & Session Revocation | All human roles | Terminate session tokens and clear client-side caches. | — (F01 not specified) |
+| **UC03** | View Dashboard & Telemetry | All human roles | View role-scoped metrics (personal tickets and team workload for Technicians, enterprise KPIs, SLA risk and incident feed for Administrators). | UC-DB-01 … UC-DB-05 |
+| **UC04** | Submit Ticket & Evidence | Requester | Submit a request in free text through the portal or the support mailbox, with error logs and screenshots; matching KB articles are suggested while typing. | UC-TK-01, UC-AI-03 |
+| **UC05** | Track, Confirm & Reopen Ticket | Requester | View the status timeline, answer AI clarifying questions, confirm the fix and rate it, reopen within 7 days, or cancel a request no longer needed. | UC-TK-02, UC-TK-06, UC-AI-02 |
+| **UC06** | Search KB Solutions | All human roles | Natural language semantic search for verified solutions with instant answer extraction. | UC-KB-01 |
+| **UC07** | Rate & Report KB Article | All human roles | Submit helpfulness votes (Helpful / Unhelpful) or report outdated/inaccurate technical steps. | UC-KB-05 |
+| **UC08** | Claim & Triage Tickets | Technician | Claim tickets from the team queue or from the shared triage queue (tickets the AI could not route), or transfer a misrouted ticket to another team. | UC-TK-02, UC-TK-03, UC-DB-05 |
+| **UC09** | Update Fix & Root Cause | Technician | Transition ticket states (In Progress, Needs Info, Resolved) and record resolution and root cause. | UC-TK-05 |
+| **UC10** | AI Synthesize KB from Ticket | Technician | 1-click generation of structured KB draft from closed ticket with PII scrubbing. | UC-KB-04 |
+| **UC11** | Author & Edit KB Articles | Technician / Admin | Author technical guides with rich text, markdown, code blocks, and tags. | UC-KB-02 |
+| **UC12** | Escalate Ticket to Tier 2/3 | Technician | Transfer complex or blocked tickets to a higher support tier with the work done so far. | UC-TK-03 |
+| **UC13** | Review & Publish (Diff View) | Administrator | Inspect proposed article revisions side-by-side (Diff View) and approve for release. | UC-KB-03 |
+| **UC14** | Configure Rules, SLA & Scope | Administrator | Define deterministic assignment rules, SLA policies, and AI auto-approval whitelist. | UC-WF-01, UC-WF-02, UC-WF-03 |
+| **UC15** | Classify & Route Ticket | AI Service | Read the ticket, classify it, fill the structured fields, suggest a priority and flag duplicates; then auto-resolve it, ask the requester one question, or route it to a technician team (the shared triage queue when no rule matches). | UC-AI-01, UC-AI-05, UC-AI-06, UC-WF-04, UC-WF-05 |
+| **UC16** | Auto-resolve & Execute Request | AI Service | Approve in-scope requests after the deterministic policy check and call the backend APIs; domain agents answer known how-to questions with cited KB steps. | UC-WF-07, UC-WF-08, UC-AI-10 |
+| **UC17** | Verify Result & Hand Off on Failure | AI Service | Verify the result on the target system and ask the requester to confirm; hand failed executions to a technician with the error log. | UC-WF-09 |
+| **UC18** | Summarize Ticket & Draft Reply | AI Service | Give the technician a summary of at most 150 words when a ticket comes to a human, and draft the resolution and the reply when it is resolved. | UC-AI-04, UC-AI-08 |
+| **UC19** | Receive SLA Reminders & Breach Alerts | Technician / Administrator | The SLA scheduler reminds the assignee before a deadline and alerts the Administrator when a ticket breaches its SLA. | UC-WF-06, UC-DB-02 |
+| **UC20** | Communicate on Ticket | Requester / Technician | Exchange public replies with attachments; Technicians add internal notes hidden from the requester. | UC-TK-04 |
+| **UC21** | View & Export Reports | Administrator | Ticket volume, handling time and SLA breaches, AI self-resolution rate and satisfaction, with CSV/XLSX export; Technicians see figures for their own scope. | UC-BC-01 … UC-BC-06 |
+| **UC22** | View Activity Log | Administrator | Search the append-only log of user, AI and system actions, including AI approval decisions and workflow run errors; Technicians and Requesters see the history of their tickets. | UC-NK-01 … UC-NK-05 |
 
-The use cases per branch (UC-DB, UC-TK, UC-AI, UC-WF, UC-KB, UC-BC, UC-NK) are specified in each branch folder.
+The use cases per branch (UC-DB, UC-TK, UC-AI, UC-WF, UC-KB, UC-BC, UC-NK) are specified in each branch folder. Two branch use cases are left out of this overview on purpose: UC-AI-07 (feedback and learning from verified tickets) and UC-AI-09 (structuring a business requirement) are specified in F04 only.
 
 ## 2. Information Architecture, Screen Hierarchy and UI/UX
 
@@ -375,8 +444,8 @@ Each branch also has its own information architecture: [F02 Dashboard](docs/f02-
 - F06 Knowledge Base: [Index](docs/f06-knowledge-base/README.md), [Mind map](docs/f06-knowledge-base/01-mindmap.md), [User stories](docs/f06-knowledge-base/02-user-stories.md), [Use cases](docs/f06-knowledge-base/03-use-cases.md), [Information architecture](docs/f06-knowledge-base/04-information-architecture.md), [Wireframes](docs/f06-knowledge-base/05-wireframes.md).
 - F07 Reports & Analytics: [Index](docs/f07-reports-analytics/README.md), [Features](docs/f07-reports-analytics/01-features.md), [Use cases](docs/f07-reports-analytics/02-use-cases.md), [User stories (INVEST)](docs/f07-reports-analytics/03-user-stories-invest.md), [Acceptance criteria](docs/f07-reports-analytics/04-acceptance-criteria.md), [Business rules](docs/f07-reports-analytics/05-business-rules.md), [Information architecture](docs/f07-reports-analytics/information-architecture/README.md).
 - F08 Activity Log: [Index](docs/f08-activity-log/README.md), [Features](docs/f08-activity-log/01-features.md), [Use cases](docs/f08-activity-log/02-use-cases.md), [User stories (INVEST)](docs/f08-activity-log/03-user-stories-invest.md), [Acceptance criteria](docs/f08-activity-log/04-acceptance-criteria.md), [Business rules](docs/f08-activity-log/05-business-rules.md), [Information architecture](docs/f08-activity-log/information-architecture/README.md).
-- Requirements catalogs: [Business rules](docs/requirements/business-rules.md), [Non-functional requirements](docs/requirements/non-functional-requirements.md).
-- Traceability: [Master traceability matrix](docs/traceability/master-traceability.md).
+- Requirements catalogs (F05 Workflow & Automation so far): [Business rules](docs/requirements/business-rules.md), [Non-functional requirements](docs/requirements/non-functional-requirements.md).
+- Traceability (F05 Workflow & Automation so far): [Master traceability matrix](docs/traceability/master-traceability.md). The system-level stories and use cases trace to the branches through the "Branch stories" and "Branch use cases" columns above.
 
 ### Repository layout
 
@@ -392,28 +461,29 @@ Fable/
 │   ├── f06-knowledge-base/        # Knowledge base: mind map, user stories, use cases, IA, wireframes
 │   ├── f07-reports-analytics/     # Reports and analytics: features, use cases, INVEST, AC, business rules, IA
 │   ├── f08-activity-log/          # Activity log: features, use cases, INVEST, AC, business rules, IA
-│   ├── requirements/              # Shared business rules and non-functional requirements
-│   ├── traceability/              # Master traceability matrix
+│   ├── requirements/              # Business rules and non-functional requirements (F05 so far)
+│   ├── traceability/              # Traceability matrix (F05 so far)
 │   ├── information-architecture.md  # System-wide information architecture
 │   ├── mindmap-xmind.md           # Mind map outline for XMind
 │   └── mindmap.png                # Mind map image
 └── README.md
 ```
 
-Every branch folder is named `fNN-<branch>` after its number in the mind map, its files are numbered `NN-<topic>.md`, and its `README.md` lists the files.
+Every branch folder is named `fNN-<branch>` after its feature branch number (F01–F09, mapped to the mind map groups in [1.1](#11-product-mind-map)), its files are numbered `NN-<topic>.md` (F04 and F05 keep their IA in an `information-architecture/` subfolder), and its `README.md` lists the files.
 
 ## Project Progress
 
 - [x] Draw the product mind map
-- [x] Write the system user stories and use cases, with the use case diagrams
-- [x] Design the system information architecture and screen hierarchy (draft)
+- [x] Write the system user stories (22) and use cases (22), with the use case diagrams
+- [x] Design the system information architecture and screen hierarchy
 - [x] F02 Dashboard: user stories, use cases, IA (draft)
-- [x] F03 Ticket Management: user stories, use cases, IA (draft)
-- [x] F04 AI Ticket Processing: use cases, INVEST, acceptance criteria, business rules, IA (draft)
-- [x] F05 Workflow & Automation: use cases, INVEST, acceptance criteria, IA (draft)
-- [x] F06 Knowledge Base: user stories, use cases, IA, wireframes (draft)
-- [x] F07 Reports & Analytics: use cases, INVEST, acceptance criteria, business rules, IA (draft)
-- [x] F08 Activity Log: use cases, INVEST, acceptance criteria, business rules, IA (draft)
+- [x] F03 Ticket Management: user stories, use cases, IA (TARGET V1)
+- [x] F04 AI Ticket Processing: features, use cases, INVEST, acceptance criteria, business rules, IA (TARGET V1, draft for team review)
+- [x] F05 Workflow & Automation: features, use cases, INVEST, acceptance criteria, IA (TARGET V1)
+- [x] F06 Knowledge Base: mind map, user stories, use cases, IA, wireframes (TARGET V1)
+- [x] F07 Reports & Analytics: features, use cases, INVEST, acceptance criteria, business rules, IA (TARGET V1, draft for team review)
+- [x] F08 Activity Log: features, use cases, INVEST, acceptance criteria, business rules, IA (TARGET V1, draft for team review)
+- [ ] Align the branch docs with the four actors (remove Team Lead) and the system IA role matrix
 - [ ] Specify F01 Authentication & Authorization and F09 User Management
 - [ ] C4 System Context, Container, Component
 - [ ] Database design (ERD)
