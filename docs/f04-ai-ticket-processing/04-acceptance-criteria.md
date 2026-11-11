@@ -179,7 +179,7 @@ AI quality cannot be proven by one test case. These named sets measure it. Each 
 
 ## AC-UC-AI-07 — Learn from verified tickets and technician feedback
 
-*(US-AI-14, US-AI-19)*
+*(US-AI-14, US-AI-19, US-AI-28)*
 
 **US-AI-14 — Feedback**
 
@@ -188,6 +188,16 @@ AI quality cannot be proven by one test case. These named sets measure it. Each 
 - **AC-AI-14.3** *Given* stored corrections, votes and draft edits, *when* F07 queries them, *then* they can be counted by day, domain, outcome, model version and prompt version.
 - **AC-AI-14.4** *Given* the SAP agent filled transaction FB60, *when* Quang corrects it to FB70 and saves, *then* a correction with before and after values is stored, a new result version is created, and no action, run or re-route starts. A value outside the domain form → `422`.
 - **AC-AI-14.5** *Given* an escalated ticket, *when* Hai marks *The agent could have resolved this* with the reason "KB-112 covers it", *then* the flag is stored with the ticket's agent result.
+
+**US-AI-28 — Review of tickets the agent resolved alone**
+
+- **AC-AI-28.1** *Given* the SAP agent resolved 12 tickets without a technician today and Quang is in the SAP team, *when* he opens the saved filter *Resolved by AI*, *then* he sees those 12 tickets with their outcome and review state, and no tickets resolved by other domains' agents.
+- **AC-AI-28.2** *Given* Quang opens one of them, *when* the page loads, *then* the review section shows the outcome, the cited article or guidance transcript, the executed action with its approval and verification, and the Resolution; the ticket's status, assignment and Resolution cannot be changed from it (an API call to change them returns `403`).
+- **AC-AI-28.3** *Given* the agent granted `FI-Admin` where the ticket asked for FI read-only, *when* Quang chooses *Resolved incorrectly* with the reason "wrong permission granted", *then* the review is stored with Quang, the time and the agent result version, the Admin is notified with the ticket, the reason and whether it is still open, and the ticket is never used as a learning example.
+- **AC-AI-28.4** *Given* a learning example already exists from that ticket, *when* it is flagged *Resolved incorrectly*, *then* the example is excluded at once and never appears in `examplesUsed` again.
+- **AC-AI-28.5** *Given* *Resolved incorrectly* with an empty reason, *when* it is saved, *then* `400`; *given* Hai (Helpdesk) tries to review an SAP agent ticket, *then* `403`; *given* a ticket resolved by a technician, *then* `409`.
+- **AC-AI-28.6** *Given* Minh confirmed a KB answer and no one flagged the ticket, *when* it has been closed for 7 days, *then* it becomes a learning example without any IT review.
+- **AC-AI-28.7** *Given* stored reviews, *when* F07 queries them, *then* they can be counted by domain, outcome, review result, model version and prompt version.
 
 **US-AI-19 — Learning from verified tickets**
 

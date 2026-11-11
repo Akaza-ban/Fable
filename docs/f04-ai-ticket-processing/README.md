@@ -50,7 +50,7 @@ The eight leaves of the **AI Ticket Processing** branch of the mind map:
 | 5 | Verify resolution result | UC-AI-13 | US-AI-24, US-AI-25 |
 | 6 | Fill resolution and reply to requester | UC-AI-08 | US-AI-16 |
 | 7 | Structure business requirements for dev team | UC-AI-09 | US-AI-18 |
-| 8 | Learn from verified tickets and technician feedback | UC-AI-07 | US-AI-14, US-AI-19 |
+| 8 | Learn from verified tickets and technician feedback | UC-AI-07 | US-AI-14, US-AI-19, US-AI-28 |
 
 IDs are kept stable on purpose: other branches cite them. IDs of work that moved are retired and never reused; new work takes the next free number.
 
@@ -144,7 +144,8 @@ Taken over **from F05**: UC-WF-08 (execute via API) → UC-AI-12; UC-WF-09 (veri
 3. **F05:** take over the retired items above, and add the settings `AUTO_RESOLVE_KB` (Q-AI-10) and `GUIDE_L2` (Q-AI-15).
 4. **F05:** a ticket state, or a documented use of an existing one, for a ticket being handled by an AI agent and for a guided session waiting on the requester (Q-AI-10, Q-AI-15).
 5. **F03:** take over the technician summary; add the resolution codes `ANSWERED_BY_KB`, `SOLVED_BY_KB` and `GUIDED_BY_AI` (Q-AI-18); approval of access-provisioning requests publishes an event that starts UC-AI-12 (Q-AI-16).
-6. **F06:** the self-service flag on articles, and step-by-step troubleshooting articles with checks that UC-AI-11 can follow.
+6. **F01 / F03:** extend the ticket scope check with the **review scope** (BR-AI-16): technicians of an agent's default escalation group may read, but not change, tickets that agent resolved without a technician.
+7. **F06:** the self-service flag on articles, and step-by-step troubleshooting articles with checks that UC-AI-11 can follow.
 
 ## Documents
 

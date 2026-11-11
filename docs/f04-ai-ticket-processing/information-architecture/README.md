@@ -4,7 +4,7 @@
 >
 > Implementation status: NOT STARTED
 
-This folder places the 15 F04 stories on screens and emails. **F04 owns very few pages.** Almost all of its UI lives inside pages owned by other branches (the F03 ticket pages) and inside the emails that carry most of the 8,000 tickets a day. So the inventory has three kinds of entries:
+This folder places the 16 F04 stories on screens and emails. **F04 owns very few pages.** Almost all of its UI lives inside pages owned by other branches (the F03 ticket pages) and inside the emails that carry most of the 8,000 tickets a day. So the inventory has three kinds of entries:
 
 | Kind | ID | Meaning |
 |---|---|---|
@@ -59,7 +59,7 @@ flowchart TB
         direction TB
         t01["<b>SCR-T-01 Create ticket</b><br/>• SEC-AI-01 KB suggestions"]
         tlist["<b>SCR-T-04 Work queues</b><br/>• SEC-AI-14 Escalation class,<br/>automation status, filters"]
-        t02["<b>SCR-T-02 Ticket detail</b><br/>Requester: SEC-AI-03 conversation, SEC-AI-04 KB,<br/>SEC-AI-17 guidance, SEC-AI-11 brief<br/>Technician: SEC-AI-05, 07, 09, 16, 17<br/>Admin: SEC-AI-18"]
+        t02["<b>SCR-T-02 Ticket detail</b><br/>Requester: SEC-AI-03 conversation, SEC-AI-04 KB,<br/>SEC-AI-17 guidance, SEC-AI-11 brief<br/>Technician: SEC-AI-05, 07, 09, 16, 17, 19<br/>Admin: SEC-AI-18"]
         resolve["<b>Resolve dialog</b> (F03)<br/>• SEC-AI-13 AI draft of Resolution + reply"]
         m04["<b>SCR-AI-04</b> Review requirement brief"]
         m05["<b>SCR-AI-05</b> Confirm resolution / Not solved"]
@@ -100,7 +100,7 @@ flowchart TB
 | Role | Home page (F01) | Where F04 shows up |
 |---|---|---|
 | Requester | My tickets | Emails EML-AI-01, 03 … 05, 07, 08; create form (SEC-AI-01); ticket detail (SEC-AI-03, 04, 11, 17); modals SCR-AI-04, SCR-AI-05 |
-| Technician | Work queues | Columns and filters (SEC-AI-14); ticket detail (SEC-AI-05, 07, 09, 16, 17); Resolve dialog (SEC-AI-13); modals SCR-AI-06, SCR-AI-07 |
+| Technician | Work queues | Columns and filters (SEC-AI-14, including *Resolved by AI*); ticket detail (SEC-AI-05, 07, 09, 16, 17), and SEC-AI-19 on tickets the domain's agent resolved; Resolve dialog (SEC-AI-13); modals SCR-AI-06, SCR-AI-07 |
 | Admin | Dashboard | Everything a technician sees, on every ticket, plus SEC-AI-18; sidebar **AI** group: SCR-WF-03, SCR-WF-30, SCR-AI-01, F01's AI suggestions and service accounts |
 | AI Service | — | No UI; works through the API as `AI_AGENT` |
 

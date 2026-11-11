@@ -19,6 +19,7 @@ Agent-first (D-AI-01) works only if everyone can tell who produced each thing on
 | **Approved by {policy / name}** | Who approved the executed action: the F05 policy check or an Administrator in F03 | SEC-AI-16 |
 | **Decided by workflow** | A decision of F05 (policy check, routing, escalation set by F05) | SEC-AI-05 |
 | **Confirmed by requester** | The requester confirmed an answer, a guided fix or a brief | SEC-AI-03, SEC-AI-11, SEC-AI-17 |
+| **Reviewed by {name}** · **Flagged incorrect by {name}** | A technician or the Admin reviewed a ticket the agent resolved alone | SEC-AI-19, SEC-AI-14 |
 
 ## 2. AI state contract
 
@@ -56,6 +57,7 @@ Every banner ends with **What the agent already did**: KB reply sent (with artic
 | Escalation | `escalationClass` | As in the banner label |
 | Agent outcome | `outcome` | "Answered from KB", "Guiding the requester", "Action proposed", "Escalated" |
 | Automation | `workflow_runs.status` | "Processing", "Verifying", "Done", "Failed — with a technician" |
+| Review | review of an AI-resolved ticket | "Not reviewed", "Looks right", "Resolved incorrectly" |
 | Resolution | F03 resolution code | "Answered by AI (KB)" for `ANSWERED_BY_KB`; "Solved with a KB article" for `SOLVED_BY_KB`; "Fixed with AI guidance" for `GUIDED_BY_AI` |
 
 ## 5. Email rules
@@ -82,4 +84,4 @@ Every banner ends with **What the agent already did**: KB reply sent (with artic
 - The guidance answers are real buttons in a labelled group ("Result of step 2"), and the free-text box has a visible label.
 - Modals SCR-AI-04 … 07 trap focus, close with Esc, and return focus to the button that opened them.
 - Vietnamese and English content carries the right `lang` attribute, so screen readers pronounce it correctly.
-- Every action available by mouse (*Insert into reply*, *Correct*, *Retry*, *Resolved manually*, guidance answers, votes) is available by keyboard.
+- Every action available by mouse (*Insert into reply*, *Correct*, *Retry*, *Resolved manually*, *Looks right*, *Resolved incorrectly*, guidance answers, votes) is available by keyboard.

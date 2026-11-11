@@ -63,8 +63,8 @@ The rules of F05 (`BR-WF-xx`) still apply; in particular BR-WF-11 … BR-WF-15 g
 ## BR-AI-12 — Learning examples come only from verified tickets
 
 - **Source:** UC-AI-07, UC-AI-10, UC-AI-08
-- **Stories:** US-AI-19
-- **Rule:** A closed ticket becomes a learning example only if a technician resolved it or confirmed the agent's handling, or the requester confirmed an AI resolution, and it was not reopened for 7 days. Examples are stored masked (BR-AI-07). They are used only as model input; no text from an example is ever shown to another user. An Admin can exclude any example, and a new example set is used only if the results on ES-AI-07 do not get worse.
+- **Stories:** US-AI-19, US-AI-28
+- **Rule:** A closed ticket becomes a learning example only if a technician resolved it or confirmed the agent's handling, or the requester confirmed an AI resolution, and it was not reopened for 7 days. A requester's confirmation is enough: it means the problem is solved. A ticket flagged *Resolved incorrectly* (BR-AI-16) never becomes an example, and an example already made from it is excluded. Examples are stored masked (BR-AI-07). They are used only as model input; no text from an example is ever shown to another user. An Admin can exclude any example, and a new example set is used only if the results on ES-AI-07 do not get worse.
 
 ## BR-AI-13 — Agent first; people only for three classes
 
@@ -83,5 +83,11 @@ The rules of F05 (`BR-WF-xx`) still apply; in particular BR-WF-11 … BR-WF-15 g
 - **Source:** UC-AI-12, UC-AI-13
 - **Stories:** US-AI-22, US-AI-24, US-AI-25
 - **Rule:** F04 calls a connector only for an approved decision, with the operation and parameters **stored in that decision**; nothing the AI writes after the approval can change them. Each decision and action runs at most once in the external system (idempotency key `decisionId + action`, also on *Retry*). Before every execution and retry, the current whitelist and catalog are re-checked (BR-WF-12), and a ticket becomes `RESOLVED` only after a successful check or a technician's note (BR-WF-13).
+
+## BR-AI-16 — Review scope for tickets the agent resolved alone
+
+- **Source:** UC-AI-07
+- **Stories:** US-AI-28
+- **Rule:** A ticket that an agent resolved without a technician (KB answer, guided fix, verified execution) can be reviewed by the technicians of that agent's default escalation group and by the Admin. The review scope gives **read and feedback only**: *Looks right*, or *Resolved incorrectly* with a required reason. It never changes the ticket's status, assignment or Resolution; reopening is done by the Admin or the requester in F03. *Resolved incorrectly* notifies the Admin and keeps the ticket out of the learning examples (BR-AI-12). The API enforces the scope (F01 ticket scope, extended for this case).
 
 **Related:** [Use cases](02-use-cases.md) · [User stories](03-user-stories-invest.md) · [Acceptance criteria](04-acceptance-criteria.md)

@@ -2,7 +2,7 @@
 
 > Design status: TARGET V1
 >
-> Scope: US-AI-05, 06, 14, 16 … 27. US-AI-01 … 04, 07 … 13 and 15 are retired: see [Handover](README.md#handover-to-other-branches).
+> Scope: US-AI-05, 06, 14, 16 … 28. US-AI-01 … 04, 07 … 13 and 15 are retired: see [Handover](README.md#handover-to-other-branches).
 
 Each story is small enough to build and test on its own, or its review says why not. Authorization, ticket scope, credential masking, grounding and audit logging are **shared acceptance constraints**, not hidden features.
 
@@ -37,6 +37,7 @@ MoSCoW: **Must** (required for V1), **Should** (planned, but the core works with
 | US-AI-16 | As a **Requester**, I want a clear reply and a recorded Resolution when the AI resolves my ticket, and as a **Technician** I want the AI to draft both when I resolve a ticket, so that every ticket closes with a clear answer without extra typing. | Every ticket has a Resolution | US-AI-24, F03 Resolve dialog | Must | M | AC-UC-AI-08 |
 | US-AI-18 | As a **Requester** with a business need, I want the AI to turn my request into a requirement brief that I can check and confirm, so that the dev team understands what to build without several rounds of emails. | Clear input for the dev team | US-AI-20, F05 hold and ask | Should | M | AC-UC-AI-09 |
 | US-AI-14 | As a **Technician**, I want to mark cited steps, KB answers and guidance as helpful or not, correct the agent's domain form, and flag escalations the agent could have resolved, so that the team can see which AI outputs work and fix the ones that do not. | Measured AI quality (F07) | US-AI-06, US-AI-20 | Should | S | AC-UC-AI-07 |
+| US-AI-28 | As a **Technician** of a domain team, I want to review the tickets that our domain's agent resolved without a technician and flag one as resolved incorrectly with a reason, so that wrong answers and wrong grants are caught, reported to the Admin, and never used for learning. | Mistakes of the agent are caught | US-AI-20, F01 / F03 review scope | Should | M | AC-UC-AI-07 |
 | US-AI-19 | As an **Admin**, I want verified tickets and their resolutions to be reused as examples when the agents handle new tickets, and to exclude a bad example, so that the agents improve from real tickets without retraining a model. | AI improves over time | US-AI-14 | Should | M | AC-UC-AI-07 |
 
 Grouped by use case, in the order of the mind-map leaves:
@@ -49,7 +50,7 @@ US-AI-22–23       UC-AI-12  Execute approved request via API
 US-AI-24–25       UC-AI-13  Verify result, report failure
 US-AI-16          UC-AI-08  Fill the Resolution and reply
 US-AI-18          UC-AI-09  Structure a business requirement
-US-AI-14, 19      UC-AI-07  Learn from verified tickets and feedback
+US-AI-14, 19, 28  UC-AI-07  Learn from verified tickets and feedback
 ```
 
 US-AI-22 … 25 replace F05's US-WF-17 … 20 (D-AI-02).
@@ -59,7 +60,7 @@ US-AI-22 … 25 replace F05's US-WF-17 … 20 (D-AI-02).
 | Priority | Stories | Count |
 |---|---|---|
 | **Must**: agent-first handling (D-AI-01), the KB answer, executing and verifying approved requests with a failure path, and the Resolution | US-AI-05, US-AI-06, US-AI-16, US-AI-17, US-AI-20, US-AI-22, US-AI-24, US-AI-25 | 8 |
-| **Should**: important, but tickets are still resolved without them | US-AI-14, US-AI-18, US-AI-19, US-AI-21, US-AI-26, US-AI-27 | 6 |
+| **Should**: important, but tickets are still resolved without them | US-AI-14, US-AI-18, US-AI-19, US-AI-21, US-AI-26, US-AI-27, US-AI-28 | 7 |
 | **Could** | US-AI-23 | 1 |
 | **Won't (V1)** | Reading images and attachments (OCR); remote control of the requester's computer; model fine-tuning; integration with ManageEngine (Q-AI-7) | — |
 
@@ -85,6 +86,7 @@ No Must story depends on a Should story. US-AI-17 needs F05 to add `AUTO_RESOLVE
 | US-AI-16 | PARTIAL | PASS | PASS | PASS | PASS | PARTIAL | Needs F03's Resolve dialog. Testable: "no invented facts" by manual review of 50 drafts. |
 | US-AI-18 | PARTIAL | PASS | PASS | PASS | PASS | PARTIAL | Needs F05 to ask the missing points. Testable: brief quality needs a manual review by the dev team. |
 | US-AI-14 | PASS | PASS | PASS | PASS | PASS | PASS | A correction never starts an action or re-routes the ticket (UC-AI-07). Article quality ratings stay in F06. |
+| US-AI-28 | PARTIAL | PASS | PASS | PASS | PASS | PASS | Needs F01 / F03 to let technicians read tickets in the review scope (BR-AI-16). The review never changes the ticket, so it is safe to build alone. |
 | US-AI-19 | PARTIAL | PASS | PASS | PASS | PASS | PASS | Needs verified tickets and feedback from US-AI-14. Measured by running ES-AI-07 with and without examples. |
 
 ## Shared acceptance constraints

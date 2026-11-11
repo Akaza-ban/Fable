@@ -201,3 +201,4 @@ flowchart LR
 2. Quang marks the cited steps *Helpful* in **SEC-AI-09**, resolves the ticket with the AI draft, and his edits to the draft are recorded.
 3. When the ticket has been closed for 7 days without reopening, it becomes a learning example with the final form and the Resolution.
 4. The Admin reviews it on **SCR-AI-01** and can exclude it; otherwise the SAP agent uses it for similar new tickets (`examplesUsed`, visible in **SEC-AI-18**).
+5. **Tickets the agent resolved alone:** Quang opens the saved filter *Resolved by AI* (**SEC-AI-14**), picks a *Not reviewed* ticket, and reads it read-only with **SEC-AI-19**. He finds the agent granted `FI-Admin` instead of FI read-only and chooses *Resolved incorrectly* with the reason. The Admin is notified, and the ticket never becomes a learning example. Tickets that the requester confirmed and nobody flagged become examples without review.
