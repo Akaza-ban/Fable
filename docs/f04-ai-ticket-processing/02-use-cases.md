@@ -37,11 +37,10 @@ Requesters are employees of every company in the group. The **AI Solutions** tea
 | Use the drafted Resolution and reply | ✓ | Tickets in their scope | Receives the sent reply |
 | Confirm or edit a requirement brief | ✓ | Tickets in their scope (read, edit) | Own tickets (confirm, edit) |
 | Correct the domain form, give feedback | ✓ | Tickets in their scope | Helpful / not helpful on KB suggestions and guidance |
-| Review a ticket the agent resolved without a technician (read, feedback, *Resolved incorrectly*) | ✓ all tickets | Review scope: tickets resolved by the agent of their group's domain | |
 | Exclude a learning example | ✓ | | |
 | Turn AI actions on and off, whitelist, connectors | F05 UC-WF-03 | | |
 
-"Tickets in their scope" means assigned to the technician or to one of their groups (F01 US-03). A ticket resolved by an agent alone has no assignee, so it is in no one's scope. The **review scope** closes that gap: a technician may read and give feedback on tickets that the agent of a domain resolved without a technician, when their group is that agent's default escalation group (for example the SAP team for the SAP agent). The review scope never allows changing the ticket's status, assignment or Resolution (BR-AI-16). **The API enforces every row**; hiding a button in the UI is only for usability.
+"Tickets in their scope" means assigned to the technician or to one of their groups (F01 US-03). **The API enforces every row**; hiding a button in the UI is only for usability.
 
 ## Input from F05
 
@@ -180,7 +179,7 @@ flowchart LR
     uc13["UC-AI-13 Verify"] --> auth & scope & policy & idem & audit
     uc08["UC-AI-08 Resolution + reply"] --> scope & mask & ground & audit
     uc09["UC-AI-09 Requirement brief"] --> scope & ground & audit
-    uc07["UC-AI-07 Learning and review"] --> auth & scope & mask & audit
+    uc07["UC-AI-07 Learning"] --> auth & scope & mask & audit
 
     classDef shared fill:#1168bd,color:#fff,stroke:#0b4884
     classDef rule fill:#e8f1fc,color:#123,stroke:#3a7bd5
@@ -385,26 +384,20 @@ Taken over from F05 UC-WF-09 (D-AI-02).
 ### UC-AI-07 Learn from Verified Tickets and Technician Feedback
 
 - **Actors:** Technician; Admin; Requester (votes only)
-- **Trigger:** a user rates or corrects an AI output; a technician reviews a ticket the agent resolved; a technician sends an AI draft; a ticket is closed
+- **Trigger:** a user rates or corrects an AI output; a technician sends an AI draft; a ticket is closed
 - **Main flow — feedback:**
   1. The technician corrects a value of the agent's domain form and saves → the correction is stored against the agent result, with before and after values and the user, and a new result version is created. It does **not** start any action or re-route the ticket: moving a ticket is a F05 reassignment.
   2. The technician marks cited steps, a KB answer or a guidance session *Helpful* / *Not helpful* with an optional reason; the requester can do the same on KB suggestions and guidance on their own tickets.
   3. On an escalated ticket, the technician can mark *The agent could have resolved this* with a reason (for example "article KB-112 covers it").
   4. When a technician sends an AI draft (UC-AI-08), how much they changed it is stored.
-- **Main flow — review of tickets the agent resolved alone:**
-  1. A technician opens the saved filter *Resolved by AI* on the work queues (SEC-AI-14). It lists the tickets in their review scope that the agent resolved without a technician (KB answer, guided fix, verified execution), newest first, with a *Not reviewed* filter.
-  2. On the ticket, the review section (SEC-AI-19) shows how the agent resolved it: the outcome, the cited article or the guidance transcript, the executed action with its approval and verification, and the Resolution.
-  3. The technician chooses *Looks right* or *Resolved incorrectly* with a required reason (for example "wrong permission granted", "article does not fit this error").
-  4. *Resolved incorrectly* → the ticket can never become a learning example, and an existing example from it is excluded at once; the Admin is notified with the ticket, the reason and the reviewer. If the ticket is not `CLOSED` yet, the notification says so, so that the Admin can reopen it in F03. The review never changes the ticket itself.
-  5. Every review is stored with the reviewer, the time, the agent result version and the model and prompt version, so F07 can report how often agent resolutions are wrong.
 - **Main flow — learning:**
-  1. When a ticket is `CLOSED` and not reopened for 7 days, it becomes a **learning example** if a technician resolved it or confirmed the agent's handling, or the requester confirmed an AI resolution. A requester's *Confirm* means the problem is solved, so no IT review is needed; a ticket flagged *Resolved incorrectly* is never used.
+  1. When a ticket is `CLOSED` and not reopened for 7 days, it becomes a **learning example** if a technician resolved it or confirmed the agent's handling, or the requester confirmed an AI resolution.
   2. An example keeps the masked problem text, the domain, the final domain form, and **how it was resolved**: the action and its verified run, the cited article, the guidance step that fixed it, or the technician's Resolution.
   3. When an agent handles a new ticket (UC-AI-10 step 2) and when the AI drafts a Resolution (UC-AI-08), the most similar examples are retrieved; their ids are stored in `examplesUsed`.
   4. The Admin can list examples and exclude one (for example a ticket closed with a wrong fix); an excluded example is never retrieved again.
-- **Exceptions:** correcting to a value outside the domain form → `422`; a user outside the ticket scope or the review scope → `403`; *Resolved incorrectly* without a reason → `400`; a review on a ticket that a technician resolved (not the agent alone) → `409`; a non-Admin excluding an example → `403`
-- **Permission:** technicians in scope, Admin; reviews: technicians in the review scope, Admin; requester only for votes on own tickets; examples: Admin
-- **Result:** every correction, vote, review and draft edit is stored with the model and prompt version, so F07 can report AI quality; the agents improve from real, human-verified tickets without retraining a model. Turning resolutions into KB articles is F06. F05 may use the same examples for classification
-- **Stories:** US-AI-14, US-AI-19, US-AI-28 · **Rules:** BR-AI-10, BR-AI-12, BR-AI-16
+- **Exceptions:** correcting to a value outside the domain form → `422`; a user outside the ticket scope → `403`; a non-Admin excluding an example → `403`
+- **Permission:** technicians in scope, Admin; requester only for votes on own tickets; examples: Admin
+- **Result:** every correction, vote and draft edit is stored with the model and prompt version, so F07 can report AI quality; the agents improve from real, human-verified tickets without retraining a model. Turning resolutions into KB articles is F06. F05 may use the same examples for classification
+- **Stories:** US-AI-14, US-AI-19 · **Rules:** BR-AI-10, BR-AI-12
 
 **Related:** [Features](01-features.md) · [User stories](03-user-stories-invest.md) · [Acceptance criteria](04-acceptance-criteria.md) · [Business rules](05-business-rules.md)

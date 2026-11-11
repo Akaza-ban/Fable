@@ -12,7 +12,7 @@ Host pages belong to other branches. F04 only adds the sections listed here. Rou
 |---|---|---|---|
 | SCR-T-01 Create ticket | F03 | `/tickets/new` | SEC-AI-01 |
 | SCR-T-04 Work queues | F03 | `/tickets` | SEC-AI-14 |
-| SCR-T-02 Ticket detail | F03 | `/tickets/:id` | SEC-AI-03, 04, 05, 07, 09, 11, 16, 17, 18, 19 |
+| SCR-T-02 Ticket detail | F03 | `/tickets/:id` | SEC-AI-03, 04, 05, 07, 09, 11, 16, 17, 18 |
 | Resolve dialog (DLG-T-05) | F03 | modal on `/tickets/:id` | SEC-AI-13 |
 
 ### Sections
@@ -27,11 +27,10 @@ Host pages belong to other branches. F04 only adds the sections listed here. Rou
 | SEC-AI-09 | Solution steps | SCR-T-02 | Up to 6 steps, each with a citation `[KB-087 §3]`; *Insert into reply* (editable draft); *Find solutions again*; helpful / not helpful | US-AI-06, US-AI-14 |
 | SEC-AI-11 | Requirement brief | SCR-T-02 tab | The brief in eight sections, its state (draft / confirmed / not confirmed); requester: *Review and confirm* → SCR-AI-04; technician: edit | US-AI-18 |
 | SEC-AI-13 | Resolution and reply draft | Resolve dialog | Drafted Resolution (at most 80 words) and reply, editable; "Please describe" where nothing is known; marker "Drafted by AI" | US-AI-16 |
-| SEC-AI-14 | AI columns and filters | SCR-T-04 | Columns: escalation class, agent outcome, automation status, review state. Filters: escalation class, domain, suspected-bug burst, failed automation, resolved by AI (with *Not reviewed*) | US-AI-20, US-AI-21, US-AI-25, US-AI-28 |
+| SEC-AI-14 | AI columns and filters | SCR-T-04 | Columns: escalation class, agent outcome, automation status. Filters: escalation class, domain, suspected-bug burst, failed automation | US-AI-20, US-AI-21, US-AI-25 |
 | SEC-AI-16 | Automation run | SCR-T-02 tab *Automation* | Operation and parameters (from the approved decision), approval source (F05 policy or an Administrator in F03), run status, attempts (time, result code, duration), verification result, error code and failed step; *Retry*; *Resolved manually* → SCR-AI-06. Requester: one status line in plain words ("Being processed", "Done", "A technician is taking over") | US-AI-22, US-AI-23, US-AI-24, US-AI-25 |
 | SEC-AI-17 | Guided troubleshooting | SCR-T-02 | Requester: the current step card (step *n*, what to do, citation, *It works now* · *Still the same* · *I see something else*, free text, *I need a person*) and earlier steps. Technician and Admin: the full transcript with findings | US-AI-26, US-AI-27 |
 | SEC-AI-18 | Agent results | SCR-T-02 tab *AI* (F03 / F05) | Every agent result version: outcome, form, reason, `examplesUsed`, model and prompt version, status (`COMPLETED` / `INVALID` / `FAILED`) with the failed check | US-AI-20, US-AI-19 |
-| SEC-AI-19 | AI resolution review | SCR-T-02 top, on tickets the agent resolved alone | How the agent resolved it (outcome, article or guidance transcript, executed action with approval and verification, Resolution); review state and reviewer; *Looks right*; *Resolved incorrectly* with a required reason. Read-only ticket otherwise | US-AI-28 |
 
 ## 2. F04 pages and modals
 
@@ -74,20 +73,19 @@ The API enforces every row; hiding an element is only for usability. "Scope" mea
 | SEC-AI-13 | ✗ | Scope | ✓ | `403` |
 | SEC-AI-14 | ✗ (AI columns not shown in *My tickets*) | ✓ | ✓ | — |
 | SEC-AI-18 | ✗ | ✗ | ✓ | `403` |
-| SEC-AI-19 | ✗ not rendered | Review scope (BR-AI-16) | ✓ | `403` |
 | SCR-AI-01 `/admin/ai/learning-examples` | ✗ | ✗ | ✓ | `#/403` page |
 | SCR-AI-04, SCR-AI-05 | Own tickets | Read only | Read only | `403` |
 | SCR-AI-06 | ✗ | Assignee | ✓ | `403` |
 | SCR-AI-07 | ✗ | Scope | ✓ | `403` |
 
-A requester who opens an email link to someone else's ticket gets `#/403`, and nothing changes. A technician who opens a ticket through the review scope sees the ticket read-only with SEC-AI-19; every action that changes the ticket is hidden and returns `403`.
+A requester who opens an email link to someone else's ticket gets `#/403`, and nothing changes.
 
 ## 5. Navigation
 
 | Role | Sidebar | What changes because of F04 |
 |---|---|---|
 | Requester | My tickets, New ticket, Profile (F01, F03) | Nothing new in the sidebar |
-| Technician | Work queues, Profile | Work queues get AI columns and filters (SEC-AI-14). Saved filters *Suspected bugs*, *Failed automation* and *Resolved by AI* |
+| Technician | Work queues, Profile | Work queues get AI columns and filters (SEC-AI-14). Saved filters *Suspected bugs* and *Failed automation* |
 | Admin | Dashboard, Tickets, Users, Groups, …, **AI** | One **AI** group: AI scope (SCR-WF-03, F05) · AI decisions (SCR-WF-30, F05) · Learning examples (SCR-AI-01, F04) · AI suggestions (F01) · Service accounts (F01) |
 
 Contextual navigation inside SCR-T-02: the escalation banner links to the guidance transcript, the automation tab and the AI messages; a citation opens the KB article (F06) in a new tab; a linked burst ticket opens its own SCR-T-02 (if in scope); the Admin sees *View agent results* → SEC-AI-18.
@@ -112,14 +110,13 @@ Every Must story is reachable by its role.
 | US-AI-16 | Must | Technician, Requester | SEC-AI-13, SEC-AI-03, EML-AI-04, EML-AI-06, SCR-AI-05 |
 | US-AI-18 | Should | Requester, Technician | SEC-AI-11, SCR-AI-04, EML-AI-05 |
 | US-AI-14 | Should | Technician, Requester | SEC-AI-04, SEC-AI-07, SEC-AI-09, SEC-AI-17, SCR-AI-07 |
-| US-AI-28 | Should | Technician | SEC-AI-14 filter *Resolved by AI*, SEC-AI-19 |
 | US-AI-19 | Should | Admin | SCR-AI-01, SEC-AI-18 |
 
 ## 7. Requests to other branches
 
 | Owner | Request |
 |---|---|
-| F03 | Host the sections above on SCR-T-01, SCR-T-02, SCR-T-04 and the Resolve dialog, including a read-only SCR-T-02 for the review scope (SEC-AI-19), including the new *Automation* tab (SEC-AI-16) and the guidance card (SEC-AI-17); `?action=` handling on `/tickets/:id` (D-AI-IA-02); send EML-AI-07 and EML-AI-08; the resolution code `GUIDED_BY_AI` (Q-AI-18) |
+| F03 | Host the sections above on SCR-T-01, SCR-T-02, SCR-T-04 and the Resolve dialog, including the new *Automation* tab (SEC-AI-16) and the guidance card (SEC-AI-17); `?action=` handling on `/tickets/:id` (D-AI-IA-02); send EML-AI-07 and EML-AI-08; the resolution code `GUIDED_BY_AI` (Q-AI-18) |
 | F05 | Remove the *Automation* tab from its own design of SCR-T-02 (now SEC-AI-16); the settings `AUTO_RESOLVE_KB` and `GUIDE_L2` on SCR-WF-03 (Q-AI-10, Q-AI-15); take over SEC-AI-15 and the AI-filled ticket fields |
-| F01 | The **AI** sidebar group for Admin; SSO return to the original link after login; the read-only **review scope** in the ticket scope check (BR-AI-16) |
+| F01 | The **AI** sidebar group for Admin; SSO return to the original link after login |
 | F06 | Article pages that open at a section (`#§3`) for citations; the self-service flag; troubleshooting procedures with a check and a next step for each step, and a flag on steps that need admin rights |

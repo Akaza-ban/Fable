@@ -25,7 +25,7 @@ The features follow the eight leaves of the **AI Ticket Processing** branch of t
 | F04.5 | **Verify the resolution result.** Check the target system before the ticket is marked resolved; on failure, report the error, the failed step and the attempts so F05 can hand the ticket to a technician, who can retry or resolve manually | Requester, Technician | Must |
 | F04.6 | **Fill the Resolution and reply to the requester.** After a verified execution, a KB answer or a guided fix, the AI writes the Resolution and sends its own reply; when a technician resolves a ticket, the AI drafts both for the technician to confirm | Technician, Requester | Must |
 | F04.7 | **Structure a business requirement for the dev team.** Turn a free-text business request into a requirement brief, confirmed by the requester, sent with the ticket to the domain's dev team | Requester, Technician | Should |
-| F04.8 | **Learn from verified tickets and technician feedback.** Votes on AI answers and steps, how much technicians change the drafts, and reviews of tickets the agent resolved alone (*Looks right* / *Resolved incorrectly*); closed tickets that were not reopened and not flagged become examples for the agents | Technician, Admin | Should |
+| F04.8 | **Learn from verified tickets and technician feedback.** Votes on AI answers and steps, how much technicians change the drafts, and closed tickets that were not reopened become examples for the agents | Technician, Admin | Should |
 
 ## Out of scope for F04
 
