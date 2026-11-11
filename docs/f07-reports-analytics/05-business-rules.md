@@ -10,7 +10,7 @@ The rules of F05 (`BR-WF-xx`), F04 (`BR-AI-xx`) and F01 (`BR-05 … BR-20`, `doc
 
 - **Source:** *Metric definitions* in [02-use-cases.md](02-use-cases.md)
 - **Stories:** all
-- **Rule:** Reports, the F02 Dashboard, F05's SCR-WF-30 cards, exports and the digest use the definitions M-01 … M-11 and the same API. Each report states its period, time zone (`Asia/Ho_Chi_Minh`) and the parameters in use. A metric with no data is shown as "Not enough data", never `0%`.
+- **Rule:** Reports, the F02 Dashboard, F05's SCR-WF-30 cards, exports and the digest use the definitions M-01 … M-11 and the same API. Each report states its period, time zone (`Asia/Ho_Chi_Minh`) and the parameters in use. A metric with no data is shown as "Not enough data", never `0%`. A metric is shown only at a granularity its definition allows: M-04 per week once the N-day window has passed, never per day (its latest days are always "under observation").
 
 ## BR-BC-02 — Scope is filtered in the query
 
@@ -40,7 +40,7 @@ The rules of F05 (`BR-WF-xx`), F04 (`BR-AI-xx`) and F01 (`BR-05 … BR-20`, `doc
 
 - **Source:** UC-BC-03, metric M-04
 - **Stories:** US-BC-04
-- **Rule:** A closed ticket counts as resolved without a technician only when no Technician or Admin took a handling action on it and it was not reopened within N days of closing. Until N days have passed it is "Under observation". The requester's confirmation and F05 automation are not handling actions.
+- **Rule:** A closed ticket counts as resolved without a technician only when no Technician or Admin took a handling action on it and it was not reopened within N days of closing. N is the reopen window of F03 BR-TK-11, read by F07, not a parameter of its own. Until N days have passed it is "Under observation". The requester's confirmation and F05 automation are not handling actions.
 
 ## BR-BC-07 — The digest carries figures, not ticket content
 

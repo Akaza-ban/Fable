@@ -2,6 +2,8 @@
 
 > Design status: TARGET V1
 >
+> Implementation status: NOT STARTED
+>
 > Related: [IA overview](README.md) · [User flows](02-user-flows.md) · [UI states](03-ui-states-and-accessibility.md)
 
 ## 1. F07 pages, tabs and modals
@@ -13,7 +15,7 @@
 | SCR-BC-02 | SLA | Tab | Admin; Technician (scope) | Sidebar, SEC-BC-01 | `/analytics/sla` | Tiles: first response (human / AI), resolution time (mean, median, P90), breach rate by target; breakdown by priority / type / group; tabs **Breached** and **At risk** (number, type, group, priority, SLA policy version, target missed, overdue by); note "SLA data from Workflow (F05)" | US-BC-03 |
 | SCR-BC-03 | AI | Tab | Admin | Sidebar, SEC-BC-02, EML-BC-01 | `/analytics/ai` | M-04 tile with "under observation"; weekly line vs target; split by path (automation, agent KB answer, self-help, after AI question) and by domain agent; route A / B / C (M-08) with ranked route C reasons; escalations by class (M-10); quality: M-05, M-06, M-11 with model / prompt version filter; lists: AI-closed tickets reopened, corrected classifications (AI → human), *Not solved* after agent answer | US-BC-04, 08, 09 |
 | SCR-BC-04 | Satisfaction | Tab | Admin; Technician (scope) | Sidebar | `/analytics/satisfaction` | Average next to response rate; distribution 1–5; by type / group / handler; ratings 1–2 list; comments (Admin only); warning "Few ratings, not representative" | US-BC-05 |
-| SCR-BC-05 | Report settings | Page | Admin | Sidebar *Settings* | `/analytics/settings` | N days, low-response threshold, self-resolution target, export row limit, maximum period, digest recipients, *Send test digest*; link "SLA targets are set in Workflow" → SCR-WF-02; last changed by / at | US-BC-07, 11 |
+| SCR-BC-05 | Report settings | Page | Admin | Sidebar *Settings* | `/analytics/settings` | N days (read-only, from the F03 reopen window), low-response threshold, self-resolution target, export row limit, maximum period, digest recipients, *Send test digest*; link "SLA targets are set in Workflow" → SCR-WF-02; last changed by / at | US-BC-07, 11 |
 | SCR-BC-10 | Export | Modal | Admin | *Export* on any tab | on the tab route | Format CSV / XLSX; row count; note "Internal notes, comments and secrets are never exported"; errors `EXPORT_TOO_LARGE`, `AUDIT_UNAVAILABLE` | US-BC-06 |
 
 ## 2. Sections hosted by other branches
@@ -21,7 +23,7 @@
 | ID | Section | Host | Content | Stories |
 |---|---|---|---|---|
 | SEC-BC-01 | KPI widgets | F02 Dashboard | Open, breached, M-04 this week, with a link to the matching tab; same API, short default period | US-BC-01, 03, 04 |
-| SEC-BC-02 | AI cards | F05 SCR-WF-30 | Self-resolution, clarification and human-routing rates (M-04, M-08) computed by `/reports/ai`; *View full report* → SCR-BC-03 | US-BC-04, 08 |
+| SEC-BC-02 | AI cards | F05 SCR-WF-30 | Daily AI routing outcome (M-08: auto-approved, asked back, routed to a person); AI self-resolution rate (M-04) of the last full week past the N-day window, with the "under observation" count. Computed by `/reports/ai`; labels use the M-xx names; *View full report* → SCR-BC-03 | US-BC-04, 08 |
 
 ## 3. Emails
 
@@ -86,7 +88,7 @@ Prefix `/api/v1`. Errors use `ProblemDetails`. Every endpoint filters by the cal
 | Owner | Request |
 |---|---|
 | F02 | Dashboard widgets call `/reports/*` (SEC-BC-01) instead of their own counts |
-| F05 | SCR-WF-30 cards call `/reports/ai` (SEC-BC-02); confirm Q-BC-05 (target in `SLA_BREACHED`) |
+| F05 | SCR-WF-30 cards call `/reports/ai` (SEC-BC-02); label the daily cards as M-08 (auto-approved / clarification / human-routing), and show self-resolution (M-04) only weekly, never per day; confirm Q-BC-05 (target in `SLA_BREACHED`) |
 | F04 | Keep corrections and votes countable by model and prompt version (AC-AI-14.3); expose `agent` and `escalationClass` on the current analysis |
 | F03 | Store the resolution codes `ANSWERED_BY_KB` and `SOLVED_BY_KB` and the 1–5 rating; ticket list SCR-T-04 accepts the report filters in its query string |
 | F01 | Accept the `report:*` permissions |

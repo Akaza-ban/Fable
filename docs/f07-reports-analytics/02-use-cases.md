@@ -2,6 +2,8 @@
 
 > Design status: TARGET V1
 >
+> Implementation status: NOT STARTED
+>
 > Scope: F07 Reports & Analytics (UC-BC-01 … UC-BC-08)
 
 ## Actors and roles
@@ -68,7 +70,7 @@ Reports, the Dashboard (F02), F05's SCR-WF-30 cards, exports and the digest all 
 | M-01 | First response time | Ticket creation → first **public** reply to the requester. Human (`USER`) and AI (`AI`: question, KB answer, result reply) first responses are reported **separately**. `AUTOMATION` acknowledgements do not count. | Whether an AI reply meets the SLA: Q-BC-04 |
 | M-02 | Resolution time | Creation → **last** transition to `RESOLVED`, minus time in `NEEDS_INFO` (SLA paused, BR-WF-07) and minus time in `RESOLVED` before a *Not solved*. Measured on the business calendar of the ticket's SLA policy version (BR-WF-08), so M-02 and M-03 agree. Mean, median, P90. | Calendar: F05 |
 | M-03 | SLA breach | **Read, never recomputed:** breached when F05 set `sla_breached = true`. At risk = `SLA_WARNING` without breach. Breach rate = breached / tickets with an SLA policy in the period, split by response / resolution target (Q-BC-05). | Targets: F05 |
-| M-04 | AI self-resolution rate | **Numerator:** tickets `CLOSED` in the period with **no handling action by a Technician or Admin** (reply, assignment, status change, reclassification, internal note, retry or manual resolution of a workflow run) **and** not reopened within N days. **Denominator:** tickets `CLOSED` in the period. **Excluded from both:** `CANCELLED`; auto-closed for no answer (`NEEDS_INFO` → `CLOSED`, UC-WF-06); closed less than N days ago (shown as "under observation"). Split by **path**: automation (F05 flow A), agent KB answer (`ANSWERED_BY_KB`), requester self-help (`SOLVED_BY_KB`), answered after an AI question; and by **domain agent** (F04 `agent`). The requester's confirmation is not a handling action. | N (demo 7 days, Q-BC-10); target line (demo 50%, Q-BC-13) |
+| M-04 | AI self-resolution rate | **Numerator:** tickets `CLOSED` in the period with **no handling action by a Technician or Admin** (reply, assignment, status change, reclassification, internal note, retry or manual resolution of a workflow run) **and** not reopened within N days. **Denominator:** tickets `CLOSED` in the period. **Excluded from both:** `CANCELLED`; auto-closed for no answer (`NEEDS_INFO` → `CLOSED`, UC-WF-06); closed less than N days ago (shown as "under observation"). Split by **path**: automation (F05 flow A), agent KB answer (`ANSWERED_BY_KB`), requester self-help (`SOLVED_BY_KB`), answered after an AI question; and by **domain agent** (F04 `agent`). The requester's confirmation is not a handling action. | N = the reopen window of F03 BR-TK-11 (demo 7 days), read, not set by F07 (Q-BC-10); target line (demo 50%, Q-BC-13) |
 | M-05 | AI classification correction rate | Tickets whose request type or `domain/subcategory` was set by the AI and later changed by a person (F04 UC-AI-07) / tickets classified by the AI. By field, domain, model version and prompt version. | — |
 | M-06 | Helpful AI output rate | Votes "helpful" / votes, per output kind (KB suggestion, solution steps, summary). Also vote rate = outputs with a vote / outputs shown. | Who can vote: Q-BC-08 |
 | M-07 | Satisfaction | Average 1–5 of rated tickets, count per score, **response rate** = rated / `CLOSED` in the period, always shown together. Split by handler: AI only / with a technician. | Low-response threshold (demo 20%) |
@@ -246,10 +248,10 @@ flowchart LR
 - **Preconditions:** `report:configure`
 - **Main flow:**
   1. The Admin opens *Report settings*.
-  2. Edits N days for M-04, the satisfaction response-rate threshold, the self-resolution target line, the export row limit, the maximum period, the digest recipients.
+  2. Edits the satisfaction response-rate threshold, the self-resolution target line, the export row limit, the maximum period, the digest recipients. N days for M-04 is shown read-only: it is the reopen window of F03 BR-TK-11, so a ticket counts as self-resolved only once it can no longer be reopened.
   3. Saves → audit entry `REPORT_CONFIG_UPDATED` with before and after values.
-- **Alternative flows:** SLA targets and the calendar are not here; a link opens F05 SCR-WF-02. Each report states the parameters in use ("N = 7 days"); files already exported do not change.
-- **Exceptions:** negative value, N = 0, limit = 0, target outside 1–100% → `422`; not Admin → `403`
+- **Alternative flows:** SLA targets and the calendar are not here; a link opens F05 SCR-WF-02. When the reopen window changes, the next view of M-04 uses the new N. Each report states the parameters in use ("N = 7 days"); files already exported do not change.
+- **Exceptions:** negative value, limit = 0, target outside 1–100% → `422`; a request that sets N → `422` (read-only); not Admin → `403`
 - **Result:** figures match how the organization works, and every change is traceable
 - **Stories:** US-BC-07 · **Rules:** BR-BC-01, BR-BC-05
 

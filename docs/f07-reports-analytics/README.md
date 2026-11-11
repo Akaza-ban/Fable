@@ -38,12 +38,12 @@ The leaves of mind-map branch **8. Dashboard & Governance Telemetry** that belon
 | Ticket status, priority, resolution codes (`ANSWERED_BY_KB`, `SOLVED_BY_KB`, …) | Counts and times them | F03 stores them; F05 owns the state diagram |
 | SLA targets, business calendar, breach | Reads `sla_breached`, `SLA_WARNING` / `SLA_BREACHED`; never recomputes | F05 UC-WF-02, UC-WF-06 (BR-WF-07, BR-WF-08) |
 | AI routing outcome A / B / C | Aggregates `ai_decisions` (M-08) | F05 UC-WF-04 writes `ai_decisions` (NFR-WF-OBS-001) |
-| Daily AI cards on **SCR-WF-30** | Defines the metric (M-04, M-08) and serves `/reports/ai` | F05 shows the cards; asked to call the same API (BR-BC-01) |
+| AI cards on **SCR-WF-30** | Defines the metrics and serves `/reports/ai`: daily M-08 (auto-approved, asked back, routed to a person), weekly M-04 | F05 shows the cards; asked to call the same API and label them by these definitions (BR-BC-01) |
 | AI analysis, escalation class, domain agent, corrections and votes | Reports on them (M-05, M-06, M-10) | F04 records them (UC-AI-07, UC-AI-10, AC-AI-14.3) |
 | KB articles and their helpful ratings | Reads the ratings | F06 |
 | Satisfaction rating 1–5 and comment | Aggregates (M-07) | F03 (mind-map 1.6) |
 | Live counters for the home page | Same definitions, same API | F02 Dashboard |
-| Audit log | Writes `REPORT_EXPORTED`, `REPORT_CONFIG_UPDATED` through the shared log; reads it for M-04, M-05 | F08 Activity Log (BR-NK-01) |
+| Audit log | Writes `REPORT_EXPORTED`, `REPORT_CONFIG_UPDATED`, `REPORT_DIGEST_SENT` through the shared log; reads it for M-04, M-05 | F08 Activity Log (BR-NK-01) |
 | Users, groups, service accounts | Scope filtering and names | F01 / F09 |
 
 ## Documents
@@ -71,7 +71,7 @@ Roles, ticket scope and `BR-05 … BR-20` come from F01 (`docs/mvp.md` on the `f
 | Q-BC-07 | A ticket moved across groups is attributed to which group? | The last group that handled it. |
 | Q-BC-08 | Who can rate a KB suggestion as helpful? | Requester and technician (F04 US-AI-14); owned by F04 / F06. |
 | Q-BC-09 | Live queries over 12 months at ~2.9 million tickets per year will be slow. | Live queries for the demo; nightly pre-aggregated tables in production. F02 uses the same API. |
-| Q-BC-10 | Is the reopen window the same for every `CLOSED` ticket? | 7 days (F05 UC-WF-06); N in M-04 = 7. |
+| Q-BC-10 | Is the reopen window the same for every `CLOSED` ticket? | **Resolved:** N in M-04 is the F03 reopen window (BR-TK-11, 7 days, same value as F05). F07 reads it and does not set it. |
 | Q-BC-11 | Is PDF export needed (mind-map 8.6)? May rating comments be exported? | V1: CSV and XLSX; the weekly digest is an email. Comments are not exported. |
 | Q-BC-12 | Permission names: `report:read` (F01 style) or camelCase (F05 `workflowConfigManage`)? | `resource:action`, mapped 1:1 when the team decides. |
 | Q-BC-13 | The mind map targets 25–35% of tickets resolved without a human; F04 Q-AI-14 proposes 50% within 3 months. Which target does the report show? | Show the F04 target line (50%), configurable in UC-BC-06. To agree with the client. |

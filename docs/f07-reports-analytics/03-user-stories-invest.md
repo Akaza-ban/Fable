@@ -2,6 +2,8 @@
 
 > Design status: TARGET V1
 >
+> Implementation status: NOT STARTED
+>
 > Scope: US-BC-01 … US-BC-09, US-BC-11
 
 Each story is small enough to build and test on its own, or its review says why not. Authorization, ticket scope, the shared metric definitions and audit logging are **shared acceptance constraints**, not hidden features.
@@ -29,7 +31,7 @@ MoSCoW: **Must** (required for V1), **Should** (planned, but the core works with
 | US-BC-04 | As an **Admin**, I want the share of tickets closed with no technician, by path and by domain agent, against the target, so that I can decide whether to widen or narrow what the AI may do. | Measures agent first (D-AI-01) | F04 resolution codes, audit log | Must | L | AC-UC-BC-03 |
 | US-BC-05 | As an **Admin**, I want satisfaction scores next to how many people rated, so that I do not draw conclusions from a few ratings. | Honest satisfaction figure | F03 ratings | Should | S | AC-UC-BC-04 |
 | US-BC-06 | As an **Admin**, I want to export the report on screen to CSV or XLSX, so that I can share it with management. | Shareable figures | US-BC-01 … 05, F08 log | Must | M | AC-UC-BC-05 |
-| US-BC-07 | As an **Admin**, I want to set the observation window, thresholds, target and limits, so that the figures match how we work. | Correct figures | — | Must | S | AC-UC-BC-06 |
+| US-BC-07 | As an **Admin**, I want to set the thresholds, target and limits, and see the observation window in use, so that the figures match how we work. | Correct figures | — | Must | S | AC-UC-BC-06 |
 | US-BC-08 | As an **Admin**, I want the route A / B / C share and the escalations to technicians by class (cannot resolve, system bug, software requirement), so that I know why tickets still reach people. | Targets the right fix | F05 `ai_decisions`, F04 `escalationClass` | Must | M | AC-UC-BC-03 |
 | US-BC-09 | As an **Admin**, I want AI corrections, helpful votes and failed analyses by model and prompt version, so that I can tell whether a change made the AI better or worse. | Safe AI changes | F04 UC-AI-07 data | Should | M | AC-UC-BC-03 |
 | US-BC-11 | As an **Admin**, I want a weekly email with the key figures, so that management follows the trend without signing in. | Regular visibility | US-BC-01, 03, 04 | Could | S | AC-UC-BC-08 |

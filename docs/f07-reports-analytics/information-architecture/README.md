@@ -51,7 +51,7 @@ flowchart TB
     end
 
     subgraph settings["Settings — Admin"]
-        r05["<b>SCR-BC-05 Report settings</b><br/>• N, thresholds, target, limits<br/>• Digest recipients"]
+        r05["<b>SCR-BC-05 Report settings</b><br/>• N (read-only), thresholds, target, limits<br/>• Digest recipients"]
     end
 
     subgraph hosts["Hosted figures"]

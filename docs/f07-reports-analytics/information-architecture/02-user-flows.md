@@ -2,6 +2,8 @@
 
 > Design status: TARGET V1
 >
+> Implementation status: NOT STARTED
+>
 > Related: [IA overview](README.md) · [Screens and navigation](01-screens-and-navigation.md) · [UI states](03-ui-states-and-accessibility.md)
 
 Three flows. Sample people are the same as in the [acceptance criteria](../04-acceptance-criteria.md). Purple: F07. Grey: other branches.
