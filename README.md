@@ -46,7 +46,38 @@ The system helps an enterprise receive, classify, and dispatch internal IT suppo
 
 The system organizes capabilities across 14 discrete use cases (`UC01` to `UC14`) mapped to 4 operational roles:
 
-![Role-Based Use Case Allocation](docs/use-cases-diagram.svg)
+```mermaid
+flowchart TB
+    subgraph actors["System Actors"]
+        direction LR
+        admin(["Administrator"]):::actorPill
+        operator(["Operations Lead"]):::actorPill
+        tech(["Technician"]):::actorPill
+        requester(["Requester"]):::actorPill
+    end
+
+    subgraph dwopBoundary["AI-Powered IT Service Desk — System Boundary (Role-Based Use Case Allocation)"]
+        direction LR
+
+        cardAdmin["<b>Administrator</b><br/><br/>• <b>UC01</b> Login & SSO Auth<br/>• <b>UC02</b> Logout<br/>• <b>UC03</b> View Dashboard & Telemetry<br/>• <b>UC08</b> Claim & Triage Tickets<br/>• <b>UC09</b> Update Fix & Root Cause<br/>• <b>UC10</b> AI Synthesize KB from Ticket<br/>• <b>UC11</b> Author & Edit KB Articles<br/>• <b>UC12</b> Escalate Ticket to Tier 2/3<br/>• <b>UC13</b> Review & Publish (Diff View)<br/>• <b>UC14</b> Configure Rules, SLA & Scope"]:::colCard
+
+        cardOp["<b>Operations Lead</b><br/><br/>• <b>UC01</b> Login & SSO Auth<br/>• <b>UC02</b> Logout<br/>• <b>UC03</b> View Dashboard & Telemetry<br/>• <b>UC06</b> Search KB Solutions<br/>• <b>UC08</b> Claim & Triage Tickets<br/>• <b>UC09</b> Update Fix & Root Cause<br/>• <b>UC10</b> AI Synthesize KB from Ticket<br/>• <b>UC11</b> Author & Edit KB Articles<br/>• <b>UC12</b> Escalate Ticket to Tier 2/3<br/>• <b>UC13</b> Review & Publish (Diff View)"]:::colCard
+
+        cardTech["<b>Technician</b><br/><br/>• <b>UC01</b> Login & SSO Auth<br/>• <b>UC02</b> Logout<br/>• <b>UC03</b> View Dashboard & Telemetry<br/>• <b>UC06</b> Search KB Solutions<br/>• <b>UC07</b> Rate & Report KB Article<br/>• <b>UC08</b> Claim & Triage Tickets<br/>• <b>UC09</b> Update Fix & Root Cause<br/>• <b>UC10</b> AI Synthesize KB from Ticket<br/>• <b>UC11</b> Author & Edit KB Articles<br/>• <b>UC12</b> Escalate Ticket to Tier 2/3"]:::colCard
+
+        cardReq["<b>Requester</b><br/><br/>• <b>UC01</b> Login & SSO Auth<br/>• <b>UC02</b> Logout<br/>• <b>UC03</b> View Dashboard (My Tickets)<br/>• <b>UC04</b> Submit Ticket & Evidence<br/>• <b>UC05</b> Track Ticket & Clarification<br/>• <b>UC06</b> Search KB Solutions<br/>• <b>UC07</b> Rate & Report KB Article"]:::colCard
+    end
+
+    admin --> cardAdmin
+    operator --> cardOp
+    tech --> cardTech
+    requester --> cardReq
+
+    classDef actorPill fill:#334155,color:#ffffff,stroke:#64748b,stroke-width:2px;
+    classDef colCard fill:#1d4ed8,color:#ffffff,stroke:#60a5fa,stroke-width:2px;
+```
+
+For detailed actors, permissions, and business flows, see [Actors, roles, and use cases](docs/f05-workflow-automation/02-use-cases.md).
 
 ### Use Case Catalog
 
