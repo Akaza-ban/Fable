@@ -10,8 +10,8 @@ The role codes are the same as in F01, F04 and F05. **There is no Team Lead** (F
 
 | Role code | Display name | Role in F08 |
 |---|---|---|
-| `ADMIN` | Administrator | Searches every entry, sees full approval chains and every workflow run |
-| `TECHNICIAN` | Technician | Sees the full history of tickets in scope; the full run history and approval chain of tickets assigned to them; a summary otherwise |
+| `ADMIN` | Administrator | Searches every entry, sees every approval chain step with its reason and every workflow run; opens F05 SCR-WF-31 for the full AI decision |
+| `TECHNICIAN` | Technician | Sees the full history of tickets in scope and a summary of their approval chain with the reason for routing to a person (F05 D-IA-06); sees workflow runs in the F05 `#automation` tab |
 | `REQUESTER` | Requester | Sees an allowlisted history and a summary approval status of their own tickets |
 
 | System actor | Code in the audit log | Role in F08 |
@@ -26,8 +26,8 @@ The role codes are the same as in F01, F04 and F05. **There is no Team Lead** (F
 |---|---|---|---|
 | Ticket history (UC-NK-01) | ✓ all | Tickets in their scope, full | Own tickets, allowlist only (BR-NK-04) |
 | Activity log search (UC-NK-02) | ✓ | | |
-| Approval chain (UC-NK-03) | ✓ full, link to SCR-WF-31 | Assigned: full; group: summary | Own tickets, summary |
-| Workflow runs (UC-NK-04) | ✓ full | Assigned: full attempts; group: summary | |
+| Approval chain (UC-NK-03) | ✓ steps, results, reasons; link to SCR-WF-31 | Tickets in their scope: summary + reason | Own tickets, status line |
+| Workflow runs pages SCR-NK-04 / 05 (UC-NK-04) | ✓ | — (runs of their tickets: F05 `#automation` tab) | |
 | Edit or delete an entry | ✗ (`405`) | ✗ | ✗ |
 
 "Tickets in their scope" means assigned to the technician or one of their groups (F01, `ticket:read`). **The API enforces every row**; hiding a tab is only for usability.
@@ -38,8 +38,8 @@ Proposed permissions, for the F01 owner to accept (naming: F07 Q-BC-12):
 |---|---|---|---|---|
 | `ticket_history:read` | all | scope | own (allowlist) | all, read-only |
 | `audit:read` | ✓ | ✗ | ✗ | ✗ |
-| `approval:read` | all | assigned: full; group: summary | own: summary | ✗ |
-| `workflow_log:read` | ✓ | assigned: full; group: summary | ✗ | ✗ |
+| `approval:read` | all (steps, results, reasons) | scope: summary + reason | own: status line | ✗ |
+| `workflow_log:read` | ✓ | ✗ (F05 governs the `#automation` tab) | ✗ | ✗ |
 
 No `audit:write`, `audit:update` or `audit:delete` exists for any role: only the backend writes, and nobody edits or deletes (BR-NK-02).
 
@@ -157,7 +157,7 @@ flowchart LR
 - **Main flow:**
   1. The user opens SCR-T-02 and the `#history` tab (SEC-NK-01).
   2. The system returns entries for the ticket, newest first: created, AI analysis and routing decision, questions and answers, type / group / assignee / priority / status changes, escalations, replies, internal notes, workflow runs, SLA events, resolved, closed, reopened, cancelled, rated.
-  3. Each row shows the actor (name, **AI** with the domain agent, or **Automation**), time, before → after and evidence links (`decision_id` → SCR-WF-31 for Admin, `run_id` → SCR-NK-05, `analysis_id`).
+  3. Each row shows the actor (name, **AI** with the domain agent, or **Automation**), time, before → after and evidence links (`decision_id` → SCR-WF-31 for Admin, `run_id` → SCR-NK-05 for Admin or the F05 `#automation` tab for a technician, `analysis_id`).
   4. The user filters by event group (status, assignment, replies, AI, workflow, SLA).
 - **Alternative flows:**
   - **Requester:** only events visible to the requester in the catalog (BR-NK-04); routing and workflow events as one summary line; the AI shown as "IT assistant"; technician display name only (Q-NK-08).
@@ -185,20 +185,21 @@ flowchart LR
 
 ### UC-NK-03 View the Approval Chain
 
-- **Actors:** Admin; Technician (assigned: full, group: summary); Requester (own tickets)
+- **Actors:** Admin; Technician (tickets in scope, summary); Requester (own tickets, status line)
 - **Preconditions:** the ticket has an access request handled by F05 (`CHECK_ACCOUNT`, `CREATE_ACCOUNT`, `GRANT_ACCESS`, `REVOKE_ACCESS`)
-- **Main flow:** SEC-NK-02 on SCR-T-02 shows the chain in time order, each step with actor, time, result and evidence:
+- **Boundary:** F05 owns the AI decision (`ai_decisions`) and its full detail page **SCR-WF-31** (each condition with compared values, configuration version, confidence, extracted fields; F05 D-IA-06). F08 shows the **timeline** of the request: each step, its result and the reason, and links to SCR-WF-31. It does not repeat the decision detail.
+- **Main flow:** SEC-NK-02 on SCR-T-02 shows the chain in time order, each step with actor, time, result (*Passed*, *Failed*, *Asked back*, …) and reason:
   1. **Request:** requester, recipient, operation, target system, requested duration, source ticket.
-  2. **AI understanding:** category, extracted fields, confidence, domain agent (from F04 / `ai_decisions`).
-  3. **Policy check:** result of **each** condition (whitelist, department entitlement, maximum duration, valid recipient, not already granted) from `ai_decisions` (BR-WF-02, BR-WF-17).
+  2. **AI understanding:** request type and domain agent (from F04 / `ai_decisions`).
+  3. **Policy check:** overall result; when it fails, the failed condition by name as stated in the decision reason (BR-WF-02, BR-WF-17).
   4. **Decision:** `AUTO_APPROVED` (actor `AI`, `decision_id`), `NEEDS_INFO`, or `ROUTE_TO_HUMAN` with the reason and `escalationClass`.
-  5. **Execution:** run status and each attempt (time, result code, duration, masked payload), idempotency key, policy re-check at run time (BR-WF-12).
+  5. **Execution:** run status, number of attempts, last result code, policy re-check at run time (BR-WF-12); attempts are in SCR-NK-05 (Admin) or the F05 `#automation` tab (technician).
   6. **Verification:** connector check → `SUCCEEDED` or mismatch.
   7. **Requester confirmation**, and for time-limited grants the scheduled / executed `REVOKE_ACCESS` (BR-WF-14).
 - **Alternative flows:**
   - **Approved but execution failed:** highlighted "Approved — execution failed", with the assigned technician. A retry adds new steps; earlier steps never change. *Resolved manually* shows the technician's note (BR-WF-13).
-  - **Admin:** *View AI decision* opens F05 SCR-WF-31 (configuration version, compared values).
-  - **Technician in the group, not assigned:** summary (steps and results, no payloads or attempts).
+  - **Admin:** every step with its evidence ids (`decision_id`, `run_id`); *View AI decision* opens F05 SCR-WF-31 for each condition, the compared values, the configuration version and the confidence; *View run* opens SCR-NK-05.
+  - **Technician (assigned or group):** summary: each step and its result, and the reason the request was asked back or routed to a person (`escalationClass`, failed condition by name). No confidence, extracted values, compared values, configuration version or payloads (F05 D-IA-06). Runs and attempts are in the F05 `#automation` tab.
   - **Requester:** one status line (received / need more info / approved / in progress / done / failed, being handled by IT) and the short reason (F05 DF-IA-08). No confidence, conditions, payloads or attempts.
 - **Exceptions:** ticket outside scope → `403`
 - **Result:** anyone can see why a request was approved, asked back or sent to a person
@@ -206,8 +207,11 @@ flowchart LR
 
 ### UC-NK-04 Look Up Workflow Runs and Errors
 
-- **Actors:** Admin; Technician (assigned / group summary)
+- **Actors:** Admin
 - **Preconditions:** `workflow_log:read`
+- **Boundary:**
+  - **F05 owns** the runs: it writes `workflow_runs` and their attempts, owns the endpoints `listWorkflowRuns` / `getWorkflowRun`, the `#automation` tab of SCR-T-02 (who sees which attempts) and the *Retry* / *Resolved manually* actions (UC-WF-09, SCR-WF-20, 21).
+  - **F08 owns** the audit entries of each run step (UC-NK-05), the Admin pages **SCR-NK-04** (search across tickets) and **SCR-NK-05** (run detail), and the error-type grouping below. Both pages read the F05 endpoints; the `#automation` tab and SCR-NK-05 use the same run component (D-NK-IA-03).
 - **Main flow:**
   1. The Admin opens *Audit → Workflow runs* (SCR-NK-04): counters by status and a table (run id, ticket, operation, status, error type, attempts, started, duration).
   2. Filters by status (`QUEUED`, `RUNNING`, `RETRY_WAIT`, `VERIFYING`, `SUCCEEDED`, `FAILED`, `MANUALLY_RESOLVED`), error type, operation, connector, ticket, period.
@@ -215,8 +219,9 @@ flowchart LR
 - **Error types:** `AI_UNAVAILABLE` (F05 UC-WF-04); `AI_INVALID_OUTPUT` (F04 analysis `INVALID` / `FAILED`); transient connector error (timeout, `5xx`, `429`, retried after 1 / 5 / 15 minutes); permanent connector error (`4xx`, access denied); `PRECONDITION_FAILED` (BR-WF-12); verification mismatch; `AUDIT_UNAVAILABLE` (BR-NK-06).
 - **Alternative flows:**
   - **AI failure → a person:** on `AI_UNAVAILABLE` or `AI_INVALID_OUTPUT`, F05 does not apply the AI result and routes the ticket to a human (assignment rule, or the default support team; F05 BR-WF-09); the log has `TICKET_ROUTED_TO_HUMAN` with the error type, also visible in UC-NK-01.
-  - **Technician:** opens runs from the `#automation` tab of their ticket; the assigned technician sees full attempts (needed to retry, UC-WF-09); others in the group see a summary. *Retry* and *Resolved manually* are F05 buttons, shown only to the assigned technician and Admin.
-- **Exceptions:** no permission → `403`; run of a ticket outside scope → `403`
+  - **Technician:** has no access to SCR-NK-04 / 05; sees the runs of their tickets in the F05 `#automation` tab, with the attempts F05 shows there. *Retry* and *Resolved manually* are F05 buttons.
+  - **Admin on a ticket:** *View run* in SEC-NK-01 or SEC-NK-02 opens SCR-NK-05.
+- **Exceptions:** no `workflow_log:read` (Technician, Requester) → `403`
 - **Result:** broken connectors and AI outages are found quickly
 - **Stories:** US-NK-06, US-NK-07 · **Rules:** BR-WF-05, BR-WF-12, BR-WF-15, BR-NK-03, BR-NK-05, BR-NK-06
 

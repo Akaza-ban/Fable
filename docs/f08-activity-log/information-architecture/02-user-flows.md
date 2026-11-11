@@ -46,8 +46,8 @@ flowchart LR
 
 1. Thu opens SCR-NK-02, filters on the folder as target.
 2. The `GRANT_ACCESS` entry shows actor **Automation**, `run_id`, `decision_id`.
-3. She opens the ticket → SEC-NK-02: the AI understood the recipient correctly; the policy check passed on "department entitlement".
-4. *View AI decision* → SCR-WF-31 shows the entitlement was in the catalog → the catalog was wrong, not the AI. She fixes it in SCR-WF-03; that change is itself logged (`AI_SCOPE_UPDATED`).
+3. She opens the ticket → SEC-NK-02: AI understanding *Passed*, policy check *Passed*, decision `AUTO_APPROVED` by the AI.
+4. *View AI decision* → SCR-WF-31 shows each condition and the compared values: the entitlement was in the catalog → the catalog was wrong, not the AI. She fixes it in SCR-WF-03; that change is itself logged (`AI_SCOPE_UPDATED`).
 5. **Branch:** the AI extracted the wrong recipient → she filters SCR-NK-02 on `prompt_version` to find similar cases and reports to the F04 owner.
 
 ## Flow 3 — Admin finds a broken connector

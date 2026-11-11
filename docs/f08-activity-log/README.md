@@ -33,9 +33,9 @@ F08 **does not decide anything**. It records what other branches did and shows i
 |---|---|---|
 | Audit record structure (`actor_type`, action, before / after) | Stores and reads it; extends the scope (BR-NK-01) | F01 BR-09 defines it (`docs/mvp.md` on `feature/author`) |
 | Ticket timeline | Renders the `#history` tab of SCR-T-02 (SEC-NK-01) | F03 owns SCR-T-02 and its other tabs |
-| AI decisions, policy-condition results | Shows them as steps of the approval chain (SEC-NK-02) | F05 writes `ai_decisions`; **SCR-WF-31** (F05) is the Admin's full decision page |
+| AI decisions, policy-condition results | Shows each step of the approval chain with its result and reason (SEC-NK-02); links to SCR-WF-31 | F05 writes `ai_decisions`; **SCR-WF-31** (F05, Admin only) is the only page with each condition, compared values, configuration version and confidence (F05 D-IA-06) |
 | AI analyses, corrections, agent actions | Logs and shows them with model and prompt version | F04 produces them (UC-AI-01, UC-AI-07, UC-AI-10); F04 SEC-AI-15 shows analysis versions |
-| Workflow runs and attempts | Lists and filters runs (SCR-NK-04, 05) | F05 writes them; *Retry* / *Resolved manually* are F05 actions (UC-WF-09) on the `#automation` tab |
+| Workflow runs and attempts | Admin pages to search runs across tickets (SCR-NK-04, 05), reading the F05 endpoints | F05 writes them and owns `listWorkflowRuns` / `getWorkflowRun`, the `#automation` tab (what technicians see) and *Retry* / *Resolved manually* (UC-WF-09) |
 | Masking secrets | Masks before writing (BR-NK-03) | F04 BR-AI-07 masks ticket text; F05 BR-WF-15 masks payloads; F08 is the last guard |
 | Report exports and report settings | Records `REPORT_EXPORTED`, `REPORT_CONFIG_UPDATED`, `REPORT_DIGEST_SENT` | F07 |
 | Figures computed from the log (M-04, M-05) | — | F07 |
@@ -63,7 +63,7 @@ F08 **does not decide anything**. It records what other branches did and shows i
 | Q-NK-06 | When `actor_type = AI`, does `actor_id` point to the service account or to a user? | The `AI_AGENT` service account; the domain agent (F04 `agent`) is stored in the entry's detail. |
 | Q-NK-07 | How long is the log kept? Does "nobody can delete" need a retention exception? | 2 years online, then archived by a scheduled job outside the application account. To agree with the client's compliance rules. |
 | Q-NK-08 | May a requester see the name of the technician handling their ticket? | Yes, the display name only. |
-| Q-NK-09 | F05 shows AI decisions to the **assigned** technician; F01 scope is assigned **and group**. Which applies to the approval chain? | Assigned technician: full chain; other group members: summary. |
+| Q-NK-09 | F05 D-IA-06 gives technicians only a decision summary; F01 scope is assigned **and group**. What does a technician see of the approval chain? | **Resolved:** every technician with the ticket in scope sees the same summary (steps, results, reason for routing to a person); the full decision stays in SCR-WF-31 for the Admin. |
 | Q-NK-10 | Is exporting the audit log needed? | Not in V1. If added: `audit:export`, logged like F07 exports. |
 
 ## Progress

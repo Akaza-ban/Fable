@@ -12,8 +12,8 @@
 
 | ID | Section | Host | Content | Stories |
 |---|---|---|---|---|
-| SEC-NK-01 | Ticket history | SCR-T-02 `#history` | Timeline newest first: actor marker (person / AI + agent / Automation), action, before → after, time, evidence links (`decision_id` → SCR-WF-31 for Admin, `run_id` → SCR-NK-05, `analysis_id`); filter by event group (status, assignment, replies, AI, workflow, SLA). Requester: allowlisted events, AI shown as "IT assistant", workflow as one summary line | US-NK-01, 02, 07 |
-| SEC-NK-02 | Approval chain | SCR-T-02 | Vertical stepper: Request → AI understanding → Policy check (one row per condition ✓ / ✗) → Decision → Execution attempts → Verification → Requester confirmation → Revoke (if time-limited); banner "Approved — execution failed" with assignee; *View AI decision* → SCR-WF-31 (Admin). Group technician: steps without payloads. Requester: one status line and the short reason | US-NK-05 |
+| SEC-NK-01 | Ticket history | SCR-T-02 `#history` | Timeline newest first: actor marker (person / AI + agent / Automation), action, before → after, time, evidence links (`decision_id` → SCR-WF-31 for Admin, `run_id` → SCR-NK-05 for Admin or `#automation` for a technician, `analysis_id`); filter by event group (status, assignment, replies, AI, workflow, SLA). Requester: allowlisted events, AI shown as "IT assistant", workflow as one summary line | US-NK-01, 02, 07 |
+| SEC-NK-02 | Approval chain | SCR-T-02 | Vertical stepper: Request → AI understanding → Policy check (overall result; failed condition by name) → Decision (with reason, `escalationClass`) → Execution (status, attempts count) → Verification → Requester confirmation → Revoke (if time-limited); banner "Approved — execution failed" with assignee. Admin: evidence ids, *View AI decision* → SCR-WF-31, *View run* → SCR-NK-05. Technician: steps, results and reason, no decision detail. Requester: one status line and the short reason | US-NK-05 |
 
 ## 2. F08 pages
 
@@ -21,7 +21,7 @@
 |---|---|---|---|---|---|---|---|
 | SCR-NK-02 | Activity log | Page | Admin | Sidebar *Audit*; *View log* on user, service account, rule, SLA policy pages | `/audit/activity-log` (`?actor=&actor_type=&action=&target=&evidence=&agent=&prompt_version=&from=&to=`) | Filters; paginated table (time, actor, action, target, summary); side panel with `before` / `after` diff and evidence links; no edit / delete control | US-NK-04, 10 |
 | SCR-NK-04 | Workflow runs | Page | Admin | Sidebar *Audit*; SCR-91 (AI unavailable, run failed) | `/audit/workflow-runs` (`?status=&error=&operation=&connector=&ticket=&from=&to=`) | Counters by status; table (run id, ticket, operation, status, error type, attempts, started, duration) | US-NK-06, 07 |
-| SCR-NK-05 | Workflow run detail | Page | Admin; assigned technician (also via `#automation`) | SCR-NK-04, SEC-NK-01 | `/audit/workflow-runs/:id` | Run summary; attempts (time, duration, result code, masked request / response); error message; link to SCR-T-02. *Retry* / *Resolved manually* are F05 modals (SCR-WF-20, 21), shown only to the assigned technician and Admin | US-NK-06 |
+| SCR-NK-05 | Workflow run detail | Page | Admin (technicians see the same component in the F05 `#automation` tab) | SCR-NK-04, SEC-NK-01, SEC-NK-02 | `/audit/workflow-runs/:id` | Run summary; attempts (time, duration, result code, masked request / response); error message; link to SCR-T-02. *Retry* / *Resolved manually* are F05 modals (SCR-WF-20, 21) | US-NK-06 |
 
 The ID `SCR-NK-01` and `SCR-NK-03` of earlier drafts are now the sections SEC-NK-01 and SEC-NK-02; the numbers are not reused.
 
@@ -32,10 +32,10 @@ The API enforces every row; hiding an element is only for usability. "Scope" mea
 | Item | Requester | Technician | Admin | Unauthorized result |
 |---|---|---|---|---|
 | SEC-NK-01 | Own tickets, allowlist | Scope, full | ✓ | `403`; out-of-allowlist entries absent from the response |
-| SEC-NK-02 | Own tickets, status line | Assigned: full; group: summary | ✓ + link to SCR-WF-31 | Fields absent from the response |
+| SEC-NK-02 | Own tickets, status line | Scope: summary + reason | ✓ steps and reasons + link to SCR-WF-31 | Fields absent from the response |
 | SCR-NK-02 | — | — | ✓ | SCR-90 (`/403`) |
 | SCR-NK-04 | — | — | ✓ | SCR-90 |
-| SCR-NK-05 | — | Assigned: full; group: summary | ✓ | SCR-90 |
+| SCR-NK-05 | — | — (F05 `#automation`) | ✓ | SCR-90 |
 | Any `PUT` / `PATCH` / `DELETE` on the log | `405` | `405` | `405` | — |
 
 ## 4. Navigation
@@ -72,8 +72,8 @@ Prefix `/api/v1`. Errors use `ProblemDetails`. Every endpoint filters by the cal
 | SEC-NK-01 | `GET /tickets/:code/history` | `ticket_history:read` + `ticket:read` |
 | SEC-NK-02 | `GET /tickets/:code/approvals` | `approval:read` + `ticket:read` |
 | SCR-NK-02 | `GET /audit-logs`, `GET /audit-logs/:id` | `audit:read` |
-| SCR-NK-04 | `GET /workflow-runs` | `workflow_log:read` |
-| SCR-NK-05, `#automation` | `GET /workflow-runs/:id` (F05 `getWorkflowRun`, one endpoint) | `workflow_log:read` |
+| SCR-NK-04 | `GET /workflow-runs` (F05 `listWorkflowRuns`, with the cross-ticket filters requested in §7) | `workflow_log:read` |
+| SCR-NK-05 | `GET /workflow-runs/:id` (F05 `getWorkflowRun`, one endpoint, also used by the F05 `#automation` tab under F05's rules) | `workflow_log:read` |
 
 - No `POST`, `PUT`, `PATCH` or `DELETE` exists on `/audit-logs` or `/tickets/:code/history`; such calls return `405`.
 - Period longer than the maximum → `422 INVALID_DATE_RANGE`.
@@ -83,6 +83,6 @@ Prefix `/api/v1`. Errors use `ProblemDetails`. Every endpoint filters by the cal
 | Owner | Request |
 |---|---|
 | F03 | Host SEC-NK-01 in `#history` and SEC-NK-02 on SCR-T-02 |
-| F05 | Keep `getWorkflowRun` as the one run endpoint used by `#automation` and SCR-NK-05; write evidence ids on every automated entry (BR-WF-05); link from SCR-WF-31 back to the ticket history |
+| F05 | Keep `getWorkflowRun` as the one run endpoint used by `#automation` and SCR-NK-05; add filters by status, error type, operation, connector and period to `listWorkflowRuns` for SCR-NK-04; keep SCR-WF-31 as the only page with the full AI decision (D-IA-06); write evidence ids on every automated entry (BR-WF-05); link from SCR-WF-31 back to the ticket history |
 | F04 | Write `agent`, `model_version`, `prompt_version`, `analysis_id` on AI entries (BR-AI-02) |
 | F01 | Accept the BR-09 extension, the evidence ids and the permissions (Q-NK-04); *View log* buttons on user and service account pages; decide `SYSTEM` vs `AUTOMATION` (Q-NK-03) |

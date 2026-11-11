@@ -24,8 +24,8 @@ Inputs: [Use cases](../02-use-cases.md), [User stories](../03-user-stories-inves
 | ID | Decision | Why |
 |---|---|---|
 | D-NK-IA-01 | **Ticket history is the `#history` tab of SCR-T-02** (SEC-NK-01), as F03 already reserved, not a page of its own. | People look for history where the ticket is. |
-| D-NK-IA-02 | **The approval chain is a section of SCR-T-02** (SEC-NK-02), shown when the ticket has an F05 access request. For the Admin it links to **F05 SCR-WF-31** instead of repeating the policy details. | SCR-WF-31 already shows each condition and the configuration version; the chain shows the whole story in time order. |
-| D-NK-IA-03 | **Workflow run detail (SCR-NK-05) and the `#automation` tab of SCR-T-02 use the same component and the same F05 endpoint.** *Retry* / *Resolved manually* stay F05 actions (SCR-WF-20, 21). | One view of a run, one owner of the actions. |
+| D-NK-IA-02 | **The approval chain is a section of SCR-T-02** (SEC-NK-02), shown when the ticket has an F05 access request. It shows each step with its result and reason; for the Admin it links to **F05 SCR-WF-31** instead of repeating the decision detail. Technicians see a summary with the reason (F05 D-IA-06). | SCR-WF-31 already shows each condition, the compared values and the configuration version; the chain shows the whole story in time order. One owner for the decision detail. |
+| D-NK-IA-03 | **Workflow run detail (SCR-NK-05) and the `#automation` tab of SCR-T-02 use the same component and the same F05 endpoint.** F05 owns the tab, what technicians see in it, and *Retry* / *Resolved manually* (SCR-WF-20, 21); F08 owns the Admin pages SCR-NK-04 / 05. | One view of a run, one owner of the data and actions. |
 | D-NK-IA-04 | **The audit area is Admin only** (Activity log, Workflow runs). Technicians reach runs from their tickets. | Matches the system IA (`/audit` Admin only). |
 | D-NK-IA-05 | **No edit, delete or "hide" control anywhere.** Corrections appear as new entries linked to the old one. | Append-only (BR-NK-02). |
 | D-NK-IA-06 | **Every entry says who did it:** a person, the **AI** (with the domain agent) or **Automation**, with icon and text. | Same rule as F04 D-AI-IA-06. |
@@ -85,7 +85,7 @@ flowchart TB
 | Role | Home page | Where F08 shows up |
 |---|---|---|
 | Requester | My tickets (F03) | SCR-T-02: SEC-NK-01 (allowlist), SEC-NK-02 (summary) |
-| Technician | Work queues (F03) | SCR-T-02: SEC-NK-01, SEC-NK-02 (full when assigned, summary for the group); runs through `#automation` |
+| Technician | Work queues (F03) | SCR-T-02: SEC-NK-01, SEC-NK-02 (summary with reason); runs through the F05 `#automation` tab |
 | Admin | Dashboard (F02) | Sidebar **Audit**: SCR-NK-02, SCR-NK-04 → SCR-NK-05; everything on SCR-T-02; links to SCR-WF-31 |
 | AI Service | — | No UI; writes entries, reads history read-only as `AI_AGENT` |
 

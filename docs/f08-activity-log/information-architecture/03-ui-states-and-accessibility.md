@@ -22,7 +22,7 @@ Every entry carries one actor marker, with an icon and text, never color alone. 
 | `LOADING` | Query running | Skeleton rows; the rest of SCR-T-02 never waits | All |
 | `READY` | Entries returned | The timeline or table | All |
 | `EMPTY` | No entry matches | "No events for these filters" | SEC-NK-01, SCR-NK-02, SCR-NK-04 |
-| `SUMMARY_ONLY` | Role sees a summary (requester, group technician) | Status line and short reason; no "show details" control | SEC-NK-02, SCR-NK-05 |
+| `SUMMARY_ONLY` | Role sees a summary (requester: status line; technician: steps, results and reason) | No "show details" or *View AI decision* control | SEC-NK-02 |
 | `MASKED` | A value was masked | `***` with tooltip "Hidden for security" | Diff panel, attempts |
 | `FAILED_STEP` | Approved but execution failed, verification mismatch | Red step with icon and "Approved — execution failed", assignee | SEC-NK-02 |
 | `FORBIDDEN` | Role or scope not allowed | SCR-90; never says whether the ticket exists | All |
