@@ -37,11 +37,13 @@ Sample people (same as F04): requester **Lan** (Accounting, Real Estate), reques
 
 *(US-NK-05)*
 
-- **AC-NK-05.1** *Given* Lan's `GRANT_ACCESS` request was approved and executed, *then* SEC-NK-02 shows request → AI understanding → each policy condition ✓ / ✗ → decision → attempts → verification → confirmation, each with actor and time.
-- **AC-NK-05.2** *Given* an auto-approved request, *then* the decision step shows actor `AI` and its `decision_id`; Thu's *View AI decision* opens SCR-WF-31.
+- **AC-NK-05.1** *Given* Lan's `GRANT_ACCESS` request was approved and executed, *when* Thu (Admin) opens SEC-NK-02, *then* it shows request → AI understanding → policy check → decision → execution → verification → confirmation, each with actor, time, result and reason.
+- **AC-NK-05.2** *Given* an auto-approved request, *then* the decision step shows actor `AI` and its `decision_id`; Thu's *View AI decision* opens SCR-WF-31, and SEC-NK-02 itself does not list the compared values, the configuration version or the confidence.
 - **AC-NK-05.3** *Given* a request approved but failed at execution, *then* it is highlighted "Approved — execution failed" with the assigned technician.
 - **AC-NK-05.4** *Given* a retry, *then* it appears as new steps and earlier steps are unchanged.
 - **AC-NK-05.5** *Given* Lan opens the chain, *then* she sees one status line and the short reason, no confidence, conditions, payloads or attempts.
+- **AC-NK-05.6** *Given* a request routed to a person because the entitlement is not in the department catalog, *when* Hai (Technician, ticket in his scope) opens SEC-NK-02, *then* he sees each step with its result and the reason "department entitlement not in catalog" with `escalationClass`; the response has no confidence, extracted values, compared values, configuration version or payloads, and no *View AI decision* link.
+- **AC-NK-05.7** *Given* Hai calls F05 `getAiDecision` (the API of SCR-WF-31), *then* `403` (F05 D-IA-06).
 
 ## AC-UC-NK-04 — Workflow runs and errors
 
@@ -49,7 +51,7 @@ Sample people (same as F04): requester **Lan** (Accounting, Real Estate), reques
 
 - **AC-NK-06.1** *Given* Thu, *then* she can filter runs by status (`QUEUED` … `MANUALLY_RESOLVED`), error type, operation, connector and period.
 - **AC-NK-06.2** *Given* a run, *then* each attempt shows time, duration, result code and masked request / response.
-- **AC-NK-06.3** *Given* Hai is assigned, *then* he sees the full attempts; another technician of his group sees a summary.
+- **AC-NK-06.3** *Given* Hai (Technician) opens `/audit/workflow-runs` or `/audit/workflow-runs/:id`, *then* SCR-90 (`403`); the runs of his ticket are in the F05 `#automation` tab, which uses the same run component.
 - **AC-NK-06.4** *Given* a Requester calls `/workflow-runs`, *then* `403`.
 - **AC-NK-07.1** *Given* the AI Service times out or returns an `INVALID` analysis, *then* the AI result is not applied and the ticket is routed to a person (assignment rule or the default support team).
 - **AC-NK-07.2** *Given* that routing, *then* the history has `TICKET_ROUTED_TO_HUMAN` with `AI_UNAVAILABLE` or `AI_INVALID_OUTPUT`.

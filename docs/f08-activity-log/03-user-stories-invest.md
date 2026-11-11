@@ -52,7 +52,7 @@ US-NK-03, 08, 09 UC-NK-05  Write the log
 | US-NK-02 | PARTIAL | PASS | PASS | PASS | PASS | PASS | Reuses the US-NK-01 timeline with the allowlist. |
 | US-NK-03 | PASS | PASS | PASS | PASS | PASS | PASS | Enforced in the API (`405`) and in the database grants. |
 | US-NK-04 | PASS | PASS | PASS | PASS | PASS | PASS | |
-| US-NK-05 | PASS | NEEDS CONFIRM | PASS | PASS | PASS | PASS | Who sees the full chain: Q-NK-09. |
+| US-NK-05 | PASS | PASS | PASS | PASS | PASS | PASS | Full decision detail stays in F05 SCR-WF-31; technicians see a summary (Q-NK-09 resolved). |
 | US-NK-06 | PASS | PASS | PASS | PASS | PASS | PASS | Run detail overlaps F05 `getWorkflowRun`: one endpoint owned by F05. |
 | US-NK-07 | PASS | PASS | PASS | PASS | PASS | PASS | Routing is F05; F08 records and shows it. |
 | US-NK-08 | PASS | PASS | PASS | PASS | PASS | PASS | Last guard after F04 BR-AI-07 and F05 BR-WF-15. |
