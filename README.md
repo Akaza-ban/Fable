@@ -26,7 +26,7 @@ The mind map groups features by area (8 groups); the specification folders are o
 | 8. Dashboard & Governance Telemetry | [F02 Dashboard](docs/f02-dashboard/README.md), [F07 Reports & Analytics](docs/f07-reports-analytics/README.md), [F08 Activity Log](docs/f08-activity-log/README.md) | draft |
 | Login (no group) | F01 Authentication & Authorization (not specified) | — |
 
-The mind map is an early outline and is out of date in a few places. The system has four actors (see [1.2](#12-user-stories)), so the Team Lead role in the mind map is dropped; some branch docs still name Team Lead and are being aligned. The technician summary (at most 150 words rather than 3 lines) and the reopen window (7 days rather than 48 hours) follow the branch docs. Approval of elevated permissions beyond the AI's allowed catalog (groups 7.2 and 7.3) is still open (see US-WF-15 in F05).
+The mind map is an early outline and is out of date in a few places. The system has four actors (see [1.2](#12-user-stories)), so the Team Lead role in the mind map is dropped; some branch docs still name Team Lead and are being aligned. The technician summary (at most 150 words rather than 3 lines) and the reopen window (7 days rather than 48 hours) follow the branch docs. The "Manager" who approves elevated permissions in groups 7.2 and 7.3 is the Administrator. Whether some sensitive entitlements still need that approval is open (US-WF-15 in F05); the agreed direction is to let the AI route and approve as many requests as possible, so that the Administrator's manual routing and approval work is kept to a minimum.
 
 ### 1.2 User stories
 
@@ -37,7 +37,7 @@ The system has four actors: three human roles and the AI Service.
 *   **Requester:** Business employee who raises tickets and looks for self-service fixes.
 *   **AI Service:** Background actor that classifies and routes every ticket, asks for missing context, resolves in-scope requests through backend APIs, summarizes tickets for technicians and drafts KB articles. It also does the triage and reassignment work: tickets it cannot route go to a shared triage queue.
 *   **Technician:** Support engineer who handles what the AI cannot resolve: troubleshooting, fixing, escalating to a higher tier and writing KB articles.
-*   **Administrator:** System owner who configures routing rules, SLA policies and the AI auto-approval scope, reviews KB articles before they are published, and watches operations, reports and the audit log.
+*   **Administrator:** System owner who configures routing rules, SLA policies and the AI auto-approval scope, reviews KB articles before they are published, and watches operations, reports and the audit log. The Administrator is also the approver for elevated permissions (the "Manager" in the mind map). Design goal: the AI handles routing and approval wherever it safely can, and the Administrator widens or narrows the AI's scope instead of routing tickets by hand.
 
 In the use case diagrams, **User** is the common parent of the three human roles (login, dashboard, KB search).
 
