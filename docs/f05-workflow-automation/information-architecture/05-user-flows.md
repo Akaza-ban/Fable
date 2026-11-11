@@ -4,7 +4,7 @@
 >
 > Implementation status: NOT STARTED
 
-Six flows cover a ticket's path through the three processing flows (A — AI self-service, B — clarification, C — human handling), automation failure handling, and two Admin configuration flows. In every flow a **purple** step is performed by the AI, and every AI step has a failure path that lets a person continue. Each flow starts from its actors (person icon). A step performed by a person begins with 👤 and an abbreviation: **RQ** Requester, **TE** Technician, **TL** Team Lead, **AD** Admin. Steps without a prefix are done by the system or the AI. State names are the exact names in the [use cases](../02-use-cases.md#related-states).
+Six flows cover a ticket's path through the three processing flows (A — AI self-service, B — clarification, C — human handling), automation failure handling, and two Admin configuration flows. In every flow a **purple** step is performed by the AI, and every AI step has a failure path that lets a person continue. Each flow starts from its actors (person icon). A step performed by a person begins with 👤 and an abbreviation: **RQ** Requester, **TE** Technician, **AD** Admin. Steps without a prefix are done by the system or the AI. State names are the exact names in the [use cases](../02-use-cases.md#related-states).
 
 ## Flow 1: Basic request — AI self-service (flow A)
 
@@ -68,24 +68,31 @@ flowchart TD
 
 ## Flow 3: Request that needs a human (flow C)
 
-Example: Lan reports *"The left button of my mouse doesn't work"*.
+Example: Lan reports *"The left button of my mouse doesn't work"*. In the Hardware team, Mai holds 2 P1 Complex tickets (score 20) and Hung holds 5 P4 Simple tickets (score 5); Nam is *Busy* in a meeting. The ticket goes to Hung.
 
 ```mermaid
 flowchart TD
     actTech["<span style='font-size:40px'>👤</span><br/><b>Technician</b>"]:::actor
-    actLead["<span style='font-size:40px'>👤</span><br/><b>Team Lead</b>"]:::actor
+    actAdmin["<span style='font-size:40px'>👤</span><br/><b>Admin</b>"]:::actor
     actReq["<span style='font-size:40px'>👤</span><br/><b>Requester</b>"]:::actor
     start(["ROUTE_TO_HUMAN<br/>hardware / out of scope / policy check failed<br/>/ clarification limit / AI failure"]) --> summary["AI: summarize the ticket + routing reason"]:::ai
     summary --> rules{"Matches an assignment rule?"}
-    rules -->|"Yes"| assign["ASSIGNED to an available technician<br/>notification SCR-91 with summary"]
-    rules -->|"No"| triage["TRIAGE — SCR-WF-10 Triage queue<br/>Team Lead notified"]
-    actLead --> triage
-    triage --> reassign["👤 TL: SCR-WF-11 Assign<br/>(reason required)"]
-    reassign --> assign
+    rules -->|"Yes"| team["Target team from the rule"]
+    rules -->|"No"| deflt["Default support team"]
+    team --> select
+    deflt --> select{"Eligible technician?<br/>AVAILABLE · no P1 held · below max load"}
+    select -->|"Yes"| assign["ASSIGNED to the lowest workload score<br/>notification SCR-91 with summary"]
+    select -->|"No"| queue["Waits in the team queue"]
+    queue -->|"A technician becomes eligible"| select
+    queue -->|"Waiting > 30 min"| alert["Admin notified SCR-91"]
+    actAdmin --> alert
+    alert --> manual["👤 AD: SCR-WF-11 Reassign<br/>(last resort, reason required)"]
+    manual --> assign
     actTech --> work
     assign --> work["👤 TE: SCR-T-02<br/>read the AI summary, do the work (e.g. replace the mouse)"]
     work -->|"SLA threshold reached"| warn["SLA warning SCR-91"]
     warn --> work
+    work -->|"👤 TE switches to Off<br/>ticket not started"| select
     work --> done["👤 TE: record the result → RESOLVED"]
     actReq --> confirm
     done --> confirm{"👤 RQ: result?"}
@@ -138,7 +145,9 @@ flowchart TD
     classDef actor fill:none,stroke:none,color:#111
 ```
 
-## Flow 6: Admin configures assignment rules
+## Flow 6: Admin configures assignment rules and workload
+
+Rules choose the **team**; the *Workload* tab of the same page (points per priority, complexity by request type, maximum load, default support team) decides **who** in the team receives the ticket. The dry run shows both.
 
 ```mermaid
 flowchart TD
@@ -150,10 +159,12 @@ flowchart TD
     err --> add
     valid -->|"Yes"| off["Saved as Disabled, at the end of the list"]
     off --> order["👤 AD: drag above the generic 'Hardware' rule"]
-    order --> dry["👤 AD: SCR-WF-05 Dry run<br/>sample ticket 'Printer paper jam'"]
+    order --> dry["👤 AD: SCR-WF-05 Dry run<br/>sample ticket 'Printer paper jam'<br/>→ team, members' status and workload, expected technician"]
     dry --> result{"Result as expected?"}
     result -->|"No"| add
     result -->|"Yes"| on(["👤 AD: Enable — applies to tickets<br/>entering flow C from now on"])
+    actAdmin --> wl["👤 AD: SCR-WF-01 Workload tab<br/>e.g. request type 'Server' = Complex ×2<br/>maximum load 20"]
+    wl --> wlsave(["Saved, audited — applies<br/>from the next assignment"])
 
     classDef actor fill:none,stroke:none,color:#111
 ```

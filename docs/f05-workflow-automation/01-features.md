@@ -31,11 +31,11 @@ System name: **AI-Powered IT Ticket Routing and Automated Resolution System**.
 | Needs a human | New mouse or keyboard, PC repair, complex incidents, access outside the catalog | **Technician** |
 | AI not confident | Vague description, missing information | **AI asks the requester**, then re-routes |
 
-- F05.1 Configure technician assignment rules (conditions, target team, distribution strategy, order, dry run)
+- F05.1 Configure technician assignment rules (conditions, target team, order, dry run) and **workload scoring** (priority points, complexity by request type, maximum load)
 - F05.2 Configure SLA policies by priority and business calendar
 - F05.3 Configure the **AI processing scope**: AI actions and confidence thresholds, automation action catalog (whitelist), department entitlement catalog
 - F05.4 **Ticket routing**: AI self-service / ask the requester / route to a human
-- F05.5 **Automatic technician assignment by rules** + manual triage queue
+- F05.5 **Automatic technician assignment** by rules, technician availability and workload score — no Team Lead, no manual triage queue
 - F05.6 Response reminders, SLA warnings and escalation on breach
 - F05.7 **AI approval of in-scope requests** (AI understanding + deterministic policy check)
 - F05.8 **API execution after approval** (idempotent, with retries, automatic revocation on expiry)
