@@ -169,3 +169,49 @@ Feature: Article Feedback & Quality Assurance
     Then A feedback record is created with status "PENDING"
     And If negative reports reach 3 within 30 days, article status becomes "FLAGGED"
 ```
+
+---
+
+### US-KB-07: Flagged Article Review & Deprecation Queue
+> *As an* **Administrator or Technician**,  
+> *I want to* review articles flagged as outdated, inaccurate, or low quality,  
+> *So that* obsolete instructions are corrected or archived before they mislead users.
+
+```gherkin
+Feature: Flagged Article Maintenance
+
+  Scenario: Flagged article enters maintenance queue
+    Given Article "KB-1042" has received 3 negative reports within 30 days
+    When The system evaluates article quality scores
+    Then The article state transitions to "FLAGGED"
+    And The article appears in the maintenance queue for assigned technicians and administrators
+
+  Scenario: Deprecating an obsolete article
+    Given An article is no longer valid because the platform or process has changed
+    When The admin clicks "Archive Article"
+    Then The article becomes read-only and visible only to authorized internal roles
+    And A replacement or redirect notice is displayed to readers when relevant
+```
+
+---
+
+### US-KB-08: Real-Time Self-Service Ticket Deflection
+> *As a* **Requester**,  
+> *I want to* be shown relevant KB results while creating a support ticket,  
+> *So that* I can resolve common issues without waiting for a human response.
+
+```gherkin
+Feature: Real-Time KB Deflection During Ticket Creation
+
+  Scenario: Relevant solution is suggested while typing a new ticket
+    Given The user is creating a ticket with title "Cannot connect to VPN after password reset"
+    When The user types the description and the system runs semantic matching
+    Then The top 3 relevant KB articles are displayed above the submit button
+    And The user can click a result to view the resolution without leaving the form
+
+  Scenario: Ticket creation is avoided when a known fix is found
+    Given A high-confidence KB match exists for the user's issue
+    When The user clicks "This solved my issue"
+    Then The ticket draft is closed or marked as resolved by self-service guidance
+    And The deflection event is logged for analytics
+```

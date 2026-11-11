@@ -2,7 +2,7 @@
 
 > Design status: TARGET V1
 >
-> Scope: **F06 Knowledge Base — KB (UC-KB-01 … UC-KB-05)**
+> Scope: **F06 Knowledge Base — KB (UC-KB-01 … UC-KB-06)**
 >
 > Related: [User Stories](02-user-stories.md) · [Information Architecture](04-information-architecture.md)
 
@@ -36,6 +36,7 @@ flowchart LR
     UC3(UC-KB-03: Review & Publish Article)
     UC4(UC-KB-04: Synthesize Article from Ticket)
     UC5(UC-KB-05: Rate & Report Inaccurate Article)
+    UC6(UC-KB-06: Retire / Archive Article)
 
     User --> UC1
     User --> UC5
@@ -44,20 +45,25 @@ flowchart LR
     Tech --> UC2
     Tech --> UC4
     Tech --> UC5
+    Tech --> UC6
 
     Admin --> UC1
     Admin --> UC2
     Admin --> UC3
     Admin --> UC5
+    Admin --> UC6
 
     AI -.->|<<trigger & assist>>| UC4
     UC4 -.->|<<extend>>| UC2
     UC2 -.->|<<requires>>| UC3
+    UC5 -.->|<<triggers maintenance>>| UC6
 ```
 
 ---
 
 ## 3. Detailed Use Case Specifications
+
+The use case set below covers the end-to-end knowledge lifecycle: search, authoring, approval, maintenance, and final archival of obsolete content.
 
 ---
 
@@ -132,3 +138,17 @@ flowchart LR
 | **Main Flow** | 1. User reviews troubleshooting instructions on an article.<br>2. User clicks **[Not Helpful / Report Issue]**.<br>3. Modal opens prompting for issue categorization: *Outdated steps*, *Incorrect technical command*, *Missing context*, or *Broken link*.<br>4. User inputs contextual description and submits.<br>5. System logs feedback entity and increments `helpful_down_count`.<br>6. If article helpfulness drops below 60% or receives 3 reports within 30 days, status transitions to `FLAGGED` and triggers a review task for the author. |
 | **Alternative Flows** | **2a. Helpful rating:** User clicks **[Helpful]**; system increments `helpful_up_count` and renders a confirmation thank-you message. |
 | **Business Rules** | **BR-KB-05:** Articles flagged as `FLAGGED` display a warning banner to readers indicating procedures are under active revision. |
+
+---
+
+### UC-KB-06: Retire / Archive Article
+
+| Field | Description |
+| :--- | :--- |
+| **ID & Name** | **UC-KB-06: Retire / Archive Article** |
+| **Primary Actor** | `ADMIN`, `TECHNICIAN` |
+| **Pre-conditions** | Article is in `PUBLISHED` or `FLAGGED` state and has been confirmed obsolete or superseded by a newer procedure. |
+| **Post-conditions** | Article becomes read-only and is removed from active search index or marked as deprecated. |
+| **Main Flow** | 1. Admin or technician opens the article maintenance queue.<br>2. System shows article health metrics, last review date, and replacement guidance if available.<br>3. User selects **[Archive / Retire]** and enters a rationale or replacement article reference.<br>4. System transitions state to `ARCHIVED`, locks edits, records the retirement event in changelog, and prevents reader-facing publication in active search results.<br>5. If a replacement exists, the archived article displays a redirect banner or link to the new version. |
+| **Alternative Flows** | **3a. Soft deprecation:** System keeps article visible to internal roles only while public readers see an outdated warning banner and redirect recommendation.<br>**3b. Reopen from archive:** Admin reactivates an archived article only when a justified rollback is approved. |
+| **Business Rules** | **BR-KB-06:** Archived articles must remain in immutable history for auditability and may not be edited in place without a new revision or rollback approval. |
