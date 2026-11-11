@@ -69,45 +69,147 @@ The system organizes capabilities across 14 discrete use cases (`UC01` to `UC14`
 
 ---
 
-## 4. Information Architecture
+## 4. Information Architecture, Screen Hierarchy and UI/UX
 
-```text
-Public Access Layer
-└── /login                                  - SSO Corporate Authentication Portal & Role Selector
+The information architecture organizes features around each role's goals and mirrors the mind map groups. Navigation is rendered from the user's role token; every screen must define its access rules and its loading, empty, validation, error, saving and success states.
 
-Authenticated Workspace (Fixed 260px Collapsible Sidebar + Sticky 64px Topbar)
-│
-├── [REQUESTER SELF-SERVICE PORTAL]
-│   ├── /portal                             - Requester Home, search bar, and trending resolutions
-│   ├── /requests/new                       - Smart ticket draft form with real-time AI solution deflection
-│   ├── /requests/my-tickets                - Requester ticket tracking, status timeline & verification
-│   └── /requests/:id                       - Ticket conversation, clarifying question answers, feedback rating
-│
-├── [TICKET & TECHNICIAN WORKSPACE]
-│   ├── /tickets/inbox                      - Team queues, assigned tickets, triage unassigned queue
-│   ├── /tickets/:id                        - Unified technician console (AI summary, conversation, internal notes)
-│   └── /tickets/escalations                - Approaching SLA breach tickets & department reassignments
-│
-├── [AI PROCESSING & AUTOMATION]
-│   ├── /ai/classifications                 - Real-time classification feed, intent detection, confidence telemetry
-│   ├── /ai/clarification-queue             - Active clarification interactions with requesters
-│   ├── /automation/rules                   - Assignment rules builder (Round-robin, workload balance, team matching)
-│   └── /automation/sla-policies            - Priority-based SLA policies (P1–P4) & business hour calendar
-│
-├── [KNOWLEDGE MANAGEMENT — KB]
-│   ├── /kb/explore                         - Semantic solution search portal & faceted category hierarchy
-│   ├── /kb/articles/:id                    - Article view (Problem, root cause, step-by-step fix, attachments)
-│   ├── /kb/editor                          - Rich Text/Markdown authoring tool, code blocks & screenshot uploads
-│   ├── /kb/ai-inbox                        - AI-synthesized drafts extracted from resolved tickets (1-click draft)
-│   ├── /kb/approvals                       - Side-by-side Visual Diff inspection for pending article updates
-│   └── /kb/flagged                         - Problematic & outdated article maintenance queue
-│
-├── [GOVERNANCE, ANALYTICS & AUDIT]
-│   ├── /analytics/dashboard                - Executive KPI telemetry, AI deflection rate, MTTA, MTTR, SLA %
-│   ├── /audit/activity-log                 - Immutable security and workflow audit trail (SOC-2 compliant)
-│   └── /admin/users-rbac                   - Enterprise user directory, team assignments & role matrix
-│
-└── [SYSTEM EXCEPTION & FALLBACK]
-    ├── /403                                - Access Forbidden (Role-Based Access Control fallback guard)
-    └── /404                                - Page Not Found (Routing error fallback)
+### 4.1 Information Architecture
+
+``` mermaid
+flowchart TB
+    ROOT["**IT Ticket Routing System**<br/>AI-powered ticket routing and automated resolution"]
+
+    ROOT --> PUBLIC["Public area"]
+    ROOT --> SELF["Self-service area<br/>(login required, all roles)"]
+    ROOT --> SUPPORT["Support workspace<br/>(Technician / Operations Lead)"]
+    ROOT --> GOV["Governance area<br/>(Operations Lead / Administrator)"]
+
+    subgraph PUBLIC_PAGES["PUBLIC SCREENS"]
+        direction TB
+        LOGIN["**Login** /login<br/>Enterprise SSO<br/>Role-based workspace loading<br/>Authentication errors"]
+    end
+
+    subgraph SELF_PAGES["SELF-SERVICE SCREENS"]
+        direction TB
+        PORTAL["**Portal** /portal<br/>Announcements<br/>Quick self-help search<br/>Trending resolutions"]
+        NEWREQ["**New request** /requests/new<br/>Category, description<br/>Screenshots and error logs<br/>Real-time KB suggestions"]
+        MYTICKETS["**My tickets** /requests/my-tickets<br/>Status timeline<br/>Filter by status<br/>Resolution verification"]
+        REQDETAIL["**Request detail** /requests/:id<br/>Conversation<br/>AI clarifying questions<br/>Confirm fix and rating"]
+        KBEXPLORE["**KB search** /kb/explore<br/>Semantic search<br/>Category hierarchy"]
+        KBARTICLE["**KB article** /kb/articles/:id<br/>Problem, root cause, steps<br/>Helpful / unhelpful vote<br/>Report outdated content"]
+    end
+
+    subgraph SUPPORT_PAGES["SUPPORT SCREENS"]
+        direction TB
+        INBOX["**Ticket inbox** /tickets/inbox<br/>Assigned tickets<br/>Team queues<br/>Unassigned triage queue"]
+        CONSOLE["**Ticket console** /tickets/:id<br/>3-line AI summary<br/>Conversation and internal notes<br/>Status, root cause, resolution<br/>History and field diff"]
+        ESCAL["**Escalations** /tickets/escalations<br/>Approaching SLA breach<br/>Tier 2/3 escalation<br/>Reassignment"]
+        AIFEED["**AI processing** /ai/*<br/>Classification feed and confidence<br/>Clarification queue<br/>Category overrides (model feedback)"]
+        KBEDITOR["**KB editor** /kb/editor<br/>Rich text / Markdown<br/>Code blocks and screenshots<br/>Tags"]
+        KBAI["**AI drafts** /kb/ai-inbox<br/>Drafts synthesized from resolved tickets<br/>PII scrubbed"]
+        KBFLAG["**Flagged articles** /kb/flagged<br/>Reported and outdated articles"]
+    end
+
+    subgraph GOV_PAGES["GOVERNANCE SCREENS"]
+        direction TB
+        APPROVALS["**KB approvals** /kb/approvals<br/>Side-by-side visual diff<br/>Approve / reject"]
+        ANALYTICS["**Analytics** /analytics/*<br/>AI deflection rate, MTTA, MTTR, SLA %<br/>Team workload and queue depth"]
+        AUTOMATION["**Automation config** /automation/*<br/>Assignment rules<br/>SLA policies P1-P4<br/>AI auto-approval whitelist<br/>Execution runs and fallback alerts"]
+        AUDIT["**Audit log** /audit/activity-log<br/>Immutable workflow and security trail"]
+        USERS["**Users and RBAC** /admin/users-rbac<br/>User directory<br/>Teams and roles"]
+    end
+
+    PUBLIC --> LOGIN
+
+    SELF --> PORTAL
+    PORTAL --> NEWREQ
+    PORTAL --> MYTICKETS
+    MYTICKETS --> REQDETAIL
+    NEWREQ --> REQDETAIL
+    SELF --> KBEXPLORE
+    KBEXPLORE --> KBARTICLE
+    NEWREQ --> KBARTICLE
+
+    SUPPORT --> INBOX
+    INBOX --> CONSOLE
+    SUPPORT --> ESCAL
+    ESCAL --> CONSOLE
+    SUPPORT --> AIFEED
+    CONSOLE --> KBAI
+    KBAI --> KBEDITOR
+    SUPPORT --> KBFLAG
+    KBFLAG --> KBEDITOR
+
+    GOV --> APPROVALS
+    GOV --> ANALYTICS
+    GOV --> AUTOMATION
+    GOV --> AUDIT
+    GOV --> USERS
+
+    classDef root fill:#ffffff,stroke:#222222,stroke-width:2px,color:#111111;
+    classDef public fill:#fff0f0,stroke:#f87171,color:#7f1d1d;
+    classDef self fill:#ecfdf5,stroke:#22c55e,color:#14532d;
+    classDef support fill:#eff6ff,stroke:#60a5fa,color:#1e3a8a;
+    classDef gov fill:#f5f3ff,stroke:#a78bfa,color:#4c1d95;
+    classDef publicArea fill:#fecaca,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+    classDef selfArea fill:#bbf7d0,stroke:#16a34a,stroke-width:2px,color:#14532d;
+    classDef supportArea fill:#bfdbfe,stroke:#2563eb,stroke-width:2px,color:#1e3a8a;
+    classDef govArea fill:#ddd6fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+    class ROOT root;
+    class PUBLIC publicArea;
+    class SELF selfArea;
+    class SUPPORT supportArea;
+    class GOV govArea;
+    class LOGIN public;
+    class PORTAL,NEWREQ,MYTICKETS,REQDETAIL,KBEXPLORE,KBARTICLE self;
+    class INBOX,CONSOLE,ESCAL,AIFEED,KBEDITOR,KBAI,KBFLAG support;
+    class APPROVALS,ANALYTICS,AUTOMATION,AUDIT,USERS gov;
 ```
+
+Access per area follows the role matrix: the self-service area is open to every role; the support workspace is hidden (403) for Requesters; KB approvals and analytics require Operations Lead or Administrator; automation configuration is view/dry-run for Operations Leads and full configuration for Administrators; the audit log and user management are Administrator only.
+
+### 4.2 Screen Hierarchy
+
+``` mermaid
+flowchart TB
+    Login["Login (SSO)"] --> Shell["Authenticated workspace shell<br/>(sidebar + topbar)"]
+    Shell -->|"Requester"| Portal["Portal"]
+    Shell -->|"Technician"| Inbox["Ticket inbox"]
+    Shell -->|"Operations Lead"| Escalations["Escalations"]
+    Shell -->|"Administrator"| Analytics["Analytics dashboard"]
+
+    Portal --> NewReq["New request"]
+    NewReq -->|"KB suggestion solves it"| Article["KB article"]
+    NewReq -->|"Submit"| ReqDetail["Request detail"]
+    Portal --> MyTickets["My tickets"]
+    MyTickets --> ReqDetail
+    ReqDetail -->|"AI asks for context"| Clarify["Answer clarifying questions"]
+    Clarify --> ReqDetail
+    ReqDetail -->|"Resolved"| Confirm["Confirm fix and rate"]
+    Portal --> Explore["KB search"]
+    Explore --> Article
+    Article --> Vote["Vote / report outdated"]
+
+    Inbox -->|"Claim"| Console["Ticket console"]
+    Escalations --> Console
+    Console -->|"Escalate"| Escalations
+    Console -->|"Resolve"| Synth["AI KB draft (1-click)"]
+    Synth --> Editor["KB editor"]
+    Editor -->|"Submit for review"| Approvals["KB approvals (diff view)"]
+    Approvals -->|"Publish"| Article
+    Shell --> AIFeed["AI processing"]
+    Shell --> Flagged["Flagged articles"]
+    Flagged --> Editor
+
+    Analytics --> Automation["Automation config"]
+    Analytics --> Audit["Audit log"]
+    Analytics --> Users["Users and RBAC"]
+    Shell --> Forbidden["403 Forbidden"]
+    Shell --> NotFound["404 Not Found"]
+```
+
+Each role lands on its own home after login: Requesters on the Portal, Technicians on the ticket inbox, Operations Leads on escalations and Administrators on analytics. Main requester flow: Portal → New request → KB suggestions (deflection) → Submit → AI classification → auto-execution for whitelisted requests, clarifying questions when context is missing, or routing to a technician → Track status → Confirm fix and rate. Main technician flow: Inbox → Claim → Ticket console with AI summary → Update status and root cause → Resolve → 1-click AI KB draft → Edit → Lead review in diff view → Publish.
+
+The ticket console must clearly show the AI summary (3 lines), the AI-assigned category and confidence, the SLA timer, the conversation with internal notes kept separate, and a way to override the AI category (feeding model feedback). Any action executed automatically by the AI must be visible on the ticket timeline with its result, and failed executions must fall back to a technician queue.
+
+Detailed routes, standard component states (loading, empty, validation, saving, success, error, 403) and the role-based navigation matrix are maintained in [Information Architecture](docs/information-architecture.md).
