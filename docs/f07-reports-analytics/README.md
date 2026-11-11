@@ -63,7 +63,7 @@ Roles, ticket scope and `BR-05 … BR-20` come from F01 (`docs/mvp.md` on the `f
 
 | # | Question | Value used in these documents until decided |
 |---|---|---|
-| Q-BC-02 | May a technician who is not a lead see colleagues' individual figures? | No. |
+| Q-BC-02 | May a technician see colleagues' individual figures? | No. |
 | Q-BC-03 | Is the AI effectiveness report (UC-BC-03) Admin only? | Admin only. |
 | Q-BC-04 | Does an AI reply (question, KB answer) count as the first response for the SLA? | F05 decides; M-01 always reports human and AI first responses separately. |
 | Q-BC-05 | Does `SLA_BREACHED` say which target was missed (response or resolution)? | Assumed yes; M-03 is split by target. F05 owner to confirm. |
