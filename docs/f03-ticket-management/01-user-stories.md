@@ -6,7 +6,7 @@
 >
 > Scope: US-TK-01 … US-TK-22 for UC-TK-01 … UC-TK-06
 
-Use cases, transition table and `BR-TK-xx`: [02-use-cases.md](02-use-cases.md). Screens (`SCR-T-xx`, `DLG-T-xx`): [03-information-architecture.md](03-information-architecture.md). `BR-WF-xx` and `UC-WF-xx` come from F05 Workflow & Automation (branch `docs/workflow-requirements`).
+Use cases, transition table and `BR-TK-xx`: [02-use-cases.md](02-use-cases.md). Screens (`SCR-T-xx`, `DLG-T-xx`): [information-architecture/](information-architecture/README.md). `BR-WF-xx` and `UC-WF-xx` come from F05 Workflow & Automation (branch `docs/workflow-requirements`).
 
 Authentication, scope (BR-TK-01), validation, audit (BR-TK-14), optimistic concurrency (BR-TK-21) and `ProblemDetails` errors (`400`, `403`, `404`, `409`, `429`) are **shared acceptance constraints** of every story, not separate features.
 
@@ -21,20 +21,20 @@ MoSCoW: **Must** (required for V1), **Should** (important), **Could** (if time a
 | US-TK-03 | As a **Requester**, I want to create a ticket on behalf of a colleague, so that a new employee or someone without access can still get help. | Covers onboarding requests | US-TK-01, BR-WF-16 | Should | UC-TK-01 |
 | US-TK-04 | As a **Requester**, I want to see similar open tickets and KB articles while I type, so that I can solve it myself or join an existing ticket instead of creating a duplicate. | Fewer duplicates | US-TK-01, F04, F06 | Could | UC-TK-01 |
 | US-TK-05 | As a **Requester**, I want a *My tickets* list with plain-language statuses and what is expected from me, so that I always know where my requests stand. | Fewer "any update?" messages | US-TK-01 | Must | UC-TK-02 |
-| US-TK-06 | As a **Technician / Team Lead**, I want work queues (assigned to me, my team unassigned, waiting for requester, due soon, triage), so that I know what to work on next. | Faster pick-up, fewer SLA breaches | F05 SLA, F09 teams | Must | UC-TK-02 |
+| US-TK-06 | As a **Technician / Admin**, I want work queues (assigned to me, my team unassigned, waiting for requester, due soon, triage), so that I know what to work on next. | Faster pick-up, fewer SLA breaches | F05 SLA, F09 teams | Must | UC-TK-02 |
 | US-TK-07 | As a **staff user**, I want to search by code or keyword and filter / sort by status, priority, category, team, assignee, requester, date and SLA state, so that I can find any ticket in my scope among millions. | Findability | US-TK-06 | Must | UC-TK-02 |
 | US-TK-08 | As a **staff user**, I want to save a filter set as a personal view, so that I can reopen my usual queue in one click. | Productivity | US-TK-07 | Could | UC-TK-02 |
 | US-TK-09 | As any **user**, I want to open a ticket and see its conversation, details, attachments and history appropriate to my role, so that I have the full context without seeing what I shouldn't. | Context + confidentiality | US-TK-01 | Must | UC-TK-02 |
-| US-TK-10 | As a **Team Lead / Admin**, I want to assign or reassign a ticket to a team member with a reason, seeing members' load and availability, so that work is balanced and nobody gets tickets while absent. | Balanced workload | F09, BR-WF-10 | Must | UC-TK-03 |
-| US-TK-11 | As a **Technician**, I want to claim an unassigned ticket from my team queue, so that I can pick up work without waiting for my lead. | Faster pick-up | US-TK-06 | Should | UC-TK-03 |
+| US-TK-10 | As an **Admin**, I want to assign or reassign a ticket to a team member with a reason, seeing members' load and availability, so that work is balanced and nobody gets tickets while absent. | Balanced workload | F09, BR-WF-10 | Must | UC-TK-03 |
+| US-TK-11 | As a **Technician**, I want to claim an unassigned ticket from my team queue, so that I can pick up work without waiting for an Admin to assign it. | Faster pick-up | US-TK-06 | Should | UC-TK-03 |
 | US-TK-12 | As a **Technician**, I want to transfer a ticket to another team with a reason, so that a misrouted ticket reaches the right team quickly (and the AI learns from it). | Fixes misrouting | F09 teams | Must | UC-TK-03 |
-| US-TK-13 | As a **Technician**, I want to escalate a ticket to a higher support tier or to my team lead, with the work done so far, so that hard problems get expertise or management attention in time. | Fast resolution of complex issues | US-TK-12, support tiers (F09) | Must | UC-TK-03 |
+| US-TK-13 | As a **Technician**, I want to escalate a ticket to a higher support tier or to an Admin, with the work done so far, so that hard problems get expertise or management attention in time. | Fast resolution of complex issues | US-TK-12, support tiers (F09) | Must | UC-TK-03 |
 | US-TK-14 | As a **Requester / Technician**, I want to exchange public replies with attachments in the ticket, and be notified of new replies, so that all communication is in one traceable place. | No lost e-mails / chats | US-TK-09 | Must | UC-TK-04 |
 | US-TK-15 | As a **Technician**, I want to write internal notes (and @mention colleagues) that the requester cannot see, so that I can document troubleshooting and ask for help freely. | Knowledge capture, confidentiality | US-TK-14 | Must | UC-TK-04 |
 | US-TK-16 | As a **Technician**, I want to ask the requester for missing information and have the SLA pause until they answer, and as a **Requester** I want my reply to resume the ticket automatically, so that waiting time is fair and nothing gets stuck. | Fair SLA, no stuck tickets | US-TK-14, BR-WF-07 | Must | UC-TK-04 |
 | US-TK-17 | As a **Technician**, I want to start work on a ticket and have the status shown to the requester, so that they know someone is on it. | Transparency | US-TK-10 / US-TK-11 | Must | UC-TK-05 |
 | US-TK-18 | As a **Technician**, I want to resolve a ticket with a resolution code and a note for the requester (or mark it as a duplicate), so that the requester can verify the fix and the data can be reused. | Verifiable outcome, KB input | US-TK-17 | Must | UC-TK-05 |
-| US-TK-19 | As a **Technician / Team Lead**, I want to correct the category and priority with a reason, so that SLA, reports and future AI classification are accurate. | Data quality, AI learning | US-TK-17, F04 | Should | UC-TK-05 |
+| US-TK-19 | As a **Technician / Admin**, I want to correct the category and priority with a reason, so that SLA, reports and future AI classification are accurate. | Data quality, AI learning | US-TK-17, F04 | Should | UC-TK-05 |
 | US-TK-20 | As a **Requester**, I want to confirm that my ticket is solved and optionally rate the service, so that the ticket closes and the team gets feedback. | Closure + satisfaction data (F07) | US-TK-18 | Must | UC-TK-06 |
 | US-TK-21 | As a **Requester**, I want to report "not fixed" or reopen a closed ticket within 7 days, so that I don't have to start over when the problem comes back. | Continuity | US-TK-20 | Must | UC-TK-06 |
 | US-TK-22 | As a **Requester**, I want to cancel a request I no longer need, and as **staff** I want to cancel duplicates / spam with a reason, so that queues only contain real work. | Clean queues, accurate reports | US-TK-01 | Must | UC-TK-06 |
@@ -92,7 +92,7 @@ Totals: **22 stories** — 17 Must, 3 Should, 2 Could.
 
 **US-TK-06 — Work queues** · Must
 - AC1: Technician default view is *Assigned to me*, sorted by SLA due soonest; views *My team — unassigned*, *Waiting for requester*, *Due soon (at risk)* and *Breached* are available.
-- AC2: Team Lead additionally sees *Triage* (tickets in `TRIAGE`) and *Escalated to me*; Admin sees all views across all teams.
+- AC2: Admin additionally sees *Triage* (tickets in `TRIAGE`), *Escalated to me* and *All open tickets*, across all teams.
 - AC3: Each row shows code, title, requester, priority, status, team, assignee, SLA badge (`ON_TRACK` / `AT_RISK` / `BREACHED` / `PAUSED`) and time left.
 - AC4: Counts per view refresh at least every 60 s without reloading the page.
 - AC5: A technician never sees a ticket that is neither assigned to them nor to one of their teams (verified via API, not only UI).
@@ -120,9 +120,9 @@ Totals: **22 stories** — 17 Must, 3 Should, 2 Could.
 ### EPIC 3 — Assign, transfer, escalate (UC-TK-03)
 
 **US-TK-10 — Assign / reassign** · Must
-- AC1: A Team Lead can assign a `TRIAGE` or unassigned ticket to their own team or one of its members; Admin to any team / member.
+- AC1: An Admin can assign a `TRIAGE` or unassigned ticket to any team or one of its members; a technician calling assign → `403`.
 - AC2: The dialog shows each member's open ticket count and absence; disabled or absent members cannot be selected; forcing it via API → `400 ASSIGNEE_UNAVAILABLE`.
-- AC3: Reassign without a reason → `400`; Team Lead reassigning outside their team → `403`.
+- AC3: Reassign without a reason → `400`; a technician calling reassign → `403`.
 - AC4: After reassignment the status is `ASSIGNED`, both old and new assignees are notified, and the audit record holds before/after assignee and the reason.
 - AC5: The SLA deadline is unchanged by assign / reassign (BR-TK-06).
 - AC6: Assign / reassign on an `AUTOMATING`, `RESOLVED`, `CLOSED` or `CANCELLED` ticket → `409`.
@@ -133,16 +133,16 @@ Totals: **22 stories** — 17 Must, 3 Should, 2 Could.
 - AC3: Audit `TICKET_CLAIMED` with `source = USER`.
 
 **US-TK-12 — Transfer to another team** · Must
-- AC1: The assignee, the source team lead or Admin can transfer an `ASSIGNED` / `IN_PROGRESS` ticket with a reason code and a note (≥ 10 chars); missing → `400`.
-- AC2: After transfer the ticket is `ASSIGNED` to the target team without an individual assignee; Workflow assigns a member by that team's strategy within 10 s (P95) or notifies the target lead.
+- AC1: The assignee or an Admin can transfer an `ASSIGNED` / `IN_PROGRESS` ticket with a reason code and a note (≥ 10 chars); missing → `400`.
+- AC2: After transfer the ticket is `ASSIGNED` to the target team without an individual assignee; Workflow assigns a member by that team's strategy within 10 s (P95), otherwise the ticket waits in the target team queue and Admins are notified.
 - AC3: Transfer to the current team → `400`; the previous assignee can no longer change the ticket (`403`) but its history remains visible to them.
 - AC4: Reason `WRONG_TEAM` stores a routing-correction record (AI category / team vs. human choice) consumable by F04 and F07.
 - AC5: The SLA clock is not reset.
 
 **US-TK-13 — Escalate** · Must
-- AC1: *To higher support tier* lists only teams with a higher `support_tier` whose categories cover the ticket; at L3 this option is disabled with the hint *"Escalate to team lead instead"*; API call → `400`.
+- AC1: *To higher support tier* lists only teams with a higher `support_tier` whose categories cover the ticket; at L3 this option is disabled with the hint *"Escalate to Admin instead"*; API call → `400`.
 - AC2: Functional escalation requires reason and *work done so far* (≥ 20 chars, saved as an internal note); `escalation_level` increases by 1 and never decreases.
-- AC3: *To team lead* keeps the current assignee, sets `is_escalated_to_lead = true`, and the lead receives a notification within 1 minute and sees the ticket in *Escalated to me*.
+- AC3: *To Admin* keeps the current assignee, sets `is_escalated_to_admin = true`, and Admins receive a notification within 1 minute and see the ticket in *Escalated to me*.
 - AC4: Audit `TICKET_ESCALATED` records type, from/to team, level and reason; F07 can count escalations (metric M-09) separating manual (`USER`) from SLA (`AUTOMATION`) escalations.
 
 ### EPIC 4 — Communicate and add information (UC-TK-04)
@@ -183,8 +183,8 @@ Totals: **22 stories** — 17 Must, 3 Should, 2 Could.
 
 **US-TK-19 — Correct category and priority** · Should
 - AC1: Changing category or priority without a reason → `400`.
-- AC2: A technician can change the category of an assigned ticket; priority changes by a technician are *proposals* that the team lead approves; Team Lead / Admin change priority directly.
-- AC3: A priority change re-binds the ticket to the SLA policy version in force for the new priority (BR-WF-08) and recalculates the deadline; raising to P1 notifies the team lead.
+- AC2: A technician can change the category of an assigned ticket; priority changes by a technician are *proposals* that an Admin approves; Admin changes priority directly.
+- AC3: A priority change re-binds the ticket to the SLA policy version in force for the new priority (BR-WF-08) and recalculates the deadline; raising to P1 notifies Admins.
 - AC4: The AI-suggested and the human-chosen values are both kept (`category_source`, audit before/after) for F04 learning and F07 reports.
 
 ### EPIC 6 — Confirm, close, reopen, cancel (UC-TK-06)
@@ -200,11 +200,11 @@ Totals: **22 stories** — 17 Must, 3 Should, 2 Could.
 - AC2: The ticket returns to `IN_PROGRESS` with the previous assignee if available, otherwise to `ASSIGNED` for the owning team; `reopen_count` increases; the assignee is notified.
 - AC3: A ticket auto-closed for no response reopens to `NEW` and is routed again.
 - AC4: Reopen after 7 days → `409 REOPEN_WINDOW_EXPIRED`; the UI shows *Create follow-up ticket*, which pre-fills a new ticket with a `FOLLOW_UP_OF` link.
-- AC5: The 3rd reopen automatically escalates the ticket to the team lead.
+- AC5: The 3rd reopen automatically escalates the ticket to Admin.
 
 **US-TK-22 — Cancel** · Must
 - AC1: The requester can cancel their own ticket in `NEW`, `NEEDS_INFO`, `TRIAGE` or `ASSIGNED`; in `IN_PROGRESS` the button becomes *Ask to cancel* (posts a public message); a direct API cancel from `IN_PROGRESS` → `409`.
-- AC2: Staff (assignee, team lead, Admin) can cancel with a reason code and note (≥ 10 chars); `DUPLICATE` needs a valid original ticket code.
+- AC2: Staff (assignee, Admin) can cancel with a reason code and note (≥ 10 chars); `DUPLICATE` needs a valid original ticket code.
 - AC3: Cancelling an `AUTOMATING` ticket → `409` with an explanatory message.
 - AC4: `CANCELLED` is final: replies, reopen and any status change → `409`.
 - AC5: The requester (when staff cancels) or the assignee (when the requester cancels) is notified with the reason; F07 counts `CANCELLED` tickets in volume only.
