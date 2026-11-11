@@ -15,7 +15,7 @@ Every role uses the same layout: a **left sidebar** with the pages of the role, 
 | Quick create | **+ Create ticket**, opens SCR-T-01. Shown for every role. |
 | Notifications | The word "Notifications" followed by the unread count, e.g. "Notifications 3"; always text with a number, never only a coloured dot. Opens SCR-91 (D-IA-09). |
 | User | Name and role, e.g. "Lan — Requester", "Hung — Technician (Hardware)". |
-| Availability (Technician only) | Switch *Available / Busy / Off* next to the name, always as text with the status word (D-IA-11). Changing it takes effect on the next assignment; switching to *Off* asks for confirmation: *"Your not-started tickets will be moved to available colleagues."* *(proposed)* |
+| Status (Technician only) | *ON / OFF* switch next to the name, always as text with the status word (D-IA-11). Changing it takes effect on the next assignment; switching to *OFF* asks for confirmation: *"Your not-started tickets will be moved to available colleagues."* *(proposed)* |
 | Log out | Ends the session and goes to SCR-01. |
 
 **Sidebar by role.** Only permitted items are rendered. The first item is the home page (DF-IA-02).
@@ -24,7 +24,7 @@ Every role uses the same layout: a **left sidebar** with the pages of the role, 
 |---|---|---|
 | **Requester** | **My tickets** (SCR-T-03, home) · Notifications (SCR-91) | My tickets: tickets where the AI is waiting for my answer + tickets waiting for my confirmation |
 | **Technician** | **Assigned to me** (SCR-T-03, home) · Notifications (SCR-91) | Assigned to me: open tickets; tickets near or past their SLA shown separately |
-| **Admin** | **AI decisions** (SCR-WF-30, home) · All tickets (SCR-T-03) · **Workflow configuration** group: Assignment rules (SCR-WF-01), SLA (SCR-WF-02), AI scope (SCR-WF-03) · Notifications (SCR-91) | All tickets: tickets waiting in a team queue (no eligible technician) + SLA breaches |
+| **Admin** | **AI decisions** (SCR-WF-30, home) · All tickets (SCR-T-03) · **Workflow configuration** group: Workload settings (SCR-WF-01), SLA (SCR-WF-02), AI scope (SCR-WF-03) · Notifications (SCR-91) | All tickets: tickets waiting in a team queue (no eligible technician) + SLA breaches |
 
 Notes:
 
@@ -46,7 +46,7 @@ Notes:
 - **After reporting not fixed (SCR-WF-22):** stay on SCR-T-02; the ticket shows *"Handed over to a technician"*.
 - **After reassigning (SCR-WF-11, Admin):** stay on SCR-T-02 with the new assignee shown (DF-IA-05).
 - **After retrying (SCR-WF-20) or resolving manually (SCR-WF-21):** stay on SCR-T-02, Automation tab, with the new status.
-- **After saving configuration** (SCR-WF-04, 06, 07, or saving the SLA table): stay on the configuration page; the new/edited row is highlighted.
+- **After saving configuration** (SCR-WF-01, SCR-WF-06, SCR-WF-07, or the SLA table): stay on the configuration page; the new/edited row is highlighted.
 - **After login:** go to the role home page. **After log out / session end:** go to SCR-01.
 - **Conflict** (data changed by someone else meanwhile): stay on the page, keep the entered data, and show a **Reload** button.
 
@@ -67,7 +67,7 @@ The notification centre SCR-91 has an unread count in the top bar (D-IA-09). Not
 | Technician | Ticket reached its SLA warning threshold (UC-WF-06) | SCR-T-02 |
 | Technician | Automation failed, ticket assigned to you (UC-WF-09) | SCR-T-02 Automation tab |
 | Technician | Requester reported not fixed | SCR-T-02 |
-| Technician | One of your not-started tickets was moved to a colleague (you went *Off*, or SLA breach) | SCR-T-02 |
+| Technician | One of your not-started tickets was moved to a colleague (you switched *OFF*, or SLA breach) | SCR-T-02 |
 | Admin | Ticket breached its SLA, with the automatic reassignment if any (UC-WF-06) | SCR-T-02 |
 | Admin | Ticket waiting in a team queue for more than 30 minutes because no technician is eligible *(proposed)* | SCR-T-02 |
 | Admin | AI Service unavailable, new tickets are being routed to humans (DF-IA-06) | SCR-WF-30 |

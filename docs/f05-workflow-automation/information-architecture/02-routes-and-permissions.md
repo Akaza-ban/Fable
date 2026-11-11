@@ -15,7 +15,7 @@ Routes are logical paths (DF-IA-01). Modals have no route of their own: they ope
 | `/tickets/new` | SCR-T-01 Create ticket | `?template=access` / `account` / `hardware` pre-selects a quick template. |
 | `/tickets/:id` | SCR-T-02 Ticket detail | `?tab=automation` opens the Automation tab. Opened from SCR-T-03, SCR-WF-31 or SCR-91. |
 | `/notifications` | SCR-91 Notifications | The user's own notifications. |
-| `/workflow/assignment-rules` | SCR-WF-01 Assignment rules | `?tab=rules` / `workload`. |
+| `/workflow/workload` | SCR-WF-01 Workload settings | |
 | `/workflow/sla` | SCR-WF-02 SLA & business calendar | `?tab=policies` / `calendar`. |
 | `/workflow/ai-scope` | SCR-WF-03 AI scope | `?tab=ai-actions` / `automation-actions` / `entitlements`. |
 | `/workflow/ai-decisions` | SCR-WF-30 AI decisions | Filters in the query string (`?outcome=ROUTE_TO_HUMAN&date=...`). |
@@ -37,7 +37,7 @@ Rows are pages, columns are roles. A dash `—` means the role cannot open the p
 | SCR-T-02 Ticket detail | Own tickets | Assigned tickets | All |
 | SCR-T-03 Ticket list | Own tickets | Assigned tickets | All |
 | SCR-91 Notifications | Own | Own | Own |
-| SCR-WF-01 Assignment rules (Rules, Workload) | — | — | ✓ |
+| SCR-WF-01 Workload settings | — | — | ✓ |
 | SCR-WF-02 SLA & business calendar | — | — | ✓ |
 | SCR-WF-03 AI scope | — | — | ✓ |
 | SCR-WF-30 AI decisions | — | — | ✓ |
@@ -47,7 +47,7 @@ Rows are pages, columns are roles. A dash `—` means the role cannot open the p
 Notes:
 
 - **There is no Team Lead** (D-IA-07). No technician sees another technician's tickets or reassigns them; distribution is automatic (UC-WF-05).
-- **Availability switch** (D-IA-11): every Technician sees *Available / Busy / Off* in the top bar; Requesters and Admins do not.
+- **Availability switch** (D-IA-11): every Technician sees an *ON / OFF* switch in the top bar; Requesters and Admins do not.
 - **SCR-T-02 shows role-dependent panels** (D-IA-04):
   - Requester: AI conversation, progress bar, *Confirm resolved* / *Not fixed* buttons, summary reason (DF-IA-08). No Automation tab.
   - Technician: AI summary, routing reason, SLA tab, Automation tab with *Retry* / *Resolved manually* when the ticket is assigned to them.

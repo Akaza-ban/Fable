@@ -8,7 +8,7 @@
 
 | Role code | Display name | Workflow responsibilities |
 |---|---|---|
-| `ADMIN` | Administrator | Configures assignment rules, SLA, and the AI processing scope (AI actions, whitelist, entitlement catalog); reviews AI decisions |
+| `ADMIN` | Administrator | Configures workload scoring, SLA, and the AI processing scope (AI actions, whitelist, entitlement catalog); reviews AI decisions |
 | `TECHNICIAN` | Technician | Handles requests that need a human and automation failures; keeps their **availability status** up to date |
 | `REQUESTER` | Requester | Submits requests, answers AI questions, confirms results |
 
@@ -18,19 +18,45 @@
 
 > The system has 3 user roles and **exactly 1 system actor: the AI Service**.
 >
-> Automated tasks (applying assignment rules, SLA timers, API execution, verification) are **internal system behavior**, not actors; they are logged with source `AUTOMATION` (BR-WF-05). The external access-management system (AD, Google Workspace, mock API…) is an **integration detail** reached through connectors.
+> Automated tasks (choosing the team and technician, SLA timers, API execution, verification) are **internal system behavior**, not actors; they are logged with source `AUTOMATION` (BR-WF-05). The external access-management system (AD, Google Workspace, mock API…) is an **integration detail** reached through connectors.
 >
 > **There is no Team Lead.** Nobody distributes work by hand: the system assigns tickets from each technician's availability and workload (see *Assignment by availability and workload*). The Admin is the only person who can reassign manually, as a last resort.
 
+## What F05 reads from each ticket
+
+F05 does not read the raw ticket itself: it acts on the **AI analysis** produced by F04 (UC-AI-01) for every new ticket and every requester answer. The analysis covers the **full ticket** — the request, the requester and the source — and is the only input of the routing decision (BR-WF-19).
+
+| Group | Fields used by F05 | Used for |
+|---|---|---|
+| **Source** | `channel` (`EMAIL` support mailbox or `PORTAL`), `createdBy` (e.g. a Helpdesk agent logging a phone call) | Shown on the ticket; an unknown sender (`UNKNOWN_SENDER`) is never automated |
+| **Requester** | `requester`, `requestedFor` (beneficiary), business unit, department, site | Policy check (BR-WF-16), auto-filled fields |
+| **Request** | `requestType`, `category` = `domain/subcategory`, `supportLevel` (`L1` / `L2`), extracted fields, `missingFields` | Flow choice, group and sub-group, AI agent |
+| **Confidence and reason** | `confidence`, `suggestedRoute`, `routeReason`, suggested priority with its reason | Flow choice, priority (BR-WF-20) |
+
+**Support level** (computed by F04 from a fixed table, not guessed): `L1` = Helpdesk domain (devices, accounts and access, email, phone, network, printers); `L2` = an application domain (SAP, …) or a business requirement. F05 uses it to pick the AI agent and the team, and shows it on the ticket.
+
+### Fields filled automatically
+
+When `AUTO_FILL_FIELDS` is enabled (UC-WF-03), F05 writes the analysis into the ticket fields shown by F03 — request type, category, subcategory, support level, requested for, business unit, site and priority — each marked **"Filled by AI"** (BR-WF-21). The requester never has to pick a category. A field the AI could not fill with enough confidence stays empty and is asked for (flow B). A technician or the Admin can correct any filled field with a reason; a correction of category or support level before work starts re-routes the ticket.
+
+### Priority set automatically
+
+F05 **sets** the priority (it does not only suggest it) when `SET_PRIORITY` is enabled (BR-WF-20):
+
+- the AI's priority, based only on impact and urgency (BR-AI-09), is applied when its confidence ≥ the threshold;
+- otherwise the default priority **P2 — Medium** is applied;
+- the SLA policy of that priority is attached right away (UC-WF-02);
+- a technician or the Admin can change the priority with a mandatory reason; the SLA is recalculated (BR-WF-08).
+
 ## Routing principles
 
-About **8,000 tickets per day** are routed by the AI Service into three flows:
+About **8,000 tickets per day** are routed by the AI Service into three flows. The ticket is owned either by the **AI agent of its domain** (agent-first, F04 UC-AI-10) or by a **technician**:
 
-| Flow | Condition | Handling |
-|---|---|---|
-| **A — AI self-service** | Confidence ≥ threshold, request type is in the whitelist, **policy check passes** | AI approves → system calls the API → verification → requester confirms |
-| **B — Clarification** | Confidence < threshold, or required information is missing | AI asks the requester → requester answers → re-route (max 2 rounds) |
-| **C — Human handling** | Needs a human (hardware…), outside the whitelist, policy check fails, or still unclear after 2 rounds | Automatic technician assignment with an AI summary |
+| Flow | Condition | Owner | Handling |
+|---|---|---|---|
+| **A — AI self-service** | Confidence ≥ threshold, request type is in the whitelist, **policy check passes** — or a how-to / self-service fix the domain agent can answer from the KB | **AI agent** of the domain | AI approves → system calls the API → verification → requester confirms; or cited KB answer (F04) |
+| **B — Clarification** | Confidence < threshold, or required information is missing | **AI agent** of the domain | AI asks the requester → requester answers → re-route (max 2 rounds) |
+| **C — Human handling** | Needs a human (hardware…), outside the whitelist, policy check fails, suspected bug, software requirement, or still unclear after 2 rounds | **Technician** of the group / sub-group | Automatic technician assignment with an AI summary |
 
 **AI approval has two steps** (BR-WF-02):
 
@@ -67,28 +93,46 @@ flowchart TD
 
 ## Assignment by availability and workload
 
-A ticket in flow C is assigned by **deterministic rules**, not by the AI and not by a person. The AI only classifies the ticket; the rules below decide who gets it (BR-WF-10, BR-WF-18).
+A ticket in flow C is assigned by **deterministic rules**, not by the AI and not by a person. The AI only classifies the ticket; the rules below decide who gets it (BR-WF-09, BR-WF-10, BR-WF-18).
+
+### Which owner: group → sub-group → AI agent or technician
+
+There are **no assignment rules to configure**. The AI category has two parts, `domain/subcategory` (F04), and F09 User Management organizes teams the same way (BR-WF-09):
+
+| Level | Comes from | Example |
+|---|---|---|
+| **Group** | the `domain` of the category; each group owns one or more domains (F09) | `HELPDESK` → IT Helpdesk group |
+| **Sub-group** | the `subcategory`; each sub-group declares the subcategories it handles (F09) | `HELPDESK/PRINTER` → Printer sub-group |
+| **AI agent** | the domain agent of the group (F04), when `AGENT_FIRST` is on for that domain | Helpdesk agent |
+| **Technician** | a member of the sub-group (or of the group if no sub-group handles the subcategory), chosen by status and workload | Hung |
+
+1. The ticket is placed in the **group** of its domain and, when one exists, the **sub-group** of its subcategory.
+2. If the domain has an enabled **AI agent**, the agent owns the ticket first (flows A and B).
+3. The ticket goes to a **technician** of the sub-group — or of the group when no sub-group handles the subcategory — when it enters flow C.
+4. If no group owns the domain, or the AI could not classify the ticket, the ticket goes to the **default support team** (configured in UC-WF-01) and is handled by a technician.
 
 ### Technician availability status
 
+There are only **two statuses**:
+
 | Status | Meaning | Receives new tickets? |
 |---|---|---|
-| `AVAILABLE` | On shift, ready to take work | Yes |
-| `BUSY` | In a meeting, on site, on a break | No (keeps the tickets already held) |
-| `OFF` | Leave, off shift, sick | No; not-started tickets are moved to colleagues |
+| `ON` | On shift and taking work | Yes |
+| `OFF` | Not taking work: off shift, on leave, sick, or away (meeting, on site) | No; their not-started tickets are moved to colleagues, tickets in progress stay with them |
 
-The status is set by the technician (top bar switch) and automatically by the system: `OFF` outside working hours of the business calendar and on registered leave, `AVAILABLE` at the start of the shift. The status itself is owned by F09 User Management; F05 reads it.
+The status is set by the technician (top bar ON/OFF switch) and automatically by the system: `OFF` outside working hours of the business calendar and on registered leave, `ON` at the start of the shift. A technician who steps away for a while simply switches to `OFF`. The status itself is owned by F09 User Management; F05 reads it.
 
 ### Workload score
 
-Counting tickets is not enough: two critical, complex tickets weigh more than five small ones. Each open ticket gets a **load score = priority points × complexity factor**; a technician's workload is the sum over their open tickets (`ASSIGNED`, `IN_PROGRESS`).
+Counting tickets is not enough: three high-priority, complex tickets weigh more than five small ones. Each open ticket gets a **load score = priority points × complexity factor**; a technician's workload is the sum over their open tickets (`ASSIGNED`, `IN_PROGRESS`).
+
+The system has **three priority levels** (there is no "critical" level):
 
 | Priority | Points |
 |---|---|
-| P1 — Critical | 5 |
-| P2 — High | 3 |
-| P3 — Medium | 2 |
-| P4 — Low | 1 |
+| P1 — High | 3 |
+| P2 — Medium | 2 |
+| P3 — Low | 1 |
 
 | Complexity | Factor | Examples |
 |---|---|---|
@@ -98,21 +142,21 @@ Counting tickets is not enough: two critical, complex tickets weigh more than fi
 
 In V1 the complexity comes from the **request type**, configured by the Admin (e.g. "Server" = Complex). AI-estimated complexity is out of scope for V1. All numbers are defaults that the Admin can change (UC-WF-01).
 
-*Example:* Mai holds 2 tickets P1 Complex → 5×2 + 5×2 = **20**; Hung holds 5 tickets P4 Simple → 5 × 1 = **5**. A new "broken mouse" ticket goes to **Hung**, although he holds more tickets.
+*Example:* Mai holds 3 tickets P1 Complex → 3 × (3×2) = **18**; Hung holds 5 tickets P3 Simple → 5 × 1 = **5**. A new "broken mouse" ticket goes to **Hung**, although he holds more tickets.
 
 ### Selection rule
 
-1. Keep members of the target team (from the assignment rule, UC-WF-01).
-2. Remove technicians who are `BUSY` or `OFF`.
-3. Remove technicians who hold a **P1 ticket** (focus rule) or whose workload has reached the **maximum load** (default 20) — unless every remaining member is in that situation, in which case the P1 rule is ignored.
+1. Keep members of the sub-group of the ticket's subcategory — or of the group of its domain when no sub-group handles it, or of the default support team.
+2. Remove technicians who are `OFF`.
+3. Remove technicians whose workload has reached the **maximum load** (default 20).
 4. Pick the technician with the **lowest workload score**; on a tie, the one who received a ticket least recently.
 5. Nobody left → the ticket waits in the team queue (`ASSIGNED` to the team, no individual); the first technician who becomes eligible receives it.
 
 ```mermaid
 flowchart TD
-    t["Ticket in flow C"] --> rule["Assignment rule → target team<br/>(no match → default support team)"]
-    rule --> f1["Keep AVAILABLE members"]
-    f1 --> f2["Drop members holding a P1<br/>or at maximum load"]
+    t["Ticket in flow C"] --> rule["domain → group, subcategory → sub-group<br/>(no group → default support team)"]
+    rule --> f1["Keep members who are ON"]
+    f1 --> f2["Drop members at maximum load"]
     f2 --> any{"Anyone left?"}
     any -- "Yes" --> pick["Lowest workload score<br/>→ ASSIGNED to that technician"]
     any -- "No" --> wait["Waits in the team queue<br/>first eligible technician gets it"]
@@ -122,13 +166,14 @@ flowchart TD
 
 | Feature | Admin | Technician | Requester |
 |---|---|---|---|
-| Configure assignment rules | ✓ | | |
 | Configure SLA and business calendar | ✓ | | |
 | Configure AI scope (AI actions, whitelist, entitlement catalog) | ✓ | | |
 | View AI decisions and their grounds | ✓ | Assigned tickets | Own tickets (summary reason) |
 | Configure workload scoring (priority points, complexity by request type, maximum load) | ✓ | | |
 | Set own availability status | | ✓ | |
 | Reassign tickets manually (last resort, reason required) | ✓ | | |
+| Correct an AI-filled field or the priority (reason required) | ✓ | Assigned tickets | |
+| See source, support level, priority and owner (AI agent or technician) of a ticket | ✓ | Assigned tickets | Own tickets |
 | Receive reminders / SLA warnings | | ✓ | ✓ (when the AI is waiting for them) |
 | Receive SLA breach escalations | ✓ | | |
 | Submit requests | ✓ | ✓ | ✓ |
@@ -152,7 +197,7 @@ flowchart LR
         direction TB
         subgraph config["Configuration"]
             direction LR
-            uc01["UC-WF-01 Configure assignment rules"]
+            uc01["UC-WF-01 Configure workload scoring"]
             uc02["UC-WF-02 Configure SLA"]
             uc03["UC-WF-03 Configure AI processing scope"]
         end
@@ -270,34 +315,30 @@ stateDiagram-v2
 
 ## Use cases
 
-### UC-WF-01 Configure assignment rules
+### UC-WF-01 Configure workload scoring
+
+> Assignment rules ("ticket type → team") were **removed**: the team comes from the AI category and the categories each team is responsible for (F09). This use case now only configures how the technician inside the team is chosen.
 
 - **Actor:** Admin
-- **Preconditions:** logged in as `ADMIN`; at least one technical team has active members
-- **Main flow — rules:** open SCR-WF-01 → *Add rule* → enter name, conditions (request type, category, priority, requester department — combined with AND), target team → `createAssignmentRule` → backend checks authorization and input → saved as **Disabled** → audit → the rule appears at the end of the ordered list. Inside the team, the technician is always chosen by availability and workload score (no per-rule strategy).
-- **Main flow — workload scoring:** SCR-WF-01 tab *Workload* → edit the priority points (P1–P4), the complexity of each request type (Simple / Medium / Complex) and its factor, the maximum load per technician, and the default support team for tickets that match no rule → `updateWorkloadSettings` → audit
-- **Secondary flows:**
-  - Drag and drop to reorder → `reorderAssignmentRules`
-  - Dry run on a sample ticket → `dryRunAssignmentRules` → shows the matching rule, team, each member's status and workload score, and the expected assignee; no data is changed
-  - Enable / disable → `updateAssignmentRule`
-  - Archive a rule (no hard delete, to keep historical references) → `archiveAssignmentRule`
-- **Exceptions:** target team has no active members → `400`; conditions identical to another rule → warning, saving still allowed; points, factors or maximum load ≤ 0 → `400`; no default support team → `400`
+- **Preconditions:** logged in as `ADMIN`; at least one technical team has active members and responsible categories (F09)
+- **Main flow:** open SCR-WF-01 *Workload settings* → edit the priority points (P1–P3), the complexity of each request type (Simple / Medium / Complex) and its factor, the maximum load per technician, and the **default support team** for tickets whose category has no responsible team → `updateWorkloadSettings` → audit
+- **Secondary flow — preview:** choose a sample ticket → `previewAssignment` → shows the AI category, the responsible team, each member's status (`ON` / `OFF`) and workload score, who is excluded and why, and the expected technician; no data is changed
+- **Exceptions:** points, factors or maximum load ≤ 0 → `400`; a request type without a complexity → `400`; no default support team, or the default team has no active members → `400`
 - **Permission:** `workflowConfigManage`
-- **Result:** rules apply to tickets entering flow C **after** they are enabled; workload settings apply to the next assignment
+- **Result:** new settings apply from the next assignment; tickets already assigned are not moved
 
 ### UC-WF-02 Configure SLA policies
 
 - **Actor:** Admin
 - **Preconditions:** logged in as `ADMIN`
-- **Main flow:** open SCR-WF-02 → choose a priority (P1–P4) → enter first-response time, resolution time, warning threshold (%) → choose a business calendar (working hours, holidays) → `updateSlaPolicy` → a new policy version is saved → audit
-- **Suggested defaults:**
+- **Main flow:** open SCR-WF-02 → choose a priority (P1–P3) → enter first-response time, resolution time, warning threshold (%) → choose a business calendar (working hours, holidays) → `updateSlaPolicy` → a new policy version is saved → audit
+- **Suggested defaults** (three levels; there is no "critical" level):
 
   | Priority | First response | Resolution | Warning threshold |
   |---|---|---|---|
-  | P1 — Critical | 15 minutes | 4 hours | 75% |
-  | P2 — High | 1 hour | 8 business hours | 75% |
-  | P3 — Medium | 4 business hours | 3 business days | 75% |
-  | P4 — Low | 8 business hours | 5 business days | 75% |
+  | P1 — High | 1 hour | 8 business hours | 75% |
+  | P2 — Medium | 4 business hours | 3 business days | 75% |
+  | P3 — Low | 8 business hours | 5 business days | 75% |
 
 - **Exceptions:** resolution time < response time, threshold outside 1–99% → `400`
 - **Permission:** `workflowConfigManage`
@@ -307,7 +348,7 @@ stateDiagram-v2
 
 - **Actor:** Admin
 - **Preconditions:** logged in as `ADMIN`; connectors to the external access-management system are declared in deployment configuration (secrets are never entered through the UI)
-- **Main flow — AI actions:** SCR-WF-03 tab *AI actions* → enable/disable each action (`AUTO_CLASSIFY`, `ASK_FOR_INFO`, `AUTO_APPROVE`, `SUGGEST_KB`, `SUGGEST_PRIORITY`) → set the confidence threshold (0.00–1.00) and the maximum clarification rounds (default 2) → `updateAiActionSetting` → audit
+- **Main flow — AI actions:** SCR-WF-03 tab *AI actions* → enable/disable each action (`AUTO_CLASSIFY`, `AUTO_FILL_FIELDS`, `SET_PRIORITY`, `ASK_FOR_INFO`, `AUTO_APPROVE`, `SUGGEST_KB`) and, **per domain**, `AGENT_FIRST` (the domain's AI agent owns the ticket before any technician) → set the confidence threshold (0.00–1.00), the default priority when the AI is not confident (default P2), and the maximum clarification rounds (default 2) → `updateAiActionSetting` → audit
 - **Main flow — whitelist:** tab *Automation actions* → *Add* → enter request type, connector, operation, required parameters, maximum access duration, fallback team on failure → `createAutomationAction` → audit. V1 operations:
 
   | Operation | Meaning | Changes data? |
@@ -325,36 +366,42 @@ stateDiagram-v2
 ### UC-WF-04 Route ticket
 
 - **Actors:** Requester; AI Service
-- **Trigger:** a new ticket is created, or the requester answers an AI question
+- **Trigger:** a new ticket is created from the support mailbox (`EMAIL`) or the portal (`PORTAL`), or the requester answers an AI question
 - **Main flow:**
-  1. The AI Service classifies the ticket, estimates confidence, and extracts information (beneficiary, system, entitlement / account type, duration)
-  2. The system writes an `ai_decisions` record and selects the flow according to the *Routing principles* table
-  3. Flow A → UC-WF-07; flow C → UC-WF-05
+  1. The AI Service (F04) reads the **full ticket** — request, requester and source — and returns the analysis: request type, `domain/subcategory`, **support level** (`L1` / `L2`), extracted fields, missing fields, confidence and a suggested priority (see *What F05 reads from each ticket*)
+  2. The system **auto-fills** the ticket fields marked "Filled by AI" (`AUTO_FILL_FIELDS`, BR-WF-21)
+  3. The system **sets the priority** — the AI's priority when confident, otherwise P2 — and attaches the SLA (`SET_PRIORITY`, BR-WF-20)
+  4. The system places the ticket in the **group** of its domain and the **sub-group** of its subcategory (BR-WF-09)
+  5. The system writes an `ai_decisions` record and selects the flow according to the *Routing principles* table; the owner is the domain's **AI agent** (flows A and B, when `AGENT_FIRST` is on) or a **technician** (flow C)
+  6. Flow A → UC-WF-07; flow C → UC-WF-05
+- **Alternative — sender unknown** (external address, shared mailbox): fields stay empty, the ticket is never automated → flow C with reason `UNKNOWN_SENDER`
+- **Alternative — no AI agent for the domain**, or `AGENT_FIRST` off → flows A and B are handled by the AI Service without an agent owner; flow C unchanged
+- **Alternative — a technician or the Admin corrects the category or support level** before work starts → the ticket is routed again from step 4; the correction and its reason are audited
 - **Alternative — clarification (flow B):** confidence < threshold or a required field is missing → the AI sends a specific question to the requester (e.g. *"Which system do you need access to?"*) → ticket `NEEDS_INFO` → requester answers → back to step 1. Still not confident after 2 rounds → flow C
 - **Alternative — requester does not answer:** see UC-WF-06 (reminders and auto-close)
 - **Exception:** AI Service unavailable / error → ticket goes to flow C with reason `AI_UNAVAILABLE`
 - **Permission:** create ticket: `ticketCreate`; answer: ticket owner
-- **Result:** each ticket has exactly one current routing decision, with its grounds, recorded in the audit log
+- **Result:** each ticket has its fields filled, a priority and an SLA, a group and sub-group, an owner (AI agent or technician), and exactly one current routing decision with its grounds, recorded in the audit log
 
 ### UC-WF-05 Auto-assign technician
 
 - **Actors:** Technician (assignee); Admin (manual reassignment, last resort); AI Service (provides the summary)
-- **Trigger:** a ticket enters flow C (needs a human, out of scope, policy check failed, clarification limit reached), a ticket is returned from UC-WF-09, or a technician becomes eligible again (status back to `AVAILABLE`, load below the maximum)
-- **Main flow:** the system takes enabled rules in order → the **first matching** rule gives the target team → applies the *Selection rule* (available members, no P1 held, below maximum load, lowest workload score) → creates an assignment record → ticket `ASSIGNED` → sends a notification including **the AI summary and the reason it was routed to a human** → audit with source `AUTOMATION`, `ruleId` and the workload scores compared
+- **Trigger:** a ticket enters flow C (needs a human, out of scope, policy check failed, clarification limit reached), a ticket is returned from UC-WF-09, or a technician becomes eligible again (status back to `ON`, load below the maximum)
+- **Main flow:** the system takes the **group** and **sub-group** set in UC-WF-04 (domain → group, subcategory → sub-group, F09) → uses the sub-group, or the group when no sub-group handles the subcategory → applies the *Selection rule* (members who are `ON`, below maximum load, lowest workload score) → creates an assignment record → ticket `ASSIGNED` → sends a notification including **the AI summary and the reason it was routed to a human** → audit with source `AUTOMATION`, the category, the team and the workload scores compared
 - **Alternatives:**
-  - No rule matches → the **default support team** is used; same selection rule
+  - No group owns the domain, or the AI could not classify the ticket → the **default support team** is used; same selection rule
   - Nobody in the team is eligible → the ticket waits in the team queue; the first technician who becomes eligible receives it automatically
   - A technician switches to `OFF` → their **not-started** tickets (`ASSIGNED`) are reassigned with the same selection rule; tickets `IN_PROGRESS` stay with them unless the SLA is breached (UC-WF-06)
   - Admin reassigns manually → `reassignTicket` with a mandatory reason → audit with before/after values
 - **Permission:** automatic: internal system; manual reassignment: `ticketReassign` (Admin only)
-- **Result:** every ticket that needs a human is assigned to the least-loaded available technician of the right team, without anyone distributing work by hand
+- **Result:** every ticket that needs a human is assigned to the least-loaded technician who is `ON` in the right sub-group or group, without anyone distributing work by hand
 
 ### UC-WF-06 Response reminders and SLA warnings
 
 - **Actors:** Technician, Admin, Requester (notification recipients)
 - **Trigger:** automatic — a system job runs every minute
 - **Main flow — warning:** ticket reaches the warning threshold → reminder to the assignee (once per threshold) → `SLA_WARNING` event recorded
-- **Main flow — breach:** deadline passed → flag `sla_breached` → if configured, raise priority by one level → **if the ticket is not started (`ASSIGNED`) or its assignee is no longer `AVAILABLE`, reassign it automatically** with the selection rule (UC-WF-05) → notify the Admin → `SLA_BREACHED` event recorded. A ticket `IN_PROGRESS` with an available assignee stays with them (the work already done is not lost).
+- **Main flow — breach:** deadline passed → flag `sla_breached` → if configured, raise priority by one level → **if the ticket is not started (`ASSIGNED`) or its assignee is now `OFF`, reassign it automatically** with the selection rule (UC-WF-05) → notify the Admin → `SLA_BREACHED` event recorded. A ticket `IN_PROGRESS` whose assignee is `ON` stays with them (the work already done is not lost).
 - **Main flow — waiting for requester:** ticket in `NEEDS_INFO`, or `RESOLVED` awaiting confirmation → remind the requester on day 1 and day N−1 → on day N (default 5 business days) `NEEDS_INFO` becomes `CLOSED` with reason *no response*; the requester can reopen within 7 days
 - **Exception:** `AUTOMATING` tickets are never auto-closed (BR-WF-11)
 - **Permission:** internal system

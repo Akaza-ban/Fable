@@ -9,8 +9,8 @@ Screens (`SCR-*`), operationIds, tables and components are **proposed names**; t
 
 | Requirement | Use Case | Acceptance Criteria | Screen | Component (C3) | API operationId | Database | Business rule | Verification |
 |---|---|---|---|---|---|---|---|---|
-| US-WF-01 | UC-WF-01 | AC-UC-WF-01 | SCR-WF-01, SCR-WF-04 | Workflow Rules | `listAssignmentRules`, `createAssignmentRule`, `updateAssignmentRule`, `archiveAssignmentRule` | `assignment_rules`, `audit_logs` | BR-WF-09 | `INT-WF-RULE-001` PLANNED |
-| US-WF-02 | UC-WF-01 | AC-UC-WF-01 | SCR-WF-01, SCR-WF-05 | Workflow Rules | `reorderAssignmentRules`, `dryRunAssignmentRules` | `assignment_rules` | BR-WF-09 | `UNIT-APP-WF-RULE-001` PLANNED |
+| US-WF-01 | — | — | — | — | Removed: no assignment rules; team comes from the AI category (BR-WF-09) | — | — | — |
+| US-WF-02 | — | — | — | — | Removed with US-WF-01 | — | — | — |
 | US-WF-03 | UC-WF-02 | AC-UC-WF-02 | SCR-WF-02 | SLA Engine | `listSlaPolicies`, `updateSlaPolicy`, `updateBusinessCalendar` | `sla_policies`, `business_calendars` | BR-WF-08 | `UNIT-APP-WF-SLA-001` PLANNED |
 | US-WF-04 | UC-WF-02 | AC-UC-WF-02 | SCR-T-02 | SLA Engine | internal | `ticket_sla_timers`, `sla_events` | BR-WF-07 | `UNIT-APP-WF-SLA-002` PLANNED |
 | US-WF-05 | UC-WF-03 | AC-UC-WF-03 | SCR-WF-03 | AI Gateway | `listAiActionSettings`, `updateAiActionSetting` | `ai_action_settings` | BR-WF-06 | `INT-WF-AI-001` PLANNED |
@@ -29,7 +29,10 @@ Screens (`SCR-*`), operationIds, tables and components are **proposed names**; t
 | US-WF-18 | UC-WF-08 | AC-UC-WF-08 | SCR-91 | Automation Executor | internal (scheduler) | `access_grants`, `workflow_runs` | BR-WF-14 | `INT-WF-REVOKE-001` PLANNED |
 | US-WF-19 | UC-WF-09 | AC-UC-WF-09 | SCR-T-02, SCR-WF-22 | Automation Executor, Connectors | `confirmTicketResolution`, `reopenTicket` | `workflow_runs`, `tickets` | BR-WF-13 | `INT-WF-VERIFY-001` PLANNED |
 | US-WF-20 | UC-WF-09 | AC-UC-WF-09 | SCR-T-02, SCR-WF-20, SCR-WF-21 | Automation Executor | `getWorkflowRun`, `retryWorkflowRun`, `resolveWorkflowRunManually` | `workflow_runs`, `workflow_run_attempts`, `audit_logs` | BR-WF-04, BR-WF-12, BR-WF-13 | `INT-WF-FAIL-001`, `INT-WF-RBAC-003` PLANNED |
-| US-WF-21 | UC-WF-01 | AC-UC-WF-01 | SCR-WF-01 (Workload tab) | Workflow Rules, Assignment Engine | `getWorkloadSettings`, `updateWorkloadSettings` | `workload_settings`, `request_type_complexity`, `audit_logs` | BR-WF-18 | `UNIT-APP-WF-WORKLOAD-001` PLANNED |
+| US-WF-21 | UC-WF-01 | AC-UC-WF-01 | SCR-WF-01 Workload settings, SCR-WF-05 Assignment preview | Assignment Engine | `getWorkloadSettings`, `updateWorkloadSettings`, `previewAssignment` | `workload_settings`, `request_type_complexity`, `team_categories` (F09), `audit_logs` | BR-WF-09, BR-WF-18 | `UNIT-APP-WF-WORKLOAD-001` PLANNED |
+| US-WF-22 | UC-WF-04 | AC-UC-WF-04 | SCR-T-01, SCR-T-02 ("Filled by AI" fields) | Ticket Router, AI Gateway | internal (routing), `correctTicketField` | `tickets`, `ai_decisions`, `audit_logs` | BR-WF-19, BR-WF-21 | `INT-WF-FIELDS-001` PLANNED |
+| US-WF-23 | UC-WF-04 | AC-UC-WF-04 | SCR-T-02 (priority and SLA) | Ticket Router, SLA Engine | internal (routing), `changeTicketPriority` | `tickets`, `ticket_sla_timers`, `audit_logs` | BR-WF-08, BR-WF-20 | `UNIT-APP-WF-PRIORITY-001` PLANNED |
+| US-WF-24 | UC-WF-04, UC-WF-05 | AC-UC-WF-04, AC-UC-WF-05 | SCR-T-02 (group, sub-group, owner), SCR-WF-05 | Ticket Router, Assignment Engine | internal (routing), `previewAssignment` | `tickets`, `ticket_assignments`, `team_categories` (F09) | BR-WF-09 | `INT-WF-ROUTE-003` PLANNED |
 
 ## Screen inventory
 
@@ -42,7 +45,7 @@ The full screen inventory (12 pages and 8 modals), routes, permissions and scree
 | NFR-WF-CAP-001, NFR-WF-PERF-001 | Ticket Router, AI Gateway | asynchronous processing queue, multiple workers calling the AI in parallel | `PERF-WF-LOAD-001`, `PERF-WF-ROUTE-001` PLANNED |
 | NFR-WF-PERF-002, NFR-WF-SAFE-001 | Policy Engine | pure policy evaluation (no AI calls), cached entitlement catalog | `PERF-WF-APPROVE-001`, `SEC-WF-AIPOLICY-001` PLANNED |
 | NFR-WF-PERF-003, NFR-WF-REL-001 | Automation Executor | DB-backed job queue (outbox), background workers | `PERF-WF-EXEC-001`, `INT-WF-DURABLE-001` PLANNED |
-| NFR-WF-PERF-004 | Assignment Engine | in-memory rule cache, index by team | `PERF-WF-ASSIGN-001` PLANNED |
+| NFR-WF-PERF-004 | Assignment Engine | cached category → team mapping, index by team | `PERF-WF-ASSIGN-001` PLANNED |
 | NFR-WF-PERF-005 | SLA Engine | 1-minute job scanning `ticket_sla_timers` by `next_due_at` | `INT-WF-SLA-002` PLANNED |
 | NFR-WF-REL-002/003 | Automation Executor, Connectors | unique idempotency key, 1/5/15 minute backoff | `INT-WF-IDEM-001`, `UNIT-APP-WF-RETRY-001` PLANNED |
 | NFR-WF-REL-004 | Ticket Router | 30-second AI call timeout → flow C | `INT-WF-AIDOWN-001` PLANNED |
