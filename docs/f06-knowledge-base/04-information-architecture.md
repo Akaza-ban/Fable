@@ -196,3 +196,24 @@ erDiagram
 | `comment` | TEXT | NULLABLE | Detailed reader report |
 | `status` | ENUM | DEFAULT 'PENDING' | `PENDING`, `RESOLVED`, `DISMISSED` |
 | `created_at` | TIMESTAMP | DEFAULT NOW() | Timestamp of submission |
+
+---
+
+## 5. Data Flow — Resolved Ticket to Published Article
+
+How a resolved ticket becomes a published article that requesters find on their own. Ported from the earlier Vietnamese draft on `feature/kho-kien-thuc-kb`.
+
+```mermaid
+flowchart TB
+    resolved["Ticket RESOLVED"] -->|"Technician clicks Generate KB Draft"| extract["AI Service<br/>extracts content, scrubs PII"]
+    extract -->|"Structured draft"| draft["Draft in the KB editor"]
+    draft -->|"Technician reviews and submits"| review["Pending review"]
+    review -->|"Admin checks the diff view and approves"| published["Published article"]
+    published -->|"Embeddings"| vector["Vector index<br/>(semantic search)"]
+    published -->|"Users read and search"| selfservice["Requester resolves the issue alone"]
+    vector -->|"AI suggests articles while a ticket is created"| deflection["Ticket deflection"]
+    deflection --> selfservice
+
+    classDef ai fill:#7b3fbf,color:#fff,stroke:#5a2d8c
+    class extract,vector ai
+```
