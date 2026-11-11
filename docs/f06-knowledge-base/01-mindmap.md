@@ -55,6 +55,7 @@ mindmap
 | **F06.3** | **Smart Search & Retrieval** | Natural language semantic search (RAG) with intent detection, faceted filtering, and ticket deflection suggestions during requester ticket drafting. | Requester, Technician |
 | **F06.4** | **AI Article Generation** | Automatic synthesis of closed tickets into structured KB articles with strict PII scrubbing (masking emails, credentials, private IPs). | AI Service → Technician |
 | **F06.5** | **Feedback & Quality Loop** | Thumbs up/down rating widget, issue reporting modal, automated threshold flagging (`Helpful < 60%`), and revision assignment queues. | Requester, Technician, Admin |
+| **F06.6** | **Deprecation & Archival** | Lifecycle management, deprecation warnings, redirect recommendations, and read-only archival of obsolete articles. | Admin, Technician |
 
 ---
 

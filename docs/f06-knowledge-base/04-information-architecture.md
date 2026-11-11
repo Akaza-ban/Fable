@@ -74,6 +74,11 @@ stateDiagram-v2
 
     Published --> Archived : Deprecated by lifecycle policy
     Archived --> [*]
+
+    note right of Archived
+        Archived articles remain read-only
+        and keep audit history for traceability
+    end note
 ```
 
 ---
@@ -105,7 +110,7 @@ erDiagram
         string slug "Unique URL slug"
         uuid category_id FK
         string target_audience "PUBLIC or INTERNAL_ONLY"
-        string status "DRAFT, PENDING, PUBLISHED, FLAGGED, ARCHIVED"
+        string status "DRAFT, PENDING_REVIEW, CHANGES_REQUESTED, PUBLISHED, FLAGGED, UNDER_REVISION, ARCHIVED, REJECTED"
         string current_version "Active version (e.g. 1.2)"
         uuid author_id FK
         uuid approver_id FK
@@ -175,7 +180,7 @@ erDiagram
 | `title` | VARCHAR(255) | NOT NULL | Standard article title |
 | `category_id` | UUID | FK, NOT NULL | Reference to `kb_categories` |
 | `target_audience` | ENUM | NOT NULL, DEFAULT 'PUBLIC' | `PUBLIC` or `INTERNAL_ONLY` |
-| `status` | ENUM | NOT NULL, DEFAULT 'DRAFT' | `DRAFT`, `PENDING_REVIEW`, `PUBLISHED`, `FLAGGED`, `ARCHIVED` |
+| `status` | ENUM | NOT NULL, DEFAULT 'DRAFT' | `DRAFT`, `PENDING_REVIEW`, `CHANGES_REQUESTED`, `PUBLISHED`, `FLAGGED`, `UNDER_REVISION`, `REJECTED`, `ARCHIVED` |
 | `current_version`| VARCHAR(10) | NOT NULL, DEFAULT '1.0' | Currently published version string |
 | `author_id` | UUID | FK, NOT NULL | ID of technician author |
 | `approver_id` | UUID | FK, NULLABLE | ID of approving administrator |

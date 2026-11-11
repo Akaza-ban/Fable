@@ -4,7 +4,7 @@
 >
 > Implementation status: NOT STARTED
 
-The Knowledge Base branch of the mind map: searching and reading articles, authoring, AI drafts from resolved tickets, review and publishing.
+The Knowledge Base branch of the mind map: searching and reading articles, authoring, AI drafts from resolved tickets, review, publishing, and maintenance/archival of outdated content.
 
 | File / Folder | Content |
 |---|---|
