@@ -16,10 +16,12 @@ Information architecture IDs carry the `IA` prefix so they do not clash with oth
 | D-IA-04 | **One ticket detail page (SCR-T-02) serves all three roles**, with role-dependent panels: the Requester sees the AI conversation, progress bar and confirm buttons; the Technician sees the AI summary, the routing reason and the Automation tab; the Admin sees everything plus a link to the AI decision. | Avoids three near-identical pages; the server returns only what the role may see. | Proposed |
 | D-IA-05 | **The AI scope is one page with 3 tabs** (AI actions, Automation actions, Entitlement catalog), not three pages. | All three answer one question: "what may the AI do on its own?". The Admin needs to see them side by side. | Proposed |
 | D-IA-06 | **AI decisions have their own pages (SCR-WF-30, SCR-WF-31), Admin only.** Technicians see only a decision summary in SCR-T-02; Requesters see only a summary reason. | US-WF-16 belongs to the Admin; policy-condition details are administrative information (DF-IA-08). | Proposed |
-| D-IA-07 | **Team Lead is not a separate role.** The "Triage queue" item and the "Reassign" button appear when the technician has the `is_lead` flag in at least one team. | Consistent with the use case documents (3 roles). | Proposed |
+| D-IA-07 | **There is no Team Lead and no manual triage queue.** The system assigns every flow-C ticket from availability and workload score (UC-WF-05); a ticket that matches no rule goes to the default support team. The *Reassign* modal (SCR-WF-11) is Admin only, as a last resort. SCR-WF-10 *Triage queue* is removed and its number is not reused. | User decision: nobody should distribute work by hand; the system knows who is available and how loaded they are. | Decided by the user |
 | D-IA-08 | **The Requester talks to the AI through a conversation panel in SCR-T-02**, not a separate chat page. AI questions and requester answers are ticket messages. | An AI question always belongs to a ticket; a separate chat page would separate the requester from the ticket status. | Proposed |
 | D-IA-09 | **There is a shared notification centre (SCR-91)** with an unread count in the top bar, for all three roles. | The workflow produces many events that need to be announced (AI clarification, results, SLA warnings, automation failures). | Proposed |
 | D-IA-10 | **There is no "approval" screen for humans.** The AI approves in the background; the requester only sees progress, and the Admin reviews afterwards through SCR-WF-30/31. | Follows the agreed flow: basic requests are approved by the AI, without Admin approval. | Proposed |
+| D-IA-11 | **Technicians set their availability from the top bar** (Available / Busy / Off), next to their name. The switch belongs to F09 User Management; F05 only reads the status. | The assignment rule needs the status (BR-WF-10); one click from any page keeps it up to date. | Proposed |
+| D-IA-12 | **Workload scoring is a second tab of SCR-WF-01** (*Rules* / *Workload*), not a separate page. | Rules choose the team, workload chooses the person: the Admin configures both together. | Proposed |
 
 ## Defaults pending confirmation
 
@@ -29,7 +31,7 @@ Information architecture IDs carry the `IA` prefix so they do not clash with oth
 | DF-IA-02 | **Home page by role:** Requester → SCR-T-03 *My tickets*; Technician → SCR-T-03 *Assigned to me*; Admin → SCR-WF-30 *AI decisions* (temporary, until the F02 Dashboard is specified). | Proposed |
 | DF-IA-03 | **Display formats:** date and time `dd/MM/yyyy HH:mm` in Vietnam time; AI confidence as a percentage (0.87 → `87%`); remaining SLA time as `2 h 15 min`. | Proposed |
 | DF-IA-04 | **Screen IDs are numbered by area:** `SCR-01`, `SCR-9x` shared; `SCR-T-xx` tickets (F03); `SCR-WF-0x` configuration; `SCR-WF-1x` dispatch; `SCR-WF-2x` automation actions on a ticket; `SCR-WF-3x` AI monitoring. A new screen takes the next free number in its area; existing numbers do not change. | Proposed |
-| DF-IA-05 | **After reassigning (SCR-WF-11)**, the user returns to the page that opened the modal (SCR-WF-10 or SCR-T-02). | Proposed |
+| DF-IA-05 | **After reassigning (SCR-WF-11)**, the Admin stays on SCR-T-02 with the new assignee shown. | Proposed |
 | DF-IA-06 | **The Admin is notified when the AI Service is unavailable** (all new tickets are being routed to humans, NFR-WF-REL-004). The requirements do not say who is notified. | Proposed |
 | DF-IA-07 | **SCR-T-02 refreshes its status automatically** while the ticket is `NEW`, `NEEDS_INFO` or `AUTOMATING`, so the requester sees progress without reloading. The mechanism (polling, WebSocket…) is chosen in the architecture documents. | Proposed |
 | DF-IA-08 | **The Requester only sees a summary reason** for an AI decision (e.g. *"Your request needs a technician because this access is not in your department's catalog"*), not the confidence or each policy condition. | Proposed |
@@ -43,5 +45,6 @@ Information architecture IDs carry the `IA` prefix so they do not clash with oth
 | Who is told when the AI fails | NFR-WF-REL-004 only says tickets are routed to humans. | The Admin is notified (DF-IA-06). |
 | Admin home page | No Dashboard yet (F02 not specified). | SCR-WF-30 is used temporarily (DF-IA-02). |
 | "Not fixed" | UC-WF-09 has `reopenTicket` but does not say whether a reason is needed. | Modal SCR-WF-22 with a mandatory reason, so the technician knows what is wrong. |
+| Team Lead removed | Earlier drafts had a Team Lead (`TECHNICIAN` + `is_lead`) handling a triage queue. | Removed by user decision (D-IA-07): SCR-WF-10 is removed, SCR-WF-11 is Admin only, SLA breaches notify the Admin. F02 and F03 still mention a Team Lead and must be aligned by their owners. |
 
 **Related:** [Information architecture index](README.md) · [Sitemap](01-sitemap.md) · [Screen inventory](04-screen-inventory.md)

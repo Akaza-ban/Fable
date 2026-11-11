@@ -48,8 +48,8 @@ A chip always carries its text. Colour supports the text and never replaces it.
 |---|---|---|
 | New | `NEW` | Just created, the AI is analyzing. |
 | More info needed | `NEEDS_INFO` | The AI is waiting for the requester's answer; SLA paused. |
-| Awaiting assignment | `TRIAGE` | No team yet; a team lead will assign it. |
-| Assigned | `ASSIGNED` | Assigned to a team / technician. |
+| Assigned | `ASSIGNED` | Assigned to a technician (name shown). |
+| Waiting for a technician | `ASSIGNED` (team only) | In the team queue: nobody is available right now; it will be assigned automatically as soon as someone is. |
 | In progress | `IN_PROGRESS` | A technician is working on it. |
 | Automating | `AUTOMATING` | Approved by the AI; the system is executing / verifying. |
 | Awaiting confirmation | `RESOLVED` | Done, waiting for the requester's confirmation. |
@@ -63,6 +63,16 @@ A chip always carries its text. Colour supports the text and never replaces it.
 | AI self-service | `AUTO_APPROVED` | Confidence and policy check passed. |
 | Clarification | `NEEDS_INFO` | Not confident or information missing. |
 | Handed to technician | `ROUTE_TO_HUMAN` | Needs a human; the reason is shown next to the chip. |
+
+**Technician availability** (top bar, Workload tab, Reassign modal)
+
+| Chip | Code | Meaning |
+|---|---|---|
+| Available | `AVAILABLE` | Receives new tickets. |
+| Busy | `BUSY` | Keeps current tickets, receives no new ones. |
+| Off | `OFF` | Off shift or on leave; not-started tickets are moved to colleagues. |
+
+Next to the status, the Workload tab and the Reassign modal show the **workload score** as a number with its maximum, e.g. *"12 / 20"*, and a text marker *"Holding a P1"* when the focus rule applies.
 
 **Automation run** (Automation tab)
 

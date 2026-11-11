@@ -2,7 +2,7 @@
 
 > Design status: TARGET V1
 >
-> Scope: F05 — US-WF-01 … US-WF-20
+> Scope: F05 — US-WF-01 … US-WF-21
 
 Each user story is small enough to implement and test independently. Authentication, authorization, validation, auditing and error handling are **shared acceptance constraints**, not hidden features.
 
@@ -23,7 +23,7 @@ MoSCoW priority: **Must** (required for V1), **Should** (important), **Could** (
 
 | ID | User story | Value | Dependencies | Priority | AC |
 |---|---|---|---|---|---|
-| US-WF-01 | As an **Admin**, I want to create and edit assignment rules based on conditions (request type, category, priority, department) pointing to a technical team and a distribution strategy, so that tickets that need a human reach the right team automatically. | No manual dispatching | Technical teams (F09) | Must | AC-UC-WF-01 |
+| US-WF-01 | As an **Admin**, I want to create and edit assignment rules based on conditions (request type, category, priority, department) pointing to a technical team, so that tickets that need a human reach the right team automatically. | No manual dispatching | Technical teams (F09) | Must | AC-UC-WF-01 |
 | US-WF-02 | As an **Admin**, I want to order the rules and dry-run them on a sample ticket, so that I know the assignment outcome before enabling them. | Fewer configuration mistakes | US-WF-01 | Should | AC-UC-WF-01 |
 | US-WF-03 | As an **Admin**, I want to define SLAs per priority and business calendar, so that every ticket has a clear deadline. | Measurable service commitment | — | Must | AC-UC-WF-02 |
 | US-WF-04 | As a **Technician**, I want the SLA to pause while the AI is waiting for the requester's answer, so that I am not penalized for delays outside my control. | Fair SLA | US-WF-03 | Should | AC-UC-WF-02 |
@@ -33,9 +33,9 @@ MoSCoW priority: **Must** (required for V1), **Should** (important), **Could** (
 | US-WF-08 | As a **Requester**, I want my basic requests (account check, account creation, additional access) to be recognized and handled by the AI immediately, so that I don't have to wait for a technician. | Instant resolution of most tickets | US-WF-05, US-WF-06 | Must | AC-UC-WF-04 |
 | US-WF-09 | As a **Requester**, I want the AI to ask me a specific question when it is not confident (max 2 rounds), so that my request is understood correctly instead of being handled wrongly. | Fewer wrong actions | US-WF-08 | Must | AC-UC-WF-04 |
 | US-WF-10 | As a **Technician**, I want requests that need a human (hardware, outside AI scope, policy check failed) to be assigned to me automatically with an AI summary and the reason, so that I can start without re-reading everything. | Technicians only get work that needs them | US-WF-01, US-WF-08 | Must | AC-UC-WF-05 |
-| US-WF-11 | As a **Team Lead**, I want tickets that match no rule to go to a manual triage queue, and to be able to reassign tickets with a reason, so that no ticket is missed or misassigned. | Nothing slips through | US-WF-10 | Must | AC-UC-WF-05 |
+| US-WF-11 | As a **Technician**, I want the system to respect my availability status (Available / Busy / Off) and my current workload, and to move my not-started tickets to available colleagues when I go off duty, so that I am never given work I cannot do and nothing waits on me. | Fair, automatic distribution without a Team Lead | US-WF-10, availability status (F09) | Must | AC-UC-WF-05 |
 | US-WF-12 | As a **Technician**, I want to be reminded when a ticket reaches its SLA warning threshold, so that I can act before it is overdue. | Fewer SLA breaches | US-WF-03 | Must | AC-UC-WF-06 |
-| US-WF-13 | As a **Team Lead**, I want SLA-breached tickets to be escalated automatically (notification, flag, optional priority raise), so that I can intervene in time. | Fast reaction to delays | US-WF-03 | Must | AC-UC-WF-06 |
+| US-WF-13 | As an **Admin**, I want SLA-breached tickets to be escalated automatically (flag, notification to me, optional priority raise, automatic reassignment when not started or the assignee is unavailable), so that delays are fixed without anyone redistributing work by hand. | Fast reaction to delays | US-WF-03, US-WF-11 | Must | AC-UC-WF-06 |
 | US-WF-14 | As a **Requester**, I want to be reminded when the AI is waiting for my answer, and the ticket to close automatically after N days without an answer (still reopenable), so that tickets don't hang forever. | Clean queues | US-WF-09 | Should | AC-UC-WF-06 |
 | US-WF-15 | As a **Requester**, I want requests within my department's allowed catalog to be approved by the AI right after the policy check, so that I don't have to wait for anyone's approval. | Approval in seconds | US-WF-07, US-WF-08 | Must | AC-UC-WF-07 |
 | US-WF-16 | As an **Admin**, I want to see each AI decision with its confidence, extracted information and the result of each policy condition, so that I can review it and adjust the configuration when the AI gets it wrong. | Explainable AI decisions | US-WF-15 | Must | AC-UC-WF-07 |
@@ -43,11 +43,12 @@ MoSCoW priority: **Must** (required for V1), **Should** (important), **Could** (
 | US-WF-18 | As an **Admin**, I want time-bound access to be revoked automatically on expiry, so that stale access does not accumulate. | Security | US-WF-17 | Could | AC-UC-WF-08 |
 | US-WF-19 | As a **Requester**, I want the system to verify the result on the external access-management system and then ask me to confirm, so that I am sure my request was really fulfilled. | Trustworthy result | US-WF-17 | Must | AC-UC-WF-09 |
 | US-WF-20 | As a **Technician**, I want tickets whose execution or verification failed to be handed to me with the error log so I can retry or resolve manually, so that automation failures are never forgotten. | Clear ownership of failures | US-WF-17, US-WF-10 | Must | AC-UC-WF-09 |
+| US-WF-21 | As an **Admin**, I want to configure workload scoring (points per priority, complexity of each request type, maximum load per technician, default support team), so that tickets go to the technician who is really the least busy, not just the one holding the fewest tickets. | Realistic load balancing | US-WF-01 | Must | AC-UC-WF-01 |
 
 Grouped by use case:
 
 ```text
-US-WF-01–02   UC-WF-01  Configure assignment rules
+US-WF-01–02, 21   UC-WF-01  Configure assignment rules and workload scoring
 US-WF-03–04   UC-WF-02  Configure SLA
 US-WF-05–07   UC-WF-03  Configure AI processing scope
 US-WF-08–09   UC-WF-04  Route ticket (AI self-service / clarification)
@@ -74,9 +75,9 @@ US-WF-19–20   UC-WF-09  Verify / hand off on failure
 | US-WF-08 | PASS | PASS | PASS | PASS | PASS | PASS | Flows A/B/C have explicit conditions. |
 | US-WF-09 | PASS | NEEDS CONFIRM | PASS | PASS | PASS | PASS | Max 2 clarification rounds is a proposed value, pending confirmation. |
 | US-WF-10 | PASS | PASS | PASS | PASS | PASS | PASS | Notification must include the routing reason. |
-| US-WF-11 | PASS | PASS | PASS | PASS | PASS | PASS | Reassignment reason required; SLA keeps running in `TRIAGE`. |
+| US-WF-11 | PASS | PASS | PASS | PASS | PASS | PASS | Three statuses; only not-started tickets move when going `OFF`. Status itself is provided by F09. |
 | US-WF-12 | PASS | PASS | PASS | PASS | PASS | PASS | One reminder per threshold. |
-| US-WF-13 | PASS | PASS | PASS | PASS | PASS | PASS | Priority raise is a configuration option. |
+| US-WF-13 | PASS | PASS | PASS | PASS | PASS | PASS | Priority raise is a configuration option; `IN_PROGRESS` tickets with an available assignee are not moved. |
 | US-WF-14 | PASS | PASS | PASS | PASS | PASS | PASS | N defaults to 5 business days; reopen within 7 days. |
 | US-WF-15 | PASS | NEEDS CONFIRM | PASS | PASS | PASS | PASS | Open: whether sensitive entitlements still need Admin approval (see Open questions in README). |
 | US-WF-16 | PASS | PASS | PASS | PASS | PASS | PASS | Read from `ai_decisions`; no need to re-run the AI. |
@@ -84,10 +85,11 @@ US-WF-19–20   UC-WF-09  Verify / hand off on failure
 | US-WF-18 | PASS | PASS | PASS | PASS | PASS | PASS | Revocation reuses the `workflow_run` mechanism. |
 | US-WF-19 | PASS | PASS | PASS | PASS | PASS | PASS | Connectors must expose a check operation. |
 | US-WF-20 | PASS | PASS | PASS | PASS | PASS | PASS | Retry always re-checks the current policy. |
+| US-WF-21 | PASS | NEEDS CONFIRM | PASS | PASS | PASS | PASS | Default points (5/3/2/1), factors (×1/×1.5/×2) and maximum load 20 are proposed values; complexity comes from the request type in V1. |
 
 ## Cross-cutting acceptance constraints
 
-- Only 3 roles exist: `ADMIN`, `TECHNICIAN`, `REQUESTER`; the only system actor is the **AI Service**.
+- Only 3 roles exist: `ADMIN`, `TECHNICIAN`, `REQUESTER`; the only system actor is the **AI Service**. There is **no Team Lead** and no `is_lead` flag: work is distributed by the system, and only the Admin may reassign manually.
 - The AI only self-approves when the **deterministic policy check** passes; the API — not the React client nor the AI — enforces RBAC, the whitelist and the entitlement catalog.
 - Every action not performed by a user is logged with source `AI` or `AUTOMATION` and its grounds (`decisionId`, `ruleId`, `runId`).
 - Connector secrets never appear in the UI, API responses, logs or audit records.

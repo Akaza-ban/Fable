@@ -6,11 +6,11 @@
 >
 > Scope: **F05 Workflow & Automation**. Shared screens (login, tickets, notifications) are described only where they relate to the workflow; the rest will be specified with F01 and F03.
 
-The information architecture organizes the screens of the Workflow & Automation feature: a sitemap by role, routes and page permissions, navigation, the screen inventory (**12 pages and 8 modals**; 6 pages are workflow-specific, 6 are shared or belong to F01/F03), six primary user flows, and the UI states (including AI states).
+The information architecture organizes the screens of the Workflow & Automation feature: a sitemap by role, routes and page permissions, navigation, the screen inventory (**11 pages and 8 modals**; 5 pages are workflow-specific, 6 are shared or belong to F01/F03; SCR-WF-10 was removed with the Team Lead), six primary user flows, and the UI states (including AI states).
 
 Inputs: [Use cases](../02-use-cases.md), [INVEST backlog](../04-invest-requirements.md), [Business rules](../../requirements/business-rules.md). Output for: UI/UX design (wireframes) and API (screen-to-API mapping).
 
-Three roles: **Requester** (`REQUESTER`), **Technician** (`TECHNICIAN`, possibly a **Team Lead**), **Admin** (`ADMIN`). The system actor **AI Service** has no screen; its output appears on people's screens and is always labelled **AI**.
+Three roles: **Requester** (`REQUESTER`), **Technician** (`TECHNICIAN`; there is no Team Lead — work is distributed by the system from availability and workload), **Admin** (`ADMIN`). The system actor **AI Service** has no screen; its output appears on people's screens and is always labelled **AI**.
 
 | File | Content |
 |---|---|
