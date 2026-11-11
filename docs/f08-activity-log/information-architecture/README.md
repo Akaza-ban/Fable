@@ -37,7 +37,7 @@ Solid lines: a page and its sections or child pages. Dashed arrows: which areas 
 ```mermaid
 flowchart TB
     req["<b>Requester</b>"]
-    tech["<b>Technician</b><br/>(Team Lead: is_lead)"]
+    tech["<b>Technician</b>"]
     admin["<b>Admin</b>"]
 
     subgraph tickets["Tickets (F03)"]
@@ -85,7 +85,7 @@ flowchart TB
 | Role | Home page | Where F08 shows up |
 |---|---|---|
 | Requester | My tickets (F03) | SCR-T-02: SEC-NK-01 (allowlist), SEC-NK-02 (summary) |
-| Technician | Work queues (F03) | SCR-T-02: SEC-NK-01, SEC-NK-02 (full when assigned, Team Lead for own team); runs through `#automation` |
+| Technician | Work queues (F03) | SCR-T-02: SEC-NK-01, SEC-NK-02 (full when assigned, summary for the group); runs through `#automation` |
 | Admin | Dashboard (F02) | Sidebar **Audit**: SCR-NK-02, SCR-NK-04 → SCR-NK-05; everything on SCR-T-02; links to SCR-WF-31 |
 | AI Service | — | No UI; writes entries, reads history read-only as `AI_AGENT` |
 

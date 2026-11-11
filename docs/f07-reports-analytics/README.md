@@ -4,7 +4,7 @@
 >
 > Implementation status: NOT STARTED
 
-This folder specifies the **Reports & Analytics** branch (F07) of the mind map for the *AI-powered IT ticket routing and processing system*. The system receives about **8,000 internal IT tickets per day**. F07 turns the data that other branches record (tickets, SLA events, AI decisions, AI analyses, KB ratings, satisfaction ratings, the audit log) into **one set of agreed figures**: ticket volume, handling time and SLA, how much the AI resolves on its own, how good the AI output is, requester satisfaction and team workload. It also exports those figures and sends a weekly digest.
+This folder specifies the **Reports & Analytics** branch (F07) of the mind map for the *AI-powered IT ticket routing and processing system*. The system receives about **8,000 internal IT tickets per day**. F07 turns the data that other branches record (tickets, SLA events, AI decisions, AI analyses, KB ratings, satisfaction ratings, the audit log) into **one set of agreed figures**: ticket volume, handling time and SLA, how much the AI resolves on its own, how good the AI output is, and requester satisfaction. It also exports those figures and sends a weekly digest.
 
 F07 **only reads**. It never changes a ticket, an SLA, an AI decision or a log entry.
 
@@ -16,7 +16,7 @@ F07 **only reads**. It never changes a ticket, an SLA, an AI decision or a log e
 
 ## Scope
 
-The leaves of mind-map branch **8. Dashboard & Governance Telemetry** that belong to F07. Leaf 8.5 (audit trail) belongs to [F08 Activity Log](../f08-activity-log/README.md); the live operational view belongs to [F02 Dashboard](../f02-dashboard/README.md).
+The leaves of mind-map branch **8. Dashboard & Governance Telemetry** that belong to F07. Leaf 8.5 (audit trail) belongs to [F08 Activity Log](../f08-activity-log/README.md); leaf 8.4 (team workload) and the live operational view belong to [F02 Dashboard](../f02-dashboard/README.md).
 
 | Mind-map leaf | Use case |
 |---|---|
@@ -25,7 +25,6 @@ The leaves of mind-map branch **8. Dashboard & Governance Telemetry** that belon
 | 8.3 AI deflection & automation efficiency (tickets resolved without a human, KB deflection) | UC-BC-03 |
 | *(added from F04)* AI output quality: corrections, helpful votes, by model and prompt version | UC-BC-03 |
 | *(added from the mind map, 1.6)* Requester satisfaction (1–5 rating) | UC-BC-04 |
-| 8.4 Team capacity & workload balance | UC-BC-07 |
 | 8.6 Operational reporting & export (Excel, CSV; PDF: Q-BC-11) | UC-BC-05 |
 | 8.6 Automated weekly executive digest | UC-BC-08 |
 | *(needed to run the reports)* Report parameters | UC-BC-06 |
@@ -45,15 +44,15 @@ The leaves of mind-map branch **8. Dashboard & Governance Telemetry** that belon
 | Satisfaction rating 1–5 and comment | Aggregates (M-07) | F03 (mind-map 1.6) |
 | Live counters for the home page | Same definitions, same API | F02 Dashboard |
 | Audit log | Writes `REPORT_EXPORTED`, `REPORT_CONFIG_UPDATED` through the shared log; reads it for M-04, M-05 | F08 Activity Log (BR-NK-01) |
-| Users, groups, `is_lead`, service accounts | Scope filtering and names | F01 / F09 |
+| Users, groups, service accounts | Scope filtering and names | F01 / F09 |
 
 ## Documents
 
 | File | Content |
 |---|---|
 | [01-features.md](01-features.md) | Feature breakdown F07.1–F07.9, out of scope |
-| [02-use-cases.md](02-use-cases.md) | Actors, permission matrix, data sources, metric definitions M-01 … M-12, use case diagram, UC-BC-01 … UC-BC-08 |
-| [03-user-stories-invest.md](03-user-stories-invest.md) | Backlog US-BC-01 … US-BC-11 with MoSCoW and size, INVEST review |
+| [02-use-cases.md](02-use-cases.md) | Actors, permission matrix, data sources, metric definitions M-01 … M-11, use case diagram, UC-BC-01 … UC-BC-06, UC-BC-08 |
+| [03-user-stories-invest.md](03-user-stories-invest.md) | Backlog US-BC-01 … US-BC-09, US-BC-11 with MoSCoW and size, INVEST review |
 | [04-acceptance-criteria.md](04-acceptance-criteria.md) | Given / When / Then criteria, reference data set |
 | [05-business-rules.md](05-business-rules.md) | BR-BC-01 … BR-BC-07 |
 | [information-architecture/](information-architecture/README.md) | Pages, modals, sections and emails (SCR-BC, SEC-BC, EML-BC), routes and permissions, navigation, user flows, UI states |
@@ -64,7 +63,6 @@ Roles, ticket scope and `BR-05 … BR-20` come from F01 (`docs/mvp.md` on the `f
 
 | # | Question | Value used in these documents until decided |
 |---|---|---|
-| Q-BC-01 | May a Team Lead (`is_lead`, F05 D-IA-07) see per-technician figures for the team they lead? | Yes, for their own team only; other technicians see group totals and their own figures. |
 | Q-BC-02 | May a technician who is not a lead see colleagues' individual figures? | No. |
 | Q-BC-03 | Is the AI effectiveness report (UC-BC-03) Admin only? | Admin only. |
 | Q-BC-04 | Does an AI reply (question, KB answer) count as the first response for the SLA? | F05 decides; M-01 always reports human and AI first responses separately. |
@@ -82,12 +80,12 @@ Roles, ticket scope and `BR-05 … BR-20` come from F01 (`docs/mvp.md` on the `f
 ## Progress
 
 - [x] Scope and boundary with F02, F03, F04, F05, F06, F08
-- [x] Metric definitions M-01 … M-12, aligned with F04 agent-first (D-AI-01) and F05 SLA / routing
-- [x] Use cases UC-BC-01 … UC-BC-08
-- [x] User stories US-BC-01 … US-BC-11 (INVEST, MoSCoW)
+- [x] Metric definitions M-01 … M-11, aligned with F04 agent-first (D-AI-01) and F05 SLA / routing
+- [x] Use cases UC-BC-01 … UC-BC-06, UC-BC-08 (UC-BC-07 Team workload removed: leaf 8.4 is F02)
+- [x] User stories US-BC-01 … US-BC-09, US-BC-11 (INVEST, MoSCoW)
 - [x] Acceptance criteria and business rules
 - [x] Information architecture (screens, routes, navigation, flows, UI states)
-- [ ] Decide the open questions with the team (Q-BC-01, Q-BC-05 with the F05 owner; Q-BC-13 with the client)
+- [ ] Decide the open questions with the team (Q-BC-05 with the F05 owner; Q-BC-13 with the client)
 - [ ] Non-functional requirements and traceability (API, tables)
 
 **Related:** [README](../../README.md) · [Previous: F06 Knowledge Base](../f06-knowledge-base/README.md) · [Next: F08 Activity Log](../f08-activity-log/README.md)

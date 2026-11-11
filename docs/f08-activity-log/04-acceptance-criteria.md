@@ -6,7 +6,7 @@
 
 Format: *Given* (context) · *When* (action) · *Then* (observable result). Criteria are grouped by use case (`AC-UC-NK-xx`, as in F04 and F05) and numbered by story: `AC-NK-02.3` is the third criterion of US-NK-02. The UI may satisfy a criterion visually, but permissions and rules **must** be enforced by the API.
 
-Sample people (same as F04): requester **Lan** (Accounting, Real Estate), requester **Minh** (Sales, EV Charging), technician **Hai** (IT Helpdesk), technician **Quang** (SAP, lead of SAP), Admin **Thu**.
+Sample people (same as F04): requester **Lan** (Accounting, Real Estate), requester **Minh** (Sales, EV Charging), technician **Hai** (IT Helpdesk), technician **Quang** (SAP), Admin **Thu**.
 
 ## AC-UC-NK-01 — Ticket history
 
@@ -51,7 +51,7 @@ Sample people (same as F04): requester **Lan** (Accounting, Real Estate), reques
 - **AC-NK-06.2** *Given* a run, *then* each attempt shows time, duration, result code and masked request / response.
 - **AC-NK-06.3** *Given* Hai is assigned, *then* he sees the full attempts; another technician of his group sees a summary.
 - **AC-NK-06.4** *Given* a Requester calls `/workflow-runs`, *then* `403`.
-- **AC-NK-07.1** *Given* the AI Service times out or returns an `INVALID` analysis, *then* the AI result is not applied and the ticket is routed to a person (rule or `TRIAGE`).
+- **AC-NK-07.1** *Given* the AI Service times out or returns an `INVALID` analysis, *then* the AI result is not applied and the ticket is routed to a person (assignment rule or the default support team).
 - **AC-NK-07.2** *Given* that routing, *then* the history has `TICKET_ROUTED_TO_HUMAN` with `AI_UNAVAILABLE` or `AI_INVALID_OUTPUT`.
 
 ## AC-UC-NK-05 — Write the log

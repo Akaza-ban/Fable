@@ -6,7 +6,7 @@
 
 ## Context
 
-About **8,000 tickets per day** arrive, most by email. F04 domain agents and F05 automation resolve what they can; technicians handle only what agents cannot resolve, system bugs and software requirements (F04 D-AI-01). Management needs to know, every week and with one definition per figure: how many tickets came in and where they went, how fast they were handled and whether the SLA held, how many the AI really closed without a person, whether the AI output is getting better, whether requesters are satisfied, and whether the teams are overloaded.
+About **8,000 tickets per day** arrive, most by email. F04 domain agents and F05 automation resolve what they can; technicians handle only what agents cannot resolve, system bugs and software requirements (F04 D-AI-01). Management needs to know, every week and with one definition per figure: how many tickets came in and where they went, how fast they were handled and whether the SLA held, how many the AI really closed without a person, whether the AI output is getting better, and whether requesters are satisfied.
 
 **V1 goal:** one Reports page with agreed metric definitions, limited to what each viewer may see, exportable without leaking sensitive data, and a weekly digest for management.
 
@@ -20,7 +20,6 @@ About **8,000 tickets per day** arrive, most by email. F04 domain agents and F05
 | F07.4 | **Routing and escalation.** Route A / B / C share and route C reasons (F05); escalated tickets by `escalationClass` (`AGENT_CANNOT_RESOLVE`, `SYSTEM_BUG`, `SOFTWARE_REQUIREMENT`) | Admin | Must |
 | F07.5 | **AI output quality.** Classification corrected by a person, helpful votes on summaries and KB suggestions, invalid / failed analyses; by model and prompt version | Admin | Should |
 | F07.6 | **Requester satisfaction.** Average 1–5, distribution, response rate shown next to the average, low ratings list | Admin, Technician (scope) | Should |
-| F07.7 | **Team workload.** Open tickets per technician and group, assigned vs resolved per period, oldest open ticket | Admin, Team Lead (own team) | Should |
 | F07.8 | **Filter and export.** CSV / XLSX of the report on screen, allowlisted columns only, every export logged | Admin | Must |
 | F07.9 | **Weekly digest and parameters.** Weekly email with the key figures; report parameters (observation window N, thresholds, limits, target) | Admin | Could (digest), Must (parameters) |
 
@@ -33,6 +32,7 @@ About **8,000 tickets per day** arrive, most by email. F04 domain agents and F05
 | Producing AI decisions, analyses, corrections and votes | F04, F05 (F07 only reads them) |
 | Browsing the audit log entry by entry | F08 Activity Log |
 | Changing any ticket, SLA or AI setting from a report | Nowhere: reports are read-only (BR-BC-03) |
-| Users, groups, the `is_lead` flag | F01 / F09 |
+| Team workload per technician (mind map 8.4) | F02 Dashboard |
+| Users and groups | F01 / F09 |
 | PDF export | Not in V1 (Q-BC-11) |
 | Forecasting and custom report builder | Future work |

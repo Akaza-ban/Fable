@@ -9,11 +9,10 @@
 | ID | Name | Type | Roles | Opened from | Route | Content | Stories |
 |---|---|---|---|---|---|---|---|
 | — | Shared filter bar | Part of every tab | As the tab | — | Query string `?from=&to=&type=&domain=&group=&priority=&channel=&handler=&granularity=` | Period (7 / 30 / 90 days, 12 weeks, custom), type, `domain/subcategory`, group (Technician: own groups only), priority, channel, handler (AI only / with technician); line "Parameters in use: Asia/Ho_Chi_Minh, N = 7 days, target 50%"; *Export* (Admin) | US-BC-01 … 06 |
-| SCR-BC-01 | Tickets | Tab | Admin; Technician (scope) | Sidebar *Reports*, SEC-BC-01 | `/analytics/tickets` | Tiles: new, open (backlog), closed, cancelled, reopened, escalated; trend chart; priority distribution P1–P4; table type × group with "Unassigned" row for `TRIAGE` | US-BC-01, 02 |
+| SCR-BC-01 | Tickets | Tab | Admin; Technician (scope) | Sidebar *Reports*, SEC-BC-01 | `/analytics/tickets` | Tiles: new, open (backlog), closed, cancelled, reopened, escalated; trend chart; priority distribution P1–P4; table type × group with a "Team queue" row for tickets not yet given to a technician | US-BC-01, 02 |
 | SCR-BC-02 | SLA | Tab | Admin; Technician (scope) | Sidebar, SEC-BC-01 | `/analytics/sla` | Tiles: first response (human / AI), resolution time (mean, median, P90), breach rate by target; breakdown by priority / type / group; tabs **Breached** and **At risk** (number, type, group, priority, SLA policy version, target missed, overdue by); note "SLA data from Workflow (F05)" | US-BC-03 |
 | SCR-BC-03 | AI | Tab | Admin | Sidebar, SEC-BC-02, EML-BC-01 | `/analytics/ai` | M-04 tile with "under observation"; weekly line vs target; split by path (automation, agent KB answer, self-help, after AI question) and by domain agent; route A / B / C (M-08) with ranked route C reasons; escalations by class (M-10); quality: M-05, M-06, M-11 with model / prompt version filter; lists: AI-closed tickets reopened, corrected classifications (AI → human), *Not solved* after agent answer | US-BC-04, 08, 09 |
 | SCR-BC-04 | Satisfaction | Tab | Admin; Technician (scope) | Sidebar | `/analytics/satisfaction` | Average next to response rate; distribution 1–5; by type / group / handler; ratings 1–2 list; comments (Admin only); warning "Few ratings, not representative" | US-BC-05 |
-| SCR-BC-06 | Workload | Tab | Admin; Team Lead (own team); Technician (own row) | Sidebar | `/analytics/team-workload` | Per technician: open now, assigned / resolved in period, oldest open ticket, in `NEEDS_INFO`; group totals; link to SCR-T-04 filtered on the technician; link "Reassign" goes to F05 / F03 dialogs | US-BC-10 |
 | SCR-BC-05 | Report settings | Page | Admin | Sidebar *Settings* | `/analytics/settings` | N days, low-response threshold, self-resolution target, export row limit, maximum period, digest recipients, *Send test digest*; link "SLA targets are set in Workflow" → SCR-WF-02; last changed by / at | US-BC-07, 11 |
 | SCR-BC-10 | Export | Modal | Admin | *Export* on any tab | on the tab route | Format CSV / XLSX; row count; note "Internal notes, comments and secrets are never exported"; errors `EXPORT_TOO_LARGE`, `AUDIT_UNAVAILABLE` | US-BC-06 |
 
@@ -34,16 +33,15 @@
 
 The API enforces every row; hiding an element is only for usability. "Scope" means tickets assigned to the technician or one of their groups (F01).
 
-| Item | Requester | Technician | Team Lead | Admin | Unauthorized result |
-|---|---|---|---|---|---|
-| SCR-BC-01, 02, 04 | — | Scope | Scope + per technician of own team | ✓ | SCR-90 (`/403`) |
-| SCR-BC-03 | — | — | — | ✓ | SCR-90 |
-| SCR-BC-06 | — | Own row + group total | Own team | ✓ | SCR-90 |
-| SCR-BC-05 | — | — | — | ✓ | SCR-90 |
-| SCR-BC-10 | — | — | — | ✓ | `403`, button not shown |
-| SEC-BC-01 | — | Scope | Scope | ✓ | Widget not rendered |
-| SEC-BC-02 | — | — | — | ✓ (host is Admin only) | — |
-| Comments on SCR-BC-04 | — | ✗ | ✗ | ✓ | Field absent from the response |
+| Item | Requester | Technician | Admin | Unauthorized result |
+|---|---|---|---|---|
+| SCR-BC-01, 02, 04 | — | Scope | ✓ | SCR-90 (`/403`) |
+| SCR-BC-03 | — | — | ✓ | SCR-90 |
+| SCR-BC-05 | — | — | ✓ | SCR-90 |
+| SCR-BC-10 | — | — | ✓ | `403`, button not shown |
+| SEC-BC-01 | — | Scope | ✓ | Widget not rendered |
+| SEC-BC-02 | — | — | ✓ (host is Admin only) | — |
+| Comments on SCR-BC-04 | — | ✗ | ✓ | Field absent from the response |
 
 ## 5. Navigation
 
@@ -68,7 +66,6 @@ Contextual navigation: every count, bar and list row opens SCR-T-04 with the sam
 | US-BC-07 | Must | Admin | SCR-BC-05 |
 | US-BC-08 | Must | Admin | SCR-BC-03 |
 | US-BC-09 | Should | Admin | SCR-BC-03 (quality section) |
-| US-BC-10 | Should | Team Lead | SCR-BC-06 |
 | US-BC-11 | Could | Admin | EML-BC-01, SCR-BC-05 |
 
 ## 7. Screen-to-API mapping
@@ -81,7 +78,6 @@ Prefix `/api/v1`. Errors use `ProblemDetails`. Every endpoint filters by the cal
 | SCR-BC-02 | `GET /reports/sla`, `GET /reports/sla/tickets?state=breached\|at_risk` | `report:read` |
 | SCR-BC-03, SEC-BC-02 | `GET /reports/ai` | `report:read_ai` |
 | SCR-BC-04 | `GET /reports/satisfaction` | `report:read` |
-| SCR-BC-06 | `GET /reports/workload` | `report:read` (scope by lead) |
 | SCR-BC-10 | `POST /reports/export` (report, filters, format) | `report:export`; writes `REPORT_EXPORTED` first |
 | SCR-BC-05 | `GET` / `PATCH /report-config`, `POST /report-config/test-digest` | `report:read` / `report:configure` |
 
@@ -93,4 +89,4 @@ Prefix `/api/v1`. Errors use `ProblemDetails`. Every endpoint filters by the cal
 | F05 | SCR-WF-30 cards call `/reports/ai` (SEC-BC-02); confirm Q-BC-05 (target in `SLA_BREACHED`) |
 | F04 | Keep corrections and votes countable by model and prompt version (AC-AI-14.3); expose `agent` and `escalationClass` on the current analysis |
 | F03 | Store the resolution codes `ANSWERED_BY_KB` and `SOLVED_BY_KB` and the 1–5 rating; ticket list SCR-T-04 accepts the report filters in its query string |
-| F01 | Accept the `report:*` permissions and the `is_lead` scope |
+| F01 | Accept the `report:*` permissions |

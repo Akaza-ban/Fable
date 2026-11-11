@@ -6,12 +6,12 @@
 
 ## Actors and roles
 
-The role codes are the same as in F01, F04 and F05. **Team Lead is not a role**: it is a Technician with the `is_lead` flag in a team (F05 D-IA-07).
+The role codes are the same as in F01, F04 and F05. **There is no Team Lead** (F05 D-IA-07): only Admin, Technician and Requester.
 
 | Role code | Display name | Role in F08 |
 |---|---|---|
 | `ADMIN` | Administrator | Searches every entry, sees full approval chains and every workflow run |
-| `TECHNICIAN` | Technician | Sees the full history of tickets in scope; the full run history and approval chain of tickets assigned to them (Team Lead: their team); a summary otherwise |
+| `TECHNICIAN` | Technician | Sees the full history of tickets in scope; the full run history and approval chain of tickets assigned to them; a summary otherwise |
 | `REQUESTER` | Requester | Sees an allowlisted history and a summary approval status of their own tickets |
 
 | System actor | Code in the audit log | Role in F08 |
@@ -26,7 +26,7 @@ The role codes are the same as in F01, F04 and F05. **Team Lead is not a role**:
 |---|---|---|---|
 | Ticket history (UC-NK-01) | ✓ all | Tickets in their scope, full | Own tickets, allowlist only (BR-NK-04) |
 | Activity log search (UC-NK-02) | ✓ | | |
-| Approval chain (UC-NK-03) | ✓ full, link to SCR-WF-31 | Assigned (Team Lead: own team) full; group: summary | Own tickets, summary |
+| Approval chain (UC-NK-03) | ✓ full, link to SCR-WF-31 | Assigned: full; group: summary | Own tickets, summary |
 | Workflow runs (UC-NK-04) | ✓ full | Assigned: full attempts; group: summary | |
 | Edit or delete an entry | ✗ (`405`) | ✗ | ✗ |
 
@@ -38,7 +38,7 @@ Proposed permissions, for the F01 owner to accept (naming: F07 Q-BC-12):
 |---|---|---|---|---|
 | `ticket_history:read` | all | scope | own (allowlist) | all, read-only |
 | `audit:read` | ✓ | ✗ | ✗ | ✗ |
-| `approval:read` | all | assigned / lead: full; group: summary | own: summary | ✗ |
+| `approval:read` | all | assigned: full; group: summary | own: summary | ✗ |
 | `workflow_log:read` | ✓ | assigned: full; group: summary | ✗ | ✗ |
 
 No `audit:write`, `audit:update` or `audit:delete` exists for any role: only the backend writes, and nobody edits or deletes (BR-NK-02).
@@ -81,7 +81,7 @@ flowchart LR
     subgraph left["Actors"]
         direction TB
         admin(["Admin"])
-        tech(["Technician<br/>(Team Lead: is_lead)"])
+        tech(["Technician"])
         req(["Requester"])
     end
 
@@ -185,7 +185,7 @@ flowchart LR
 
 ### UC-NK-03 View the Approval Chain
 
-- **Actors:** Admin; Technician (assigned / Team Lead); Requester (own tickets)
+- **Actors:** Admin; Technician (assigned: full, group: summary); Requester (own tickets)
 - **Preconditions:** the ticket has an access request handled by F05 (`CHECK_ACCOUNT`, `CREATE_ACCOUNT`, `GRANT_ACCESS`, `REVOKE_ACCESS`)
 - **Main flow:** SEC-NK-02 on SCR-T-02 shows the chain in time order, each step with actor, time, result and evidence:
   1. **Request:** requester, recipient, operation, target system, requested duration, source ticket.
@@ -214,7 +214,7 @@ flowchart LR
   3. Opens a run (SCR-NK-05): attempts with time, duration, result code, masked request / response, error message, link to the ticket.
 - **Error types:** `AI_UNAVAILABLE` (F05 UC-WF-04); `AI_INVALID_OUTPUT` (F04 analysis `INVALID` / `FAILED`); transient connector error (timeout, `5xx`, `429`, retried after 1 / 5 / 15 minutes); permanent connector error (`4xx`, access denied); `PRECONDITION_FAILED` (BR-WF-12); verification mismatch; `AUDIT_UNAVAILABLE` (BR-NK-06).
 - **Alternative flows:**
-  - **AI failure → a person:** on `AI_UNAVAILABLE` or `AI_INVALID_OUTPUT`, F05 does not apply the AI result and routes the ticket to a human (assigned by rule, or `TRIAGE`); the log has `TICKET_ROUTED_TO_HUMAN` with the error type, also visible in UC-NK-01.
+  - **AI failure → a person:** on `AI_UNAVAILABLE` or `AI_INVALID_OUTPUT`, F05 does not apply the AI result and routes the ticket to a human (assignment rule, or the default support team; F05 BR-WF-09); the log has `TICKET_ROUTED_TO_HUMAN` with the error type, also visible in UC-NK-01.
   - **Technician:** opens runs from the `#automation` tab of their ticket; the assigned technician sees full attempts (needed to retry, UC-WF-09); others in the group see a summary. *Retry* and *Resolved manually* are F05 buttons, shown only to the assigned technician and Admin.
 - **Exceptions:** no permission → `403`; run of a ticket outside scope → `403`
 - **Result:** broken connectors and AI outages are found quickly

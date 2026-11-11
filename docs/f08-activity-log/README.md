@@ -63,7 +63,7 @@ F08 **does not decide anything**. It records what other branches did and shows i
 | Q-NK-06 | When `actor_type = AI`, does `actor_id` point to the service account or to a user? | The `AI_AGENT` service account; the domain agent (F04 `agent`) is stored in the entry's detail. |
 | Q-NK-07 | How long is the log kept? Does "nobody can delete" need a retention exception? | 2 years online, then archived by a scheduled job outside the application account. To agree with the client's compliance rules. |
 | Q-NK-08 | May a requester see the name of the technician handling their ticket? | Yes, the display name only. |
-| Q-NK-09 | F05 shows AI decisions to the **assigned** technician; F01 scope is assigned **and group**. Which applies to the approval chain? | Assigned technician and Team Lead of the team: full chain; other group members: summary. |
+| Q-NK-09 | F05 shows AI decisions to the **assigned** technician; F01 scope is assigned **and group**. Which applies to the approval chain? | Assigned technician: full chain; other group members: summary. |
 | Q-NK-10 | Is exporting the audit log needed? | Not in V1. If added: `audit:export`, logged like F07 exports. |
 
 ## Progress

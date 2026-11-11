@@ -4,7 +4,7 @@
 >
 > Related: [IA overview](README.md) · [Screens and navigation](01-screens-and-navigation.md) · [UI states](03-ui-states-and-accessibility.md)
 
-Four flows. Sample people are the same as in the [acceptance criteria](../04-acceptance-criteria.md). Purple: F07. Grey: other branches.
+Three flows. Sample people are the same as in the [acceptance criteria](../04-acceptance-criteria.md). Purple: F07. Grey: other branches.
 
 ## Flow 1 — Weekly review of the AI
 
@@ -40,27 +40,7 @@ flowchart LR
 3. Tab **At risk** → 9 SAP tickets with `SLA_WARNING` → open in SCR-T-02 and escalate through F03 / F05 dialogs.
 4. **Branch:** F05 SLA data unavailable → M-03 shows "Unavailable"; M-01 and M-02 are still usable.
 
-## Flow 3 — Team Lead rebalances work
-
-*Quang (lead of SAP) sees one technician overloaded.* · US-BC-10, US-BC-02
-
-```mermaid
-flowchart LR
-    a["SCR-BC-06 Workload<br/>SAP team"] --> b["Technician row<br/>23 open, oldest 6 days"]
-    b --> c["SCR-T-04<br/>filtered on technician"]
-    c --> d["Reassign dialog<br/>(F05 SCR-WF-11 / F03 DLG-T-01)"]
-
-    classDef f07 fill:#f3ecfb,color:#111,stroke:#7b3fbf
-    classDef other fill:#f3f3f3,color:#333,stroke:#999
-    class a,b f07
-    class c,d other
-```
-
-1. Quang opens Reports → Workload; he sees only the SAP team.
-2. One row: 23 open, oldest open 6 days. He opens the filtered ticket list and reassigns three tickets with a reason.
-3. **Branch:** he changes the URL to IT Helpdesk → SCR-90.
-
-## Flow 4 — Export for management
+## Flow 3 — Export for management
 
 *Thu needs the monthly figures in a spreadsheet.* · US-BC-06
 

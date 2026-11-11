@@ -61,7 +61,7 @@ US-NK-03, 08, 09 UC-NK-05  Write the log
 
 ## Cross-cutting acceptance constraints
 
-- Only 3 roles exist: `ADMIN`, `TECHNICIAN` (Team Lead = `is_lead`), `REQUESTER`; the only system actor is the **AI Service**. Entry sources are `USER`, `AI`, `AUTOMATION`.
+- Only 3 roles exist: `ADMIN`, `TECHNICIAN`, `REQUESTER` (no Team Lead); the only system actor is the **AI Service**. Entry sources are `USER`, `AI`, `AUTOMATION`.
 - Nobody, including Admin, can edit or delete an entry (BR-NK-02).
 - Scope and the requester allowlist are applied in the API, not in the UI (BR-NK-04).
 - No secret reaches an entry (BR-NK-03).

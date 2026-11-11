@@ -6,7 +6,7 @@
 
 Format: *Given* (context) · *When* (action) · *Then* (observable result). Criteria are grouped by use case (`AC-UC-BC-xx`, as in F04 and F05) and numbered by story: `AC-BC-04.3` is the third criterion of US-BC-04. The UI may satisfy a criterion visually, but permissions and rules **must** be enforced by the API.
 
-Demo values: observation window **N = 7 days**, self-resolution target **50%**, satisfaction low-response threshold **20%**, export limit **50,000 rows**, maximum period **366 days**. Sample people (same as F04): technician **Hai** (IT Helpdesk group, not a lead), technician **Quang** (SAP group, lead of SAP), Admin **Thu**.
+Demo values: observation window **N = 7 days**, self-resolution target **50%**, satisfaction low-response threshold **20%**, export limit **50,000 rows**, maximum period **366 days**. Sample people (same as F04): technician **Hai** (IT Helpdesk group), technician **Quang** (SAP group), Admin **Thu**.
 
 ## Reference data set
 
@@ -20,7 +20,7 @@ Demo values: observation window **N = 7 days**, self-resolution target **50%**, 
 
 - **AC-BC-01.1** *Given* Thu (Admin), *when* she opens Tickets for the last 30 days, *then* she sees new, open, closed, cancelled, reopened and escalated counts by type, `domain/subcategory`, group, priority and channel, with a daily / weekly / monthly trend.
 - **AC-BC-01.2** *Given* a ticket created on day 1 and closed on day 40, *when* the period is days 1–30, *then* it counts as new in that period.
-- **AC-BC-01.3** *Given* a ticket in `TRIAGE`, *when* the report groups by group, *then* it appears under "Unassigned".
+- **AC-BC-01.3** *Given* a ticket `ASSIGNED` to a team with no technician yet (F05 team queue), *when* the report groups by group, *then* it appears as "Team queue" under that group.
 - **AC-BC-01.4** *Given* from > to or a period over 366 days, *when* the report is requested, *then* the API returns `422 INVALID_DATE_RANGE`.
 - **AC-BC-02.1** *Given* Hai, *when* he opens Tickets, *then* every total equals the number of tickets he can open in the ticket list with the same filters.
 - **AC-BC-02.2** *Given* Hai, *when* he filters on the SAP group, *then* the API returns `403`.
@@ -81,14 +81,6 @@ Demo values: observation window **N = 7 days**, self-resolution target **50%**, 
 - **AC-BC-07.2** *Given* N = 0, a negative value, a limit of 0 or a target outside 1–100%, *then* `422`.
 - **AC-BC-07.3** *Given* the settings page, *then* SLA targets are not editable there; a link opens F05 SCR-WF-02.
 - **AC-BC-07.4** *Given* a non-Admin, *then* `403`.
-
-## AC-UC-BC-07 — Team workload
-
-*(US-BC-10)*
-
-- **AC-BC-10.1** *Given* Quang (lead of SAP), *then* he sees one row per SAP technician with open, assigned, resolved and oldest open ticket.
-- **AC-BC-10.2** *Given* Quang, *when* he requests the IT Helpdesk team, *then* `403`.
-- **AC-BC-10.3** *Given* Hai (not a lead), *then* he sees only his own row and the group total.
 
 ## AC-UC-BC-08 — Weekly digest
 

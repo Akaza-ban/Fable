@@ -9,14 +9,14 @@ The rules of F05 (`BR-WF-xx`), F04 (`BR-AI-xx`) and F01 (`BR-05 … BR-20`, `doc
 ## BR-BC-01 — One definition per metric
 
 - **Source:** *Metric definitions* in [02-use-cases.md](02-use-cases.md)
-- **Stories:** US-BC-01 … US-BC-11
-- **Rule:** Reports, the F02 Dashboard, F05's SCR-WF-30 cards, exports and the digest use the definitions M-01 … M-12 and the same API. Each report states its period, time zone (`Asia/Ho_Chi_Minh`) and the parameters in use. A metric with no data is shown as "Not enough data", never `0%`.
+- **Stories:** all
+- **Rule:** Reports, the F02 Dashboard, F05's SCR-WF-30 cards, exports and the digest use the definitions M-01 … M-11 and the same API. Each report states its period, time zone (`Asia/Ho_Chi_Minh`) and the parameters in use. A metric with no data is shown as "Not enough data", never `0%`.
 
 ## BR-BC-02 — Scope is filtered in the query
 
-- **Source:** UC-BC-01, UC-BC-02, UC-BC-04, UC-BC-07
-- **Stories:** US-BC-02, US-BC-10
-- **Rule:** Figures are computed only on tickets the viewer may read (`ticket:read`, F01). The scope is applied in the backend query **before** aggregation. Aggregating everything and hiding parts in the UI is not allowed. A Technician never sees another technician's individual figures unless they lead that team.
+- **Source:** UC-BC-01, UC-BC-02, UC-BC-04
+- **Stories:** US-BC-02
+- **Rule:** Figures are computed only on tickets the viewer may read (`ticket:read`, F01). The scope is applied in the backend query **before** aggregation. Aggregating everything and hiding parts in the UI is not allowed. A Technician never sees another technician's individual figures.
 
 ## BR-BC-03 — Reports are read-only
 
@@ -28,7 +28,7 @@ The rules of F05 (`BR-WF-xx`), F04 (`BR-AI-xx`) and F01 (`BR-05 … BR-20`, `doc
 
 - **Source:** UC-BC-05
 - **Stories:** US-BC-06
-- **Rule:** Exported files contain only: ticket number, type, `domain/subcategory`, group, priority, status, resolution code, escalation class, timestamps, and metrics M-01 … M-12. They **never** contain internal notes, passwords or hashes, tokens, API keys, workflow payloads, AI extracted fields or rating comments. Cells starting with `=`, `+`, `-` or `@` are prefixed with `'`.
+- **Rule:** Exported files contain only: ticket number, type, `domain/subcategory`, group, priority, status, resolution code, escalation class, timestamps, and metrics M-01 … M-11. They **never** contain internal notes, passwords or hashes, tokens, API keys, workflow payloads, AI extracted fields or rating comments. Cells starting with `=`, `+`, `-` or `@` are prefixed with `'`.
 
 ## BR-BC-05 — No export without a log entry
 
