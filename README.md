@@ -44,9 +44,150 @@ The system helps an enterprise receive, classify, and dispatch internal IT suppo
 
 ## 3. Use Cases
 
-The system organizes capabilities across 14 discrete use cases (`UC01` to `UC14`) mapped to 4 operational roles:
+The system has 14 use cases (`UC01` to `UC14`) shared by 4 roles. The first diagram shows how the roles relate; the other three show the use cases by area. Purple nodes call the AI Service.
 
-![Role-Based Use Case Allocation](docs/use-cases-diagram.svg)
+```mermaid
+flowchart LR
+    req["<b>Requester</b>"]
+    tech["<b>Technician</b>"]
+    lead["<b>Operations Lead</b>"]
+    admin["<b>Administrator</b>"]
+    user["<b>User</b>"]
+
+    req ==>|"«generalize»"| user
+    tech ==>|"«generalize»"| user
+    lead ==>|"«generalize»"| user
+    admin ==>|"«generalize»"| user
+
+    classDef actor fill:none,stroke:none,color:#111
+    class req,tech,lead,admin,user actor
+```
+
+```mermaid
+flowchart LR
+    subgraph left["Actors"]
+        direction TB
+        user["<b>User</b>"]
+        req["<b>Requester</b>"]
+    end
+
+    subgraph system["System Boundary"]
+        direction TB
+        subgraph access["Access and dashboard"]
+            direction TB
+            uc01["UC01 Login & SSO Authentication"]
+            uc02["UC02 Logout & Session Revocation"]
+            uc03["UC03 View Dashboard & Telemetry"]
+        end
+        subgraph selfservice["Self-service"]
+            direction TB
+            uc04["UC04 Submit Ticket & Evidence"]
+            uc05["UC05 Track Ticket & Clarification"]
+            uc06["UC06 Search KB Solutions"]
+            uc07["UC07 Rate & Report KB Article"]
+        end
+    end
+
+    subgraph right["Systems"]
+        direction TB
+        sso(["Enterprise SSO"])
+        aiSvc(["AI Service"])
+    end
+
+    req ==>|"«generalize»"| user
+
+    user --> uc01 & uc02 & uc03 & uc06 & uc07
+    req --> uc04 & uc05
+    uc01 --> sso
+    uc05 & uc06 --> aiSvc
+
+    classDef actor fill:none,stroke:none,color:#111
+    classDef usecase fill:#1168bd,color:#fff,stroke:#0b4f9e
+    classDef ai fill:#7b3fbf,color:#fff,stroke:#5a2d8c
+    classDef external fill:#666,color:#fff,stroke:#333
+    class user,req actor
+    class uc01,uc02,uc03,uc04,uc07 usecase
+    class uc05,uc06 ai
+    class sso,aiSvc external
+    style left fill:#fff,stroke:#bbb,stroke-dasharray:5 5
+    style right fill:#fff,stroke:#bbb,stroke-dasharray:5 5
+    style system fill:#f8fbff,stroke:#1168bd,stroke-dasharray:5 5
+```
+
+```mermaid
+flowchart LR
+    subgraph left["Actors"]
+        direction TB
+        tech["<b>Technician</b>"]
+        lead["<b>Operations Lead</b>"]
+    end
+
+    subgraph system["System Boundary"]
+        direction TB
+        subgraph handling["Ticket handling"]
+            direction TB
+            uc08["UC08 Claim & Triage Tickets"]
+            uc09["UC09 Update Fix & Root Cause"]
+            uc12["UC12 Escalate Ticket to Tier 2/3"]
+        end
+    end
+
+    tech --> uc08 & uc09 & uc12
+    lead --> uc08 & uc09 & uc12
+
+    classDef actor fill:none,stroke:none,color:#111
+    classDef usecase fill:#1168bd,color:#fff,stroke:#0b4f9e
+    class tech,lead actor
+    class uc08,uc09,uc12 usecase
+    style left fill:#fff,stroke:#bbb,stroke-dasharray:5 5
+    style system fill:#f8fbff,stroke:#1168bd,stroke-dasharray:5 5
+```
+
+```mermaid
+flowchart LR
+    subgraph left["Actors"]
+        direction TB
+        tech["<b>Technician</b>"]
+        lead["<b>Operations Lead</b>"]
+        admin["<b>Administrator</b>"]
+    end
+
+    subgraph system["System Boundary"]
+        direction TB
+        subgraph kb["Knowledge base"]
+            direction TB
+            uc10["UC10 AI Synthesize KB from Ticket"]
+            uc11["UC11 Author & Edit KB Articles"]
+            uc13["UC13 Review & Publish (Diff View)"]
+        end
+        subgraph config["Configuration"]
+            direction TB
+            uc14["UC14 Configure Rules, SLA & Scope"]
+        end
+    end
+
+    subgraph right["Systems"]
+        direction TB
+        aiSvc(["AI Service"])
+    end
+
+    tech --> uc10 & uc11
+    lead --> uc10 & uc13
+    admin --> uc11 & uc13 & uc14
+    uc10 --> aiSvc
+
+    classDef actor fill:none,stroke:none,color:#111
+    classDef usecase fill:#1168bd,color:#fff,stroke:#0b4f9e
+    classDef ai fill:#7b3fbf,color:#fff,stroke:#5a2d8c
+    classDef external fill:#666,color:#fff,stroke:#333
+    class tech,lead,admin actor
+    class uc11,uc13,uc14 usecase
+    class uc10 ai
+    class aiSvc external
+    style left fill:#fff,stroke:#bbb,stroke-dasharray:5 5
+    style right fill:#fff,stroke:#bbb,stroke-dasharray:5 5
+    style system fill:#f8fbff,stroke:#1168bd,stroke-dasharray:5 5
+```
 
 ### Use Case Catalog
 
