@@ -4,7 +4,7 @@
 >
 > Implementation status: NOT STARTED
 
-Six flows cover a ticket's path through the three processing flows (A — AI self-service, B — clarification, C — human handling), automation failure handling, and two Admin configuration flows. In every flow a **purple** step is performed by the AI, and every AI step has a failure path that lets a person continue. Each flow starts from its actors (person icon). A step performed by a person begins with 👤 and an abbreviation: **RQ** Requester, **TE** Technician, **AD** Admin. Steps without a prefix are done by the system or the AI. State names are the exact names in the [use cases](../02-use-cases.md#related-states).
+Eight flows cover a ticket's path through the three processing flows (A — AI self-service, B — clarification, C — human handling), automation failure handling, two Admin configuration flows, duplicate / similar tickets, and AI re-routing on failure or misroute. In every flow a **purple** step is performed by the AI, and every AI step has a failure path that lets a person continue. Each flow starts from its actors (person icon). A step performed by a person begins with 👤 and an abbreviation: **RQ** Requester, **TE** Technician, **AD** Admin. Steps without a prefix are done by the system or the AI. State names are the exact names in the [use cases](../02-use-cases.md#related-states).
 
 ## Flow 1: Basic request — AI self-service (flow A)
 
@@ -164,6 +164,65 @@ flowchart TD
     result -->|"Yes"| done(["Done"])
 
     classDef actor fill:none,stroke:none,color:#111
+```
+
+## Flow 7: Duplicate and similar tickets
+
+Example: Lan sends the same email twice in 10 minutes; Minh and four colleagues report that SAP is down within the same hour.
+
+```mermaid
+flowchart TD
+    actReq["<span style='font-size:40px'>👤</span><br/><b>Requester</b>"]:::actor
+    actTech["<span style='font-size:40px'>👤</span><br/><b>Technician</b>"]:::actor
+    actAdmin["<span style='font-size:40px'>👤</span><br/><b>Admin</b>"]:::actor
+    start(["New ticket analysed — F04 lists similar open tickets"]) --> cand{"Similarity ≥ 0.85<br/>with an open ticket?"}:::ai
+    cand -->|"No"| normal(["Routed normally (Flow 1, 2 or 3)"])
+    cand -->|"Yes, same requester"| merge["Merged: linked as duplicate (F03),<br/>closed 'Duplicate of #T-1024',<br/>text added as a comment"]
+    merge --> notify["SCR-91: 'Added to your open ticket #T-1024'<br/>owner told of the new comment"]
+    actReq --> undo
+    notify --> undo{"👤 RQ: Not the same problem?<br/>(within 7 days)"}
+    undo -->|"Yes"| reopen["Link removed, ticket NEW"] --> normal
+    undo -->|"No"| kept(["Handled once in #T-1024"])
+    cand -->|"Yes, other requester"| burst{"≥ 5 similar on the same system<br/>within 60 minutes?"}
+    burst -->|"No"| related["Linked as related<br/>same owner as the open ticket<br/>(normal selection if owner OFF or full)"]
+    burst -->|"Yes"| main["Oldest = main ticket, others linked<br/>main priority +1 level<br/>Admin: 'Possible incident'"]
+    actAdmin --> main
+    related --> owner["👤 TE: SCR-T-02 related tickets panel<br/>resolves them together"]
+    main --> owner
+    actTech --> owner
+    owner -->|"Not the same problem"| unlink["👤 TE: SCR-WF-23 Unlink<br/>(reason required)"] --> normal
+
+    classDef actor fill:#ffffff,stroke:#333333,stroke-width:1px,color:#111111
+    classDef ai fill:#7b3fbf,color:#fff,stroke:#5a2d8c
+```
+
+## Flow 8: AI re-routes on failure or misroute
+
+Example: Hai (Network team) receives *"VPN keeps disconnecting in SAP"*; it is really an SAP authorization problem.
+
+```mermaid
+flowchart TD
+    actTech["<span style='font-size:40px'>👤</span><br/><b>Technician</b>"]:::actor
+    actAdmin["<span style='font-size:40px'>👤</span><br/><b>Admin</b>"]:::actor
+    start(["Ticket owned by an AI agent or a technician"]) --> signal{"What happened?"}
+    actTech --> ret
+    signal -->|"Technician: not for my team"| ret["👤 TE: SCR-WF-24 Return for re-routing<br/>reason: 'SAP authorization, not network'"]
+    signal -->|"Agent: wrong domain"| mis
+    signal -->|"API failed: wrong target"| mis
+    signal -->|"Agent cannot resolve"| keep["Same group and sub-group<br/>→ technician by selection rule (Flow 3)"]
+    ret --> mis
+    mis{"Re-routes < 2?"}
+    mis -->|"No"| limit["Default support team<br/>REROUTE_LIMIT_REACHED"]
+    limit --> alert["Admin notified SCR-91"]
+    actAdmin --> alert
+    mis -->|"Yes"| again["AI: new analysis with the reason<br/>group just left excluded"]:::ai
+    again --> same{"Points to the<br/>group just left?"}
+    same -->|"Yes"| deflt["Default support team"]
+    same -->|"No"| route["UC-WF-04 from step 4:<br/>new group, sub-group, owner, flow<br/>SLA not reset"]
+    route --> notify["New owner notified<br/>with routing history"]
+
+    classDef actor fill:#ffffff,stroke:#333333,stroke-width:1px,color:#111111
+    classDef ai fill:#7b3fbf,color:#fff,stroke:#5a2d8c
 ```
 
 **Related:** [Information architecture index](README.md) · [Navigation](03-navigation.md) · [UI states](06-ui-states-and-accessibility.md)

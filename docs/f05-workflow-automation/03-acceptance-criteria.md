@@ -124,6 +124,36 @@ These criteria describe target product behavior. The UI may satisfy a criterion 
 - Manual resolution without a note → `400`.
 - Only the assigned technician or an Admin may retry / resolve manually; others → `403`.
 
+## AC-UC-WF-10 — Handle duplicate and similar tickets
+
+*(US-WF-25, US-WF-26, US-WF-27)*
+
+- With `HANDLE_DUPLICATES` on, a new ticket whose similarity with an **open ticket of the same requester** is ≥ the duplicate threshold (0.85) is linked as duplicate, closed with reason *"Duplicate of #T-…"*, and its text and attachments are added as a comment to the earlier ticket; it is never assigned and consumes no SLA.
+- Example: Lan emails *"Outlook keeps asking for my password"* twice in 10 minutes → the second email is merged into the first ticket; Lan receives one notification with the **Not the same problem** action.
+- **Not the same problem** within 7 days removes the link, reopens the ticket as `NEW` and routes it normally; after 7 days → `409`. The same pair is never merged again.
+- A ticket is never merged into a ticket of another requester, nor into a ticket that is `RESOLVED`, `CLOSED` or `CANCELLED`.
+- A ticket similar (≥ threshold) to an open ticket of **another** requester stays open, is linked as related and is assigned to the same owner, unless that owner is `OFF` or at maximum load (then the normal selection rule applies and the link stays).
+- When at least 5 similar open tickets on the same system arrive within 60 minutes, the oldest becomes the main ticket, the others are linked to it and routed to its owner, the main ticket's priority rises by one level (never above P1), and the Admin receives exactly one *"Possible incident"* notification for the burst.
+- **Unlink** by the assigned technician or the Admin requires a reason (missing → `400`), routes the ticket normally and prevents the pair from being linked again; other roles → `403`.
+- A candidate below the threshold is never linked automatically.
+- Every merge, link, undo and unlink is audited with source `AUTOMATION` or `USER`, the similarity and the ticket ids.
+- With `HANDLE_DUPLICATES` off, no ticket is merged or linked automatically; F04 still shows candidates to technicians.
+
+## AC-UC-WF-11 — AI re-routes on failure or misroute
+
+*(US-WF-28, US-WF-29, US-WF-30)*
+
+- With `AUTO_REROUTE` on, *Return for re-routing* by the assigned technician (reason required, missing → `400`) triggers a new AI analysis within ≤ 15 seconds (P95); the reason is given to the AI as context and the group just left is excluded.
+- Example: Hai (Network team) returns *"VPN keeps disconnecting in SAP"* with *"SAP authorization error, not network"* → the ticket is re-analysed as `SAP/AUTHORIZATION` and assigned to the SAP group; Hai no longer sees it in his list.
+- A domain agent reporting a wrong domain, or an API failure showing a wrong target, re-routes the ticket the same way with reason `AGENT_WRONG_DOMAIN` or `AUTOMATION_WRONG_TARGET`.
+- An agent that cannot resolve the ticket (`AGENT_NOT_SOLVED`) does not change the group: the ticket goes to a technician of the same sub-group, chosen by the selection rule.
+- A new analysis that points to the group just left sends the ticket to the default support team instead.
+- After the maximum number of re-routes (default 2), the next failure sends the ticket to the default support team with reason `REROUTE_LIMIT_REACHED` and the Admin receives one notification.
+- Each re-route stores a new `ai_decisions` version with its reason code; the routing history (groups, owners, reasons, times) is shown on the ticket.
+- A re-route never resets the SLA, never lowers the priority, keeps the fields corrected by a person and keeps duplicate links.
+- *Return for re-routing* by another role → `403`; on a `RESOLVED`, `CLOSED` or `CANCELLED` ticket → `409`.
+- With `AUTO_REROUTE` off, misrouted and failed tickets go to a technician of the current group as before (UC-WF-09).
+
 ## Definition of Ready
 
 A backend work item is ready only when it names its OpenAPI operationId, application service, repository dependencies, RBAC rule, validation/error outcomes and unit-test cases. The [traceability matrix](../traceability/master-traceability.md) provides this mapping.

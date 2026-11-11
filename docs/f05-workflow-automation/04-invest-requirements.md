@@ -2,7 +2,7 @@
 
 > Design status: TARGET V1
 >
-> Scope: F05 — US-WF-01 … US-WF-24
+> Scope: F05 — US-WF-01 … US-WF-30
 
 Each user story is small enough to implement and test independently. Authentication, authorization, validation, auditing and error handling are **shared acceptance constraints**, not hidden features.
 
@@ -47,6 +47,12 @@ MoSCoW priority: **Must** (required for V1), **Should** (important), **Could** (
 | US-WF-22 | As a **Requester**, I want the ticket fields (request type, category, support level, requested for, business unit, site) to be filled automatically from what I wrote, whether I wrote an email or used the portal, so that I never have to pick a category or fill a form. | No category form | F04 analysis (UC-AI-01) | Must | AC-UC-WF-04 |
 | US-WF-23 | As a **Technician**, I want every ticket to arrive with a priority already set from its impact and urgency, and its SLA attached, and to be able to correct it with a reason, so that I work on the right tickets first. | Correct order of work | US-WF-03, F04 priority (UC-AI-05) | Must | AC-UC-WF-04 |
 | US-WF-24 | As a **Requester**, I want my ticket to go first to the AI agent of its domain and, when a person is needed, to a technician of the right sub-group, so that the most specialized handler takes it without being passed around. | Fewer hand-offs | US-WF-22, groups and sub-groups (F09), domain agents (F04) | Must | AC-UC-WF-04, AC-UC-WF-05 |
+| US-WF-25 | As a **Requester**, I want a request I send twice (for example the same email sent again) to be added to my open ticket instead of creating a second one, with a way to undo it, so that my problem is handled once and I follow a single ticket. | No parallel work on the same request | F04 duplicate candidates (UC-AI-06), F03 link operation | Must | AC-UC-WF-10 |
+| US-WF-26 | As a **Technician**, I want tickets from other people about the same problem I am already handling to be linked to mine and assigned to me, so that one person fixes the problem once and answers everyone. | One owner per problem | US-WF-25, US-WF-24 | Must | AC-UC-WF-10 |
+| US-WF-27 | As an **Admin**, I want a burst of similar tickets on the same system to be grouped under one main ticket with a higher priority and to be alerted, so that a possible incident is noticed early. | Early incident detection | US-WF-26, F04 suspected-bug burst | Should | AC-UC-WF-10 |
+| US-WF-28 | As a **Technician**, I want to return a ticket that is not for my team with a short reason and have the AI route it to the right team, so that I do not have to know every team or dispatch it myself. | No manual dispatching after a misroute | US-WF-24 | Must | AC-UC-WF-11 |
+| US-WF-29 | As a **Requester**, I want my ticket to move automatically to a person or to the right team when the AI agent or the automation cannot handle it, so that I never have to submit it again. | Nothing gets stuck after a failure | US-WF-24, F04 domain agents | Must | AC-UC-WF-11 |
+| US-WF-30 | As an **Admin**, I want re-routing to stop after a maximum number of attempts and never send a ticket back to the team that just returned it, and to be alerted when the limit is reached, so that tickets cannot bounce between teams. | Loop protection | US-WF-28 | Should | AC-UC-WF-11 |
 
 Grouped by use case:
 
@@ -60,6 +66,8 @@ US-WF-12–14   UC-WF-06  SLA reminders & warnings
 US-WF-15–16   UC-WF-07  AI approves in-scope request
 US-WF-17–18   UC-WF-08  Execute via API
 US-WF-19–20   UC-WF-09  Verify / hand off on failure
+US-WF-25–27   UC-WF-10  Handle duplicate / similar tickets
+US-WF-28–30   UC-WF-11  AI re-routes on failure or misroute
 ```
 
 ## Per-story INVEST review
@@ -92,6 +100,12 @@ US-WF-19–20   UC-WF-09  Verify / hand off on failure
 | US-WF-22 | PASS | PASS | PASS | PASS | PASS | PASS | Fields come from the F04 analysis; each is marked "Filled by AI"; low-confidence fields are asked for. |
 | US-WF-23 | PASS | NEEDS CONFIRM | PASS | PASS | PASS | PASS | Default P2 when the AI is not confident. F04 still suggests P1–P4 while F05 uses P1–P3: the scales must be aligned. |
 | US-WF-24 | PASS | PASS | PASS | PASS | PASS | PASS | Depends on F09 for sub-groups and on F04 for domain agents. |
+| US-WF-25 | PASS | PASS | PASS | PASS | PASS | PASS | Same requester only; undo within 7 days; uses F04's duplicate threshold 0.85. |
+| US-WF-26 | PASS | PASS | PASS | PASS | PASS | PASS | Never closes another person's ticket; falls back to the normal selection when the owner is OFF or full. |
+| US-WF-27 | PASS | NEEDS CONFIRM | PASS | PASS | PASS | PASS | Burst rule 5 tickets / 60 minutes is the F04 default, to be calibrated. |
+| US-WF-28 | PASS | PASS | PASS | PASS | PASS | PASS | Reason required; the group just left is excluded from the new analysis. |
+| US-WF-29 | PASS | PASS | PASS | PASS | PASS | PASS | Agent failure keeps the group; wrong target changes it. Depends on F04 agent result codes. |
+| US-WF-30 | PASS | NEEDS CONFIRM | PASS | PASS | PASS | PASS | Maximum 2 re-routes is a proposed value. |
 
 ## Cross-cutting acceptance constraints
 

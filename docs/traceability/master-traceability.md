@@ -33,6 +33,12 @@ Screens (`SCR-*`), operationIds, tables and components are **proposed names**; t
 | US-WF-22 | UC-WF-04 | AC-UC-WF-04 | SCR-T-01, SCR-T-02 ("Filled by AI" fields) | Ticket Router, AI Gateway | internal (routing), `correctTicketField` | `tickets`, `ai_decisions`, `audit_logs` | BR-WF-19, BR-WF-21 | `INT-WF-FIELDS-001` PLANNED |
 | US-WF-23 | UC-WF-04 | AC-UC-WF-04 | SCR-T-02 (priority and SLA) | Ticket Router, SLA Engine | internal (routing), `changeTicketPriority` | `tickets`, `ticket_sla_timers`, `audit_logs` | BR-WF-08, BR-WF-20 | `UNIT-APP-WF-PRIORITY-001` PLANNED |
 | US-WF-24 | UC-WF-04, UC-WF-05 | AC-UC-WF-04, AC-UC-WF-05 | SCR-T-02 (group, sub-group, owner), SCR-WF-05 | Ticket Router, Assignment Engine | internal (routing), `previewAssignment` | `tickets`, `ticket_assignments`, `team_categories` (F09) | BR-WF-09 | `INT-WF-ROUTE-003` PLANNED |
+| US-WF-25 | UC-WF-10 | AC-UC-WF-10 | SCR-T-02 (merge banner, *Not the same problem*), SCR-91 | Ticket Router, Duplicate Handler | internal (routing), `undoDuplicateMerge` | `tickets`, `ticket_links` (F03), `ticket_messages`, `audit_logs` | BR-WF-22 | `INT-WF-DUP-001` PLANNED |
+| US-WF-26 | UC-WF-10 | AC-UC-WF-10 | SCR-T-02 (related tickets panel), SCR-WF-23 | Duplicate Handler, Assignment Engine | internal (routing), `unlinkTickets` | `ticket_links` (F03), `ticket_assignments`, `audit_logs` | BR-WF-22 | `INT-WF-DUP-002` PLANNED |
+| US-WF-27 | UC-WF-10 | AC-UC-WF-10 | SCR-T-02 (main ticket), SCR-91 (Admin alert) | Duplicate Handler, SLA Engine | internal (routing) | `ticket_links` (F03), `tickets`, `notifications` | BR-WF-22 | `INT-WF-DUP-003` PLANNED |
+| US-WF-28 | UC-WF-11 | AC-UC-WF-11 | SCR-T-02 (*Return for re-routing*), SCR-WF-24 | Ticket Router, AI Gateway | `returnForRerouting`, internal (routing) | `tickets`, `ai_decisions`, `ticket_assignments`, `audit_logs` | BR-WF-23 | `INT-WF-REROUTE-001` PLANNED |
+| US-WF-29 | UC-WF-11 | AC-UC-WF-11 | SCR-T-02 (routing history), SCR-91 | Ticket Router, Automation Executor, Assignment Engine | internal (agent result, `workflow_run` failure) | `ai_decisions`, `workflow_runs`, `ticket_assignments` | BR-WF-23 | `INT-WF-REROUTE-002` PLANNED |
+| US-WF-30 | UC-WF-11 | AC-UC-WF-11 | SCR-WF-03 (re-route limit), SCR-91 (Admin alert) | Ticket Router | `updateAiActionSetting`, internal (routing) | `ai_decisions`, `ai_action_settings`, `notifications` | BR-WF-23 | `UNIT-APP-WF-REROUTE-001` PLANNED |
 
 ## Screen inventory
 

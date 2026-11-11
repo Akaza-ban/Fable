@@ -69,6 +69,11 @@ The notification centre SCR-91 has an unread count in the top bar (D-IA-09). Not
 | Technician | Requester reported not fixed | SCR-T-02 |
 | Technician | One of your not-started tickets was moved to a colleague (you switched *OFF*, or SLA breach) | SCR-T-02 |
 | Admin | Ticket breached its SLA, with the automatic reassignment if any (UC-WF-06) | SCR-T-02 |
+| Requester | Your request was added to your open ticket #T-… (duplicate), with *Not the same problem* (UC-WF-10) | SCR-T-02 |
+| Technician / AI agent owner | A duplicate or related ticket was linked to a ticket you own (UC-WF-10) | SCR-T-02 |
+| Technician / AI agent owner | A ticket was re-routed to you, with the AI summary and the routing history (previous group, who returned it, why) (UC-WF-11) | SCR-T-02 |
+| Admin | Re-route limit reached: a ticket was sent to the default support team after the maximum number of re-routes (UC-WF-11) | SCR-T-02 |
+| Admin | Possible incident: a burst of similar tickets on the same system, once per burst (UC-WF-10) | SCR-T-02 (main ticket) |
 | Admin | Ticket waiting in a team queue for more than 30 minutes because no technician is eligible *(proposed)* | SCR-T-02 |
 | Admin | AI Service unavailable, new tickets are being routed to humans (DF-IA-06) | SCR-WF-30 |
 
