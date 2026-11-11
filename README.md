@@ -23,7 +23,7 @@ The mind map groups features by area (8 groups); the specification folders are o
 | 5. AI Intelligent Processing | [F04 AI Ticket Processing](docs/f04-ai-ticket-processing/README.md) | TARGET V1 (draft for team review) |
 | 6. Automation Workflow Engine | [F05 Workflow & Automation](docs/f05-workflow-automation/README.md) | TARGET V1 |
 | 7. Approval & Automated Execution | [F05 Workflow & Automation](docs/f05-workflow-automation/README.md) | TARGET V1 |
-| 8. Dashboard & Governance Telemetry | [F02 Dashboard](docs/f02-dashboard/README.md), [F07 Reports & Analytics](docs/f07-reports-analytics/README.md), [F08 Activity Log](docs/f08-activity-log/README.md) | draft |
+| 8. Dashboard & Governance Telemetry | [F02 Dashboard](docs/f02-dashboard/README.md), [F07 Reports & Analytics](docs/f07-reports-analytics/README.md), [F08 Activity Log](docs/f08-activity-log/README.md) | F02 draft; F07, F08 TARGET V1 (draft for team review) |
 | Login (no group) | F01 Authentication & Authorization (not specified) | — |
 
 The mind map is an early outline and is out of date in a few places. The system has four actors (see [1.2](#12-user-stories)), so the Team Lead role in the mind map is dropped; some branch docs still name Team Lead and are being aligned. The technician summary (at most 150 words rather than 3 lines) and the reopen window (7 days rather than 48 hours) follow the branch docs. The "Manager" who approves elevated permissions in groups 7.2 and 7.3 is the Administrator. Whether some sensitive entitlements still need that approval is open (US-WF-15 in F05); the agreed direction is to let the AI route and approve as many requests as possible, so that the Administrator's manual routing and approval work is kept to a minimum.
@@ -293,7 +293,7 @@ flowchart LR
 | **UC18** | Summarize Ticket & Draft Reply | AI Service | Give the technician a summary of at most 150 words when a ticket comes to a human, and draft the resolution and the reply when it is resolved. | UC-AI-04, UC-AI-08 |
 | **UC19** | Receive SLA Reminders & Breach Alerts | Technician / Administrator | The SLA scheduler reminds the assignee before a deadline and alerts the Administrator when a ticket breaches its SLA. | UC-WF-06, UC-DB-02 |
 | **UC20** | Communicate on Ticket | Requester / Technician | Exchange public replies with attachments; Technicians add internal notes hidden from the requester. | UC-TK-04 |
-| **UC21** | View & Export Reports | Administrator | Ticket volume, handling time and SLA breaches, AI self-resolution rate and satisfaction, with CSV/XLSX export; Technicians see figures for their own scope. | UC-BC-01 … UC-BC-06 |
+| **UC21** | View & Export Reports | Administrator | Ticket volume, handling time and SLA breaches, AI self-resolution rate, satisfaction and team workload, with CSV/XLSX export and a weekly email digest; Technicians see figures for their own scope. | UC-BC-01 … UC-BC-08 |
 | **UC22** | View Activity Log | Administrator | Search the append-only log of user, AI and system actions, including AI approval decisions and workflow run errors; Technicians and Requesters see the history of their tickets. | UC-NK-01 … UC-NK-05 |
 
 The use cases per branch (UC-DB, UC-TK, UC-AI, UC-WF, UC-KB, UC-BC, UC-NK) are specified in each branch folder. Two branch use cases are left out of this overview on purpose: UC-AI-07 (feedback and learning from verified tickets) and UC-AI-09 (structuring a business requirement) are specified in F04 only.
@@ -443,12 +443,12 @@ The ticket console must clearly show the AI summary (at most 150 words, in fixed
 
 Detailed routes, standard component states (loading, empty, validation, saving, success, error, 403) and the role-based navigation matrix are maintained in [Information Architecture](docs/information-architecture.md).
 
-Each branch also has its own information architecture: [F02 Dashboard](docs/f02-dashboard/03-information-architecture.md), [F03 Ticket Management](docs/f03-ticket-management/03-information-architecture.md), [F04 AI Ticket Processing](docs/f04-ai-ticket-processing/information-architecture/README.md), [F05 Workflow & Automation](docs/f05-workflow-automation/information-architecture/README.md), [F06 Knowledge Base](docs/f06-knowledge-base/04-information-architecture.md), [F07 Reports & Analytics](docs/f07-reports-analytics/information-architecture/README.md), [F08 Activity Log](docs/f08-activity-log/information-architecture/README.md).
+Each branch also has its own information architecture: [F02 Dashboard](docs/f02-dashboard/information-architecture/README.md), [F03 Ticket Management](docs/f03-ticket-management/03-information-architecture.md), [F04 AI Ticket Processing](docs/f04-ai-ticket-processing/information-architecture/README.md), [F05 Workflow & Automation](docs/f05-workflow-automation/information-architecture/README.md), [F06 Knowledge Base](docs/f06-knowledge-base/04-information-architecture.md), [F07 Reports & Analytics](docs/f07-reports-analytics/information-architecture/README.md), [F08 Activity Log](docs/f08-activity-log/information-architecture/README.md).
 
 ## Documentation
 
 - System overview: [Mind map outline](docs/mindmap-xmind.md), [Information architecture](docs/information-architecture.md).
-- F02 Dashboard: [Index](docs/f02-dashboard/README.md), [User stories](docs/f02-dashboard/01-user-stories.md), [Use cases](docs/f02-dashboard/02-use-cases.md), [Information architecture](docs/f02-dashboard/03-information-architecture.md).
+- F02 Dashboard: [Index](docs/f02-dashboard/README.md), [Features](docs/f02-dashboard/01-features.md), [User stories](docs/f02-dashboard/02-user-stories.md), [Use cases](docs/f02-dashboard/03-use-cases.md), [Acceptance criteria](docs/f02-dashboard/04-acceptance-criteria.md), [INVEST backlog](docs/f02-dashboard/05-invest-requirements.md), [Information architecture](docs/f02-dashboard/information-architecture/README.md).
 - F03 Ticket Management: [Index](docs/f03-ticket-management/README.md), [User stories](docs/f03-ticket-management/01-user-stories.md), [Use cases](docs/f03-ticket-management/02-use-cases.md), [Information architecture](docs/f03-ticket-management/03-information-architecture.md).
 - F04 AI Ticket Processing: [Index](docs/f04-ai-ticket-processing/README.md), [Features](docs/f04-ai-ticket-processing/01-features.md), [Use cases](docs/f04-ai-ticket-processing/02-use-cases.md), [User stories (INVEST)](docs/f04-ai-ticket-processing/03-user-stories-invest.md), [Acceptance criteria](docs/f04-ai-ticket-processing/04-acceptance-criteria.md), [Business rules](docs/f04-ai-ticket-processing/05-business-rules.md), [Information architecture](docs/f04-ai-ticket-processing/information-architecture/README.md).
 - F05 Workflow & Automation: [Index](docs/f05-workflow-automation/README.md), [Features](docs/f05-workflow-automation/01-features.md), [Use cases](docs/f05-workflow-automation/02-use-cases.md), [Acceptance criteria](docs/f05-workflow-automation/03-acceptance-criteria.md), [INVEST backlog](docs/f05-workflow-automation/04-invest-requirements.md), [Information architecture](docs/f05-workflow-automation/information-architecture/README.md).
@@ -465,7 +465,7 @@ No source code exists yet. The repository holds the documents.
 ```text
 Fable/
 ├── docs/
-│   ├── f02-dashboard/             # Dashboard: user stories, use cases, IA
+│   ├── f02-dashboard/             # Dashboard: features, user stories, use cases, AC, INVEST, IA
 │   ├── f03-ticket-management/     # Ticket management: user stories, use cases, IA
 │   ├── f04-ai-ticket-processing/  # AI ticket processing: features, use cases, INVEST, AC, business rules, IA
 │   ├── f05-workflow-automation/   # Workflow and automation: features, use cases, AC, INVEST, IA
@@ -480,14 +480,14 @@ Fable/
 └── README.md
 ```
 
-Every branch folder is named `fNN-<branch>` after its feature branch number (F01–F09, mapped to the mind map groups in [1.1](#11-product-mind-map)), its files are numbered `NN-<topic>.md` (F04 and F05 keep their IA in an `information-architecture/` subfolder), and its `README.md` lists the files.
+Every branch folder is named `fNN-<branch>` after its feature branch number (F01–F09, mapped to the mind map groups in [1.1](#11-product-mind-map)), its files are numbered `NN-<topic>.md` (F02, F04, F05, F07 and F08 keep their IA in an `information-architecture/` subfolder), and its `README.md` lists the files.
 
 ## Project Progress
 
 - [x] Draw the product mind map
 - [x] Write the system user stories (22) and use cases (22), with the use case diagrams
 - [x] Design the system information architecture and screen hierarchy
-- [x] F02 Dashboard: user stories, use cases, IA (draft)
+- [x] F02 Dashboard: features, user stories, use cases, acceptance criteria, INVEST, IA (draft)
 - [x] F03 Ticket Management: user stories, use cases, IA (TARGET V1)
 - [x] F04 AI Ticket Processing: features, use cases, INVEST, acceptance criteria, business rules, IA (TARGET V1, draft for team review)
 - [x] F05 Workflow & Automation: features, use cases, INVEST, acceptance criteria, IA (TARGET V1)
