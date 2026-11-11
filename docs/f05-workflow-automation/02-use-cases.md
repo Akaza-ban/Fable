@@ -9,7 +9,7 @@
 | Role code | Display name | Workflow responsibilities |
 |---|---|---|
 | `ADMIN` | Administrator | Configures assignment rules, SLA, and the AI processing scope (AI actions, whitelist, entitlement catalog); reviews AI decisions |
-| `TECHNICIAN` | Technician | Handles requests that need a human and automation failures; may be flagged as **Team Lead** (`is_lead`) within a team |
+| `TECHNICIAN` | Technician | Handles requests that need a human and automation failures; keeps their **availability status** up to date |
 | `REQUESTER` | Requester | Submits requests, answers AI questions, confirms results |
 
 | System actor | Audit code | Responsibilities |
@@ -19,6 +19,8 @@
 > The system has 3 user roles and **exactly 1 system actor: the AI Service**.
 >
 > Automated tasks (applying assignment rules, SLA timers, API execution, verification) are **internal system behavior**, not actors; they are logged with source `AUTOMATION` (BR-WF-05). The external access-management system (AD, Google Workspace, mock API…) is an **integration detail** reached through connectors.
+>
+> **There is no Team Lead.** Nobody distributes work by hand: the system assigns tickets from each technician's availability and workload (see *Assignment by availability and workload*). The Admin is the only person who can reassign manually, as a last resort.
 
 ## Routing principles
 
@@ -63,6 +65,59 @@ flowchart TD
     class b askc
 ```
 
+## Assignment by availability and workload
+
+A ticket in flow C is assigned by **deterministic rules**, not by the AI and not by a person. The AI only classifies the ticket; the rules below decide who gets it (BR-WF-10, BR-WF-18).
+
+### Technician availability status
+
+| Status | Meaning | Receives new tickets? |
+|---|---|---|
+| `AVAILABLE` | On shift, ready to take work | Yes |
+| `BUSY` | In a meeting, on site, on a break | No (keeps the tickets already held) |
+| `OFF` | Leave, off shift, sick | No; not-started tickets are moved to colleagues |
+
+The status is set by the technician (top bar switch) and automatically by the system: `OFF` outside working hours of the business calendar and on registered leave, `AVAILABLE` at the start of the shift. The status itself is owned by F09 User Management; F05 reads it.
+
+### Workload score
+
+Counting tickets is not enough: two critical, complex tickets weigh more than five small ones. Each open ticket gets a **load score = priority points × complexity factor**; a technician's workload is the sum over their open tickets (`ASSIGNED`, `IN_PROGRESS`).
+
+| Priority | Points |
+|---|---|
+| P1 — Critical | 5 |
+| P2 — High | 3 |
+| P3 — Medium | 2 |
+| P4 — Low | 1 |
+
+| Complexity | Factor | Examples |
+|---|---|---|
+| Simple | ×1 | Replace a mouse, install a printer |
+| Medium | ×1.5 | Reinstall software, network issue on one PC |
+| Complex | ×2 | Server failure, incident affecting many users |
+
+In V1 the complexity comes from the **request type**, configured by the Admin (e.g. "Server" = Complex). AI-estimated complexity is out of scope for V1. All numbers are defaults that the Admin can change (UC-WF-01).
+
+*Example:* Mai holds 2 tickets P1 Complex → 5×2 + 5×2 = **20**; Hung holds 5 tickets P4 Simple → 5 × 1 = **5**. A new "broken mouse" ticket goes to **Hung**, although he holds more tickets.
+
+### Selection rule
+
+1. Keep members of the target team (from the assignment rule, UC-WF-01).
+2. Remove technicians who are `BUSY` or `OFF`.
+3. Remove technicians who hold a **P1 ticket** (focus rule) or whose workload has reached the **maximum load** (default 20) — unless every remaining member is in that situation, in which case the P1 rule is ignored.
+4. Pick the technician with the **lowest workload score**; on a tie, the one who received a ticket least recently.
+5. Nobody left → the ticket waits in the team queue (`ASSIGNED` to the team, no individual); the first technician who becomes eligible receives it.
+
+```mermaid
+flowchart TD
+    t["Ticket in flow C"] --> rule["Assignment rule → target team<br/>(no match → default support team)"]
+    rule --> f1["Keep AVAILABLE members"]
+    f1 --> f2["Drop members holding a P1<br/>or at maximum load"]
+    f2 --> any{"Anyone left?"}
+    any -- "Yes" --> pick["Lowest workload score<br/>→ ASSIGNED to that technician"]
+    any -- "No" --> wait["Waits in the team queue<br/>first eligible technician gets it"]
+```
+
 ## Role × feature matrix
 
 | Feature | Admin | Technician | Requester |
@@ -71,9 +126,11 @@ flowchart TD
 | Configure SLA and business calendar | ✓ | | |
 | Configure AI scope (AI actions, whitelist, entitlement catalog) | ✓ | | |
 | View AI decisions and their grounds | ✓ | Assigned tickets | Own tickets (summary reason) |
-| View the manual triage queue | ✓ | Team Lead | |
-| Reassign tickets | ✓ | Team Lead (own team) | |
+| Configure workload scoring (priority points, complexity by request type, maximum load) | ✓ | | |
+| Set own availability status | | ✓ | |
+| Reassign tickets manually (last resort, reason required) | ✓ | | |
 | Receive reminders / SLA warnings | | ✓ | ✓ (when the AI is waiting for them) |
+| Receive SLA breach escalations | ✓ | | |
 | Submit requests | ✓ | ✓ | ✓ |
 | Answer AI questions | ✓ | ✓ | ✓ (own tickets) |
 | Retry / resolve manually on failure | ✓ | Assigned tickets | |
@@ -169,8 +226,7 @@ flowchart LR
 |---|---|
 | `NEW` | Just created, waiting for AI classification |
 | `NEEDS_INFO` | AI is asking the requester for clarification — **SLA paused** |
-| `TRIAGE` | No team picked it up (no assignment rule matched) — waiting for manual triage by a team lead |
-| `ASSIGNED` | Assigned to a team / technician |
+| `ASSIGNED` | Assigned to a technician, or waiting in the team queue when no technician is eligible |
 | `IN_PROGRESS` | Technician is working on it |
 | `AUTOMATING` | AI approved; the system is executing / verifying via API |
 | `RESOLVED` | Handled, waiting for requester confirmation |
@@ -199,8 +255,6 @@ stateDiagram-v2
     NEEDS_INFO --> NEW: requester answers → re-route
     NEW --> AUTOMATING: AI approves (flow A)
     NEW --> ASSIGNED: route to human (flow C)
-    NEW --> TRIAGE: no assignment rule matched
-    TRIAGE --> ASSIGNED: team lead assigns
     AUTOMATING --> RESOLVED: execution + verification OK
     AUTOMATING --> ASSIGNED: permanent error / retries exhausted → technician
     ASSIGNED --> IN_PROGRESS: technician starts
@@ -220,15 +274,16 @@ stateDiagram-v2
 
 - **Actor:** Admin
 - **Preconditions:** logged in as `ADMIN`; at least one technical team has active members
-- **Main flow:** open SCR-WF-01 → *Add rule* → enter name, conditions (request type, category, priority, requester department — combined with AND), target team, distribution strategy (`ROUND_ROBIN` / `LEAST_LOADED`) → `createAssignmentRule` → backend checks authorization and input → saved as **Disabled** → audit → the rule appears at the end of the ordered list
+- **Main flow — rules:** open SCR-WF-01 → *Add rule* → enter name, conditions (request type, category, priority, requester department — combined with AND), target team → `createAssignmentRule` → backend checks authorization and input → saved as **Disabled** → audit → the rule appears at the end of the ordered list. Inside the team, the technician is always chosen by availability and workload score (no per-rule strategy).
+- **Main flow — workload scoring:** SCR-WF-01 tab *Workload* → edit the priority points (P1–P4), the complexity of each request type (Simple / Medium / Complex) and its factor, the maximum load per technician, and the default support team for tickets that match no rule → `updateWorkloadSettings` → audit
 - **Secondary flows:**
   - Drag and drop to reorder → `reorderAssignmentRules`
-  - Dry run on a sample ticket → `dryRunAssignmentRules` → shows the matching rule, team and expected assignee; no data is changed
+  - Dry run on a sample ticket → `dryRunAssignmentRules` → shows the matching rule, team, each member's status and workload score, and the expected assignee; no data is changed
   - Enable / disable → `updateAssignmentRule`
   - Archive a rule (no hard delete, to keep historical references) → `archiveAssignmentRule`
-- **Exceptions:** target team has no active members → `400`; conditions identical to another rule → warning, saving still allowed
+- **Exceptions:** target team has no active members → `400`; conditions identical to another rule → warning, saving still allowed; points, factors or maximum load ≤ 0 → `400`; no default support team → `400`
 - **Permission:** `workflowConfigManage`
-- **Result:** the rule applies to tickets entering flow C **after** it is enabled
+- **Result:** rules apply to tickets entering flow C **after** they are enabled; workload settings apply to the next assignment
 
 ### UC-WF-02 Configure SLA policies
 
@@ -283,22 +338,23 @@ stateDiagram-v2
 
 ### UC-WF-05 Auto-assign technician
 
-- **Actors:** Technician (assignee); Team Lead, Admin (reassignment); AI Service (provides the summary)
-- **Trigger:** a ticket enters flow C (needs a human, out of scope, policy check failed, clarification limit reached), or a ticket is returned from UC-WF-09
-- **Main flow:** the system takes enabled rules in order → the **first matching** rule wins → filters target-team members who are active and not marked absent → picks a technician using the strategy → creates an assignment record → ticket `ASSIGNED` → sends a notification including **the AI summary and the reason it was routed to a human** → audit with source `AUTOMATION` and `ruleId`
+- **Actors:** Technician (assignee); Admin (manual reassignment, last resort); AI Service (provides the summary)
+- **Trigger:** a ticket enters flow C (needs a human, out of scope, policy check failed, clarification limit reached), a ticket is returned from UC-WF-09, or a technician becomes eligible again (status back to `AVAILABLE`, load below the maximum)
+- **Main flow:** the system takes enabled rules in order → the **first matching** rule gives the target team → applies the *Selection rule* (available members, no P1 held, below maximum load, lowest workload score) → creates an assignment record → ticket `ASSIGNED` → sends a notification including **the AI summary and the reason it was routed to a human** → audit with source `AUTOMATION`, `ruleId` and the workload scores compared
 - **Alternatives:**
-  - No rule matches → ticket `TRIAGE`, the lead of the default intake team is notified
-  - Nobody in the team is available → assign to the team (no individual yet), notify the team lead
-  - Team Lead / Admin reassigns → `reassignTicket` with a mandatory reason → audit with before/after values
-- **Permission:** automatic: internal system; reassignment: `ticketReassign`
-- **Result:** every ticket that needs a human has an owner person or team; the SLA keeps running even in `TRIAGE`
+  - No rule matches → the **default support team** is used; same selection rule
+  - Nobody in the team is eligible → the ticket waits in the team queue; the first technician who becomes eligible receives it automatically
+  - A technician switches to `OFF` → their **not-started** tickets (`ASSIGNED`) are reassigned with the same selection rule; tickets `IN_PROGRESS` stay with them unless the SLA is breached (UC-WF-06)
+  - Admin reassigns manually → `reassignTicket` with a mandatory reason → audit with before/after values
+- **Permission:** automatic: internal system; manual reassignment: `ticketReassign` (Admin only)
+- **Result:** every ticket that needs a human is assigned to the least-loaded available technician of the right team, without anyone distributing work by hand
 
 ### UC-WF-06 Response reminders and SLA warnings
 
-- **Actors:** Technician, Team Lead, Requester (notification recipients)
+- **Actors:** Technician, Admin, Requester (notification recipients)
 - **Trigger:** automatic — a system job runs every minute
 - **Main flow — warning:** ticket reaches the warning threshold → reminder to the assignee (once per threshold) → `SLA_WARNING` event recorded
-- **Main flow — breach:** deadline passed → flag `sla_breached` → notify the team lead → if configured, raise priority by one level → `SLA_BREACHED` event recorded
+- **Main flow — breach:** deadline passed → flag `sla_breached` → if configured, raise priority by one level → **if the ticket is not started (`ASSIGNED`) or its assignee is no longer `AVAILABLE`, reassign it automatically** with the selection rule (UC-WF-05) → notify the Admin → `SLA_BREACHED` event recorded. A ticket `IN_PROGRESS` with an available assignee stays with them (the work already done is not lost).
 - **Main flow — waiting for requester:** ticket in `NEEDS_INFO`, or `RESOLVED` awaiting confirmation → remind the requester on day 1 and day N−1 → on day N (default 5 business days) `NEEDS_INFO` becomes `CLOSED` with reason *no response*; the requester can reopen within 7 days
 - **Exception:** `AUTOMATING` tickets are never auto-closed (BR-WF-11)
 - **Permission:** internal system

@@ -1,138 +1,283 @@
-# Use cases — Reporting & Analytics
+# Actors, Roles, and Use Cases — F07 Reports & Analytics
 
-Roles, ticket visibility scope, permission matrix and `BR-xx` rules are reused from [mvp.md](../mvp.md). Ticket statuses, SLA policy and AI decisions are reused from the Workflow module ([03-use-cases.md](../f05-workflow-automation/02-use-cases.md), `BR-WF-xx` in [business-rules.md](../requirements/business-rules.md)). This file only adds `UC-BC-xx`, `BR-BC-xx`, metrics `M-xx` and **proposes** new permissions (section 5). The proposed permissions take effect only once the owner of `mvp.md` accepts them.
+> Design status: TARGET V1
+>
+> Scope: F07 Reports & Analytics (UC-BC-01 … UC-BC-08)
 
-Related module: [Activity log](../f08-activity-log/02-use-cases.md) (`UC-NK-xx`, `BR-NK-xx`) — the audit log that several metrics read from.
+## Actors and roles
 
-This module only **reads** data owned by other modules; it never redefines or changes it:
+The role codes are the same as in F01, F04 and F05. **Team Lead is not a role**: it is a Technician with the `is_lead` flag in a team (F05 D-IA-07).
+
+| Role code | Display name | Role in F07 |
+|---|---|---|
+| `ADMIN` | Administrator | Sees every report on every ticket, exports, sets report parameters, receives the weekly digest |
+| `TECHNICIAN` | Technician | Sees volume, SLA and satisfaction for tickets in their scope (assigned to them or their groups); a **Team Lead** also sees per-technician figures and workload for the team they lead (Q-BC-01) |
+| `REQUESTER` | Requester | No access to reports |
+
+| System actor | Code in the audit log | Role in F07 |
+|---|---|---|
+| AI Service | `AI` | None. Its decisions and analyses are **data** that F07 reads; it never calls the report API (its `AI_AGENT` service account gets `403`) |
+
+> As in F04 and F05, the system has three user roles and **one system actor, the AI Service**. The nightly aggregation and the weekly digest are internal behaviour, logged with source `AUTOMATION`. They are not actors.
+
+## Permission matrix
+
+| Function | Admin | Technician | Requester |
+|---|---|---|---|
+| Ticket volume and status (UC-BC-01) | ✓ all tickets | Tickets in their scope | |
+| Handling time and SLA (UC-BC-02) | ✓ | Tickets in their scope | |
+| AI self-resolution and quality (UC-BC-03) | ✓ | | |
+| Satisfaction (UC-BC-04) | ✓ (with comments) | Tickets in their scope, no comments, no colleagues' individual figures | |
+| Team workload (UC-BC-07) | ✓ | Team Lead: team they lead | |
+| Export (UC-BC-05) | ✓ | | |
+| Report parameters (UC-BC-06) | ✓ | | |
+| Weekly digest (UC-BC-08) | Receives, manages recipients | | |
+
+"Tickets in their scope" means assigned to the technician or one of their groups (F01, `ticket:read`). **The API enforces every row**, filtering in the query before aggregation (BR-BC-02); hiding a menu item is only for usability.
+
+Proposed permissions, for the F01 owner to accept (naming: Q-BC-12):
+
+| Permission | Admin | Technician | Requester | `AI_AGENT` |
+|---|---|---|---|---|
+| `report:read` | all | scope (Team Lead: own team per technician) | ✗ | ✗ |
+| `report:read_ai` | ✓ | ✗ | ✗ | ✗ |
+| `report:export` | ✓ | ✗ | ✗ | ✗ |
+| `report:configure` | ✓ | ✗ | ✗ | ✗ |
+
+## Data sources
+
+F07 owns only its parameters (`report_config`) and, in production, nightly aggregates. Everything else is read.
 
 | Data | Owner | Used for |
 |---|---|---|
-| Ticket statuses `NEW`, `NEEDS_INFO`, `TRIAGE`, `ASSIGNED`, `IN_PROGRESS`, `AUTOMATING`, `RESOLVED`, `CLOSED`, `CANCELLED` | Workflow / Ticket | Time metrics |
-| SLA policy versions, `sla_breached`, `SLA_WARNING` / `SLA_BREACHED` events (BR-WF-07, BR-WF-08) | Workflow | SLA metrics |
-| `ai_decisions` (outcome `AUTO_APPROVED` / `NEEDS_INFO` / `ROUTE_TO_HUMAN`, BR-WF-17) | Workflow | AI metrics |
-| Escalation, satisfaction ratings | Ticket | M-07, M-09 |
-| KB suggestions and "helpful" ratings | Knowledge Base | M-06 |
-| `AuditLog` (BR-09) | Shared | M-04, M-05 |
+| Ticket status `NEW`, `NEEDS_INFO`, `TRIAGE`, `ASSIGNED`, `IN_PROGRESS`, `AUTOMATING`, `RESOLVED`, `CLOSED`, `CANCELLED`; priority; channel; resolution code (`ANSWERED_BY_KB`, `SOLVED_BY_KB`, …) | F03 / F05 | M-01, M-02, M-04, volume |
+| SLA policy versions, `sla_breached`, `SLA_WARNING` / `SLA_BREACHED`, pause intervals | F05 (BR-WF-07, BR-WF-08) | M-02, M-03 |
+| `ai_decisions` (`AUTO_APPROVED` / `NEEDS_INFO` / `ROUTE_TO_HUMAN` with reason) | F05 (BR-WF-17) | M-08 |
+| AI analysis versions: `category`, `agent`, `escalationClass`, status `COMPLETED` / `INVALID` / `FAILED`, model and prompt version | F04 (BR-AI-02) | M-05, M-10, M-11 |
+| Corrections and helpful votes on summary, solution steps, KB suggestions | F04 UC-AI-07 (AC-AI-14.3) | M-05, M-06 |
+| KB article ratings | F06 | M-06 |
+| Satisfaction rating 1–5 and comment | F03 | M-07 |
+| Audit log (actor `USER` / `AI` / `AUTOMATION`) | F08 | M-04 (handling actions), M-05 |
+| Users, groups, `is_lead`, service accounts | F01 / F09 | Scope, names |
 
-## 1. Overview
+## Metric definitions
 
-| Code | Use case | Actor |
-|---|---|---|
-| UC-BC-01 | Ticket statistics by type and group | ADMIN; TECHNICIAN (within scope) |
-| UC-BC-02 | Track handling time and SLA breaches | ADMIN; TECHNICIAN (within scope) |
-| UC-BC-03 | Evaluate the AI self-resolution rate | ADMIN |
-| UC-BC-04 | Summarize requester satisfaction | ADMIN; TECHNICIAN (within scope) |
-| UC-BC-05 | Filter and export reports | ADMIN |
-| UC-BC-06 | Configure report parameters | ADMIN |
-
----
-
-## 2. Metric definitions
-
-Reports, the Dashboard and the demo all use **the same calculation** below (BR-BC-01). Parameters marked "Admin-configured" are edited in UC-BC-06 unless another module owns them. Default values are **suggestions for the demo**, not commitments.
+Reports, the Dashboard (F02), F05's SCR-WF-30 cards, exports and the digest all use **these** definitions (BR-BC-01). Defaults are demo values set in UC-BC-06 unless another branch owns them.
 
 | Code | Metric | Calculation | Parameters |
 |---|---|---|---|
-| M-01 | First response time | From ticket creation to the **first public reply** to the requester by a TECHNICIAN, ADMIN or AI_AGENT. Automatic notifications (`actor_type = SYSTEM`) do not count. Human and AI first responses are reported separately. | Whether an AI reply meets the response SLA: Q-BC-04 |
-| M-02 | Resolution time | From creation to the **last** transition to `RESOLVED`, **minus** time in `NEEDS_INFO` (SLA paused, BR-WF-07) and minus time spent `RESOLVED` before the requester reported "not fixed". Measured on the working calendar of the ticket's SLA policy version (BR-WF-08), so M-02 and M-03 agree. | Working calendar: owned by Workflow (UC-WF-02) |
-| M-03 | SLA breach | **Read from Workflow, not recomputed:** a ticket is breached when Workflow set `sla_breached = true` (`SLA_BREACHED` event). "At risk" = an `SLA_WARNING` event without a breach yet. Breach rate = breached tickets / tickets with an SLA policy in the period. | Targets and warning threshold: owned by Workflow (UC-WF-02; demo P1–P4 defaults, warning 75%) |
-| M-04 | AI self-resolution rate | Numerator: tickets `CLOSED` in the period that **(a)** had no handling action by a TECHNICIAN or ADMIN (reply, assignment, status change, reclassification, internal note, retry or manual resolution of a workflow run) **and (b)** were not reopened within N days of closing. Denominator: tickets `CLOSED` in the period. **Excluded from both:** `CANCELLED` tickets, tickets auto-closed for no response (`NEEDS_INFO` → `CLOSED`, UC-WF-06), and tickets closed less than N days ago (shown separately as "under observation"). The requester's confirmation is not a handling action. | N: Admin-configured (demo: 7 days, the same as the Workflow reopen window, Q-BC-10) |
-| M-05 | AI classification correction rate | Tickets whose type or group was set by the AI (`actor_type = AI`) and **later** changed by a human (`actor_type = USER`) / tickets classified by the AI. Derived from the audit log (BR-09). | — |
-| M-06 | Helpful KB suggestion rate | KB suggestions rated "helpful" / KB suggestions **with a rating**. Also: rating rate = suggestions with a rating / suggestions shown. Ratings come from the KB module. | Who can rate: Q-BC-08 |
-| M-07 | Satisfaction | Average score (1–5) of rated tickets, with the count at each score from 1 to 5. Response rate = rated tickets / tickets `CLOSED` in the period. The response rate is always shown next to the average. | — |
-| M-08 | AI routing outcome | Share of AI decisions per outcome: `AUTO_APPROVED` (route A), `NEEDS_INFO` (route B), `ROUTE_TO_HUMAN` (route C), plus the reasons for route C. Read from `ai_decisions`; this is the data Workflow provides to reporting (NFR-WF-OBS-001). | — |
-| M-09 | Escalation rate | Tickets escalated at least once (manual escalation in the Ticket module, or SLA escalation by Workflow, UC-WF-06) / tickets created in the period. The two sources are reported separately. | — |
+| M-01 | First response time | Ticket creation → first **public** reply to the requester. Human (`USER`) and AI (`AI`: question, KB answer, result reply) first responses are reported **separately**. `AUTOMATION` acknowledgements do not count. | Whether an AI reply meets the SLA: Q-BC-04 |
+| M-02 | Resolution time | Creation → **last** transition to `RESOLVED`, minus time in `NEEDS_INFO` (SLA paused, BR-WF-07) and minus time in `RESOLVED` before a *Not solved*. Measured on the business calendar of the ticket's SLA policy version (BR-WF-08), so M-02 and M-03 agree. Mean, median, P90. | Calendar: F05 |
+| M-03 | SLA breach | **Read, never recomputed:** breached when F05 set `sla_breached = true`. At risk = `SLA_WARNING` without breach. Breach rate = breached / tickets with an SLA policy in the period, split by response / resolution target (Q-BC-05). | Targets: F05 |
+| M-04 | AI self-resolution rate | **Numerator:** tickets `CLOSED` in the period with **no handling action by a Technician or Admin** (reply, assignment, status change, reclassification, internal note, retry or manual resolution of a workflow run) **and** not reopened within N days. **Denominator:** tickets `CLOSED` in the period. **Excluded from both:** `CANCELLED`; auto-closed for no answer (`NEEDS_INFO` → `CLOSED`, UC-WF-06); closed less than N days ago (shown as "under observation"). Split by **path**: automation (F05 flow A), agent KB answer (`ANSWERED_BY_KB`), requester self-help (`SOLVED_BY_KB`), answered after an AI question; and by **domain agent** (F04 `agent`). The requester's confirmation is not a handling action. | N (demo 7 days, Q-BC-10); target line (demo 50%, Q-BC-13) |
+| M-05 | AI classification correction rate | Tickets whose request type or `domain/subcategory` was set by the AI and later changed by a person (F04 UC-AI-07) / tickets classified by the AI. By field, domain, model version and prompt version. | — |
+| M-06 | Helpful AI output rate | Votes "helpful" / votes, per output kind (KB suggestion, solution steps, summary). Also vote rate = outputs with a vote / outputs shown. | Who can vote: Q-BC-08 |
+| M-07 | Satisfaction | Average 1–5 of rated tickets, count per score, **response rate** = rated / `CLOSED` in the period, always shown together. Split by handler: AI only / with a technician. | Low-response threshold (demo 20%) |
+| M-08 | AI routing outcome | Share of `ai_decisions` per outcome: `AUTO_APPROVED` (A), `NEEDS_INFO` (B), `ROUTE_TO_HUMAN` (C), and route C reasons ranked (NFR-WF-OBS-001). | — |
+| M-09 | Escalation rate | Tickets escalated at least once / tickets created. Sources reported separately: manual escalation (F03), SLA escalation (F05 UC-WF-06). | — |
+| M-10 | Escalation to a technician by class | Tickets handed to a technician / tickets created, split by F04 `escalationClass`: `AGENT_CANNOT_RESOLVE` (with its reason), `SYSTEM_BUG`, `SOFTWARE_REQUIREMENT`. | — |
+| M-11 | AI analysis failure rate | Analyses with status `INVALID` or `FAILED`, and `AI_UNAVAILABLE` routings / analyses. By model and prompt version. | — |
+| M-12 | Workload | Per technician and group: open tickets now, assigned and resolved in the period, age of the oldest open ticket. | — |
 
-**Common calculation rules:**
-- **Count** statistics assign tickets to a period by **creation date**. **Time, SLA, M-04 and M-07** assign tickets by **resolution / close date**. `CANCELLED` tickets are counted in volume only.
-- Grouping by priority uses the ticket's **final** priority; tickets whose priority was raised by SLA escalation are flagged (Q-BC-06).
-- A ticket moved across groups is attributed to the **last group** that handled it (Q-BC-07).
-- Every metric is computed only on tickets **within the viewer's scope** (BR-BC-02).
+**Common rules**
 
----
+- **Count** metrics place a ticket in a period by **creation date**; **time, SLA, M-04 and M-07** by **resolution / close date**. `CANCELLED` tickets count in volume only.
+- Grouping by priority uses the **final** priority, flagged when raised by SLA escalation (Q-BC-06).
+- A ticket moved across groups is attributed to the **last** group (Q-BC-07).
+- Time zone `Asia/Ho_Chi_Minh`; a metric with no data is "not enough data", never `0%`.
+- Every metric is computed only on tickets in the viewer's scope (BR-BC-02).
 
-## 3. Use cases
+## Use case diagram
 
-### UC-BC-01 Ticket statistics by type and group
-- **Main flow:** choose a time range (default: last 30 days) → the backend loads the tickets within the viewer's scope → counts new, open, closed, cancelled, reopened and escalated tickets (M-09), grouped by ticket type and technician group → returns a table with a daily / weekly / monthly trend.
-- **Alternative:** a TECHNICIAN only sees figures for tickets assigned to them and to their groups; the group filter only lists their groups. If their membership just changed, the new scope applies from the next request (BR-07). Tickets in `TRIAGE` are shown as their own group "Unassigned".
-- **Exceptions:** no `report:read` → `403`. Filtering by a group outside scope → `403`. Invalid range (from > to, or longer than the maximum) → `422` `INVALID_DATE_RANGE`.
-- **BR:** BR-07, BR-BC-01, BR-BC-02, BR-BC-03.
+```mermaid
+flowchart LR
+    subgraph left["Actors"]
+        direction TB
+        admin(["Admin"])
+        tech(["Technician<br/>(Team Lead: is_lead)"])
+    end
 
-### UC-BC-02 Track handling time and SLA breaches
-- **Main flow:** choose a period and filters → show M-01, M-02 (mean, median, P90) and M-03 by priority, ticket type and group → list of breached tickets (code, type, group, priority, SLA policy version, overdue by how long) → clicking a ticket opens its detail, checked against `ticket:read`.
-- **Alternative:** list tickets **at risk** (M-03). Tickets without an SLA policy are counted separately as "no SLA". Tickets whose SLA policy version changed after a priority change are evaluated by Workflow against their current version (BR-WF-08); the report does not re-evaluate.
-- **Exceptions:** no permission or outside scope → `403`. SLA data unavailable from Workflow → M-01 and M-02 are still shown; M-03 shows "unavailable" rather than 0%.
-- **BR:** BR-WF-07, BR-WF-08, BR-BC-01, BR-BC-02, BR-BC-03.
+    subgraph system["Reports & Analytics — System Boundary"]
+        direction TB
+        subgraph view["View reports"]
+            direction LR
+            uc01["UC-BC-01 Ticket volume and status"]
+            uc02["UC-BC-02 Handling time and SLA"]
+            uc03["UC-BC-03 AI self-resolution and quality"]
+            uc04["UC-BC-04 Requester satisfaction"]
+            uc07["UC-BC-07 Team workload"]
+        end
+        subgraph share["Share and configure"]
+            direction LR
+            uc05["UC-BC-05 Filter and export"]
+            uc06["UC-BC-06 Report parameters"]
+            uc08["UC-BC-08 Weekly digest"]
+        end
+    end
 
-### UC-BC-03 Evaluate the AI self-resolution rate
-- **Main flow:** choose a period → show M-04 (with the "under observation" count), M-05, M-06 and M-08 by ticket type → lists of: tickets the AI closed that were reopened; tickets whose AI classification was corrected (AI value → human value, from the audit log `before` / `after`); route C reasons ranked by frequency.
-- **Alternative:** filter by AI service account. Compare periods to see whether the AI improves after suggestions are approved (BR-15) or after Admin changes the AI scope (UC-WF-03).
-- **Exceptions:** TECHNICIAN, REQUESTER, AI_AGENT → `403` (proposal: ADMIN only, Q-BC-03). No ticket in the period has been closed for N days → "not enough data" rather than 0%.
-- **BR:** BR-09, BR-15, BR-WF-17, BR-BC-01, BR-BC-03.
+    subgraph right["Data owners (read only)"]
+        direction TB
+        f05(["F05 Workflow"])
+        f04(["F04 AI processing"])
+        f08(["F08 Activity log"])
+    end
 
-### UC-BC-04 Summarize requester satisfaction
-- **Main flow:** choose a period → show M-07 (average, distribution from 1 to 5, response rate) by ticket type, group and handler (AI only / human) → list of tickets rated 1–2.
-- **Alternative:** a TECHNICIAN sees ratings for tickets within their scope, but not other technicians' individual figures (Q-BC-01, Q-BC-02). Comments attached to ratings are visible to ADMIN only.
-- **Exceptions:** response rate below the threshold (Admin-configured, demo 20%) → the score is shown with the warning "few ratings, not representative". No permission → `403`.
-- **BR:** BR-BC-01, BR-BC-02, BR-BC-03.
+    admin --> uc01 & uc02 & uc03 & uc04 & uc05 & uc06 & uc07 & uc08
+    tech --> uc01 & uc02 & uc04 & uc07
+    uc02 & uc03 -.-> f05
+    uc03 -.-> f04
+    uc03 & uc05 & uc06 -.-> f08
 
-### UC-BC-05 Filter and export reports
-- **Main flow:** choose a report (UC-BC-01…04) and filters (period, ticket type, group, priority, handler AI or human, SLA status, AI routing outcome) → preview → Export as CSV or XLSX → the system **writes audit log entry `REPORT_EXPORTED`** → builds a file with only allowlisted columns → returns the file.
-- **Alternative:** row count above the limit (Admin-configured, demo 50,000) → `422` `EXPORT_TOO_LARGE`, asking to narrow the filters. Filters are kept in the URL so the same report can be reopened.
-- **Exceptions:** no `report:export` → `403`. Audit log write fails → **no file is returned**, `503` `AUDIT_UNAVAILABLE` (BR-BC-05).
-- **BR:** BR-09, BR-BC-02, BR-BC-04, BR-BC-05.
+    classDef actor fill:#666,color:#fff,stroke:#333
+    classDef usecase fill:#1168bd,color:#fff,stroke:#0b4f9e
+    classDef core fill:#0b4f9e,color:#fff,stroke:#062f5e,stroke-width:3px
+    classDef ext fill:#f3f3f3,color:#333,stroke:#999,stroke-dasharray:4 3
+    class admin,tech actor
+    class uc04,uc06,uc07,uc08 usecase
+    class uc01,uc02,uc03,uc05 core
+    class f05,f04,f08 ext
+    style left fill:#fff,stroke:#bbb,stroke-dasharray:5 5
+    style right fill:#fff,stroke:#bbb,stroke-dasharray:5 5
+    style system fill:#f8fbff,stroke:#1168bd,stroke-dasharray:5 5
+```
 
-### UC-BC-06 Configure report parameters
-- **Main flow:** the Admin edits report-only parameters: N days for M-04, satisfaction response-rate threshold, export row limit, maximum time range → save → audit log entry `REPORT_CONFIG_UPDATED` with before and after values.
-- **Not here:** SLA targets, warning threshold and working calendar are configured in Workflow (UC-WF-02); this screen links to it.
-- **Alternative:** a change only affects **how figures are computed when viewed**; files already exported do not change. Each report shows the parameters in use (for example "N = 7 days").
-- **Exceptions:** not an ADMIN → `403`. Invalid value (negative, N = 0, limit = 0) → `422`.
-- **BR:** BR-09, BR-BC-01.
+Thick border: core use cases. Dashed: branches whose data F07 reads. UC-BC-08 is triggered by a weekly schedule; Admin is the actor who benefits and manages recipients.
 
----
+### Shared rules
 
-## 4. New business rules
+```mermaid
+flowchart LR
+    auth["Authenticate session"]:::shared
+    authorize["Check permission"]:::shared
+    scope["Filter by ticket scope in the query"]:::rule
+    defs["Metric definitions M-01..M-12"]:::rule
+    audit["Write audit log (F08)"]:::shared
+    allow["Column allowlist + formula escaping"]:::rule
 
-- **BR-BC-01**: All reports and the Dashboard use the definitions M-01…M-09 in section 2. Each report states its period, time zone (`Asia/Ho_Chi_Minh`) and the parameters in use.
-- **BR-BC-02**: Figures are computed only on tickets the viewer can read under `ticket:read` (mvp.md section 4). Scope is filtered **in the backend query**, before aggregation. Aggregating over all tickets and hiding parts in the UI is not allowed.
-- **BR-BC-03**: Reports are **read-only**. No report endpoint creates, edits or deletes tickets, audit logs or business data. SLA status is read from Workflow, not recomputed. Queries should use a read-only database account.
-- **BR-BC-04**: Exported files contain only allowlisted columns: ticket code, type, group, priority, status, timestamps, metrics M-01…M-09. They **never** contain internal notes, passwords or hashes, tokens, API keys, 2FA secrets, workflow payloads or AI extracted fields. Cells starting with `=`, `+`, `-` or `@` are prefixed with `'` to prevent formula (CSV) injection.
-- **BR-BC-05**: Every export writes audit log entry `REPORT_EXPORTED` (`actor_type = USER`; `after` = report, filters, format, row count). If the log write fails, no file is returned.
+    viewUc["UC-BC-01..04, 07 View"] --> auth & authorize & scope & defs
+    exportUc["UC-BC-05 Export"] --> auth & authorize & scope & defs & allow & audit
+    configUc["UC-BC-06 Parameters"] --> auth & authorize & audit
+    digestUc["UC-BC-08 Digest"] --> defs & audit
 
----
+    classDef shared fill:#1168bd,color:#fff,stroke:#0b4884
+    classDef rule fill:#e8f1fc,color:#123,stroke:#3a7bd5
+```
 
-## 5. Proposed additions to the permission matrix
+## Use case specifications
 
-Proposals for the owner of [mvp.md](../mvp.md) to decide. This file does **not** edit `mvp.md`. Names follow the `resource:action` style of `mvp.md` (Q-BC-12). Activity log permissions are in [activity-log/02-use-cases.md](../f08-activity-log/02-use-cases.md).
+### UC-BC-01 Ticket Volume and Status
 
-| Proposed permission | ADMIN | TECHNICIAN | REQUESTER | AI_AGENT | Used in |
-|---|---|---|---|---|---|
-| `report:read` | all | assigned, group (no other technicians' individual figures) | ❌ | ❌ | UC-BC-01, 02, 04 (UC-BC-03 ADMIN only) |
-| `report:export` | ✅ | ❌ | ❌ | ❌ | UC-BC-05 |
-| `report:configure` | ✅ | ❌ | ❌ | ❌ | UC-BC-06 |
+- **Actors:** Admin; Technician (scope)
+- **Preconditions:** signed in with `report:read`
+- **Main flow:**
+  1. The user opens *Reports → Tickets* (default period: last 30 days).
+  2. The backend loads tickets in the user's scope and counts new, open (backlog at period end), closed, cancelled, reopened and escalated (M-09).
+  3. It groups them by request type, `domain/subcategory`, group, priority P1–P4 and channel, with a daily / weekly / monthly trend.
+  4. Tickets in `TRIAGE` appear as the group "Unassigned".
+- **Alternative flows:**
+  - Technician: the group filter lists only their groups; a membership change applies from the next request (BR-07).
+  - Click a count → the ticket list (F03) with the same filters, still limited by `ticket:read`.
+- **Exceptions:** no permission → `403`; group outside scope → `403`; from > to or longer than the maximum → `422 INVALID_DATE_RANGE`
+- **Result:** the user sees where tickets come from and where the backlog grows
+- **Stories:** US-BC-01, US-BC-02 · **Rules:** BR-BC-01, BR-BC-02, BR-BC-03
 
----
+### UC-BC-02 Handling Time and SLA
 
-## 6. Open questions (for the team to decide)
+- **Actors:** Admin; Technician (scope)
+- **Preconditions:** `report:read`; F05 SLA policies exist
+- **Main flow:**
+  1. The user opens *Reports → SLA* and picks a period and filters.
+  2. The system shows M-01 (human and AI separately), M-02 (mean, median, P90) and M-03 by priority, type and group.
+  3. Tabs **Breached** and **At risk** list tickets (number, type, group, priority, SLA policy version, target missed, overdue by).
+  4. Clicking a ticket opens SCR-T-02 (checked against `ticket:read`).
+- **Alternative flows:**
+  - Tickets without an SLA policy are counted as "No SLA".
+  - A ticket whose policy version changed after a priority change is evaluated by F05 on its current version; the report does not re-evaluate.
+- **Exceptions:** SLA data unavailable → M-01 and M-02 still shown; M-03 shows "Unavailable", not `0%`
+- **Result:** bottlenecks are visible before breaches become a habit
+- **Stories:** US-BC-03 · **Rules:** BR-WF-07, BR-WF-08, BR-BC-01, BR-BC-03
 
-**Roles**
-- **Q-BC-01**: Workflow already marks some technicians as **Team lead** (`is_lead`). Should a team lead see per-technician figures (SLA, satisfaction) for their own group? Proposal: yes, as a scope flag rather than a new role. This needs the owner of `mvp.md` to accept `is_lead`.
-- **Q-BC-02**: Can a technician who is not a lead see colleagues' individual figures, or only the group total and their own?
-- **Q-BC-03**: Is UC-BC-03 (AI effectiveness) for ADMIN only, or can team leads see it for their group?
+### UC-BC-03 AI Self-Resolution and Quality
 
-**Metric calculation**
-- **Q-BC-04**: Does an AI reply count as the first response for the SLA (Workflow's SLA engine decides; M-01 reports both)?
-- **Q-BC-05**: Does the `SLA_BREACHED` event say whether the response or the resolution target was missed? Needed to split M-03.
-- **Q-BC-06**: When SLA escalation raises a ticket's priority, should reports group it under its initial or final priority? Proposal: final, with a flag.
-- **Q-BC-07**: A ticket moved across groups is attributed to the last group (proposal), the first, or each group that handled it?
-- **Q-BC-08**: Who can rate a KB suggestion as helpful (requester, technician, both)? Owned by the KB module.
-- **Q-BC-09**: At ~2.9 million tickets/year (Workflow NFR), live queries over a 12-month range will be slow. Proposal: live queries for the demo, daily pre-aggregated tables in production. Does the Dashboard share the same API?
-- **Q-BC-10**: Workflow lets a requester reopen an auto-closed ticket within 7 days. Is the reopen window the same for every `CLOSED` ticket? If yes, N in M-04 should equal it.
+- **Actors:** Admin
+- **Preconditions:** `report:read_ai`
+- **Main flow:**
+  1. The Admin opens *Reports → AI* and picks a period (default: last 12 weeks, weekly).
+  2. The system shows M-04 with its "under observation" count, split by path and by domain agent, and a weekly line against the target (Q-BC-13).
+  3. It shows M-08 (route A / B / C and ranked route C reasons) and M-10 (escalations by `escalationClass`).
+  4. It shows quality: M-05 by field and domain, M-06 per output kind, M-11.
+  5. Lists: AI-closed tickets that were reopened; corrected classifications (AI value → human value); *Not solved* after an agent KB answer.
+- **Alternative flows:**
+  - Filter by model version or prompt version to compare before and after a change (F04 BR-AI-02), or before and after an AI scope change in F05 UC-WF-03.
+  - Filter by domain agent (`HELPDESK`, `SAP`, …).
+- **Exceptions:** Technician, Requester, `AI_AGENT` → `403`; no ticket closed for N days in the period → "Not enough data"
+- **Result:** the Admin knows whether to widen or narrow what the AI may do, and the client sees progress against the target
+- **Stories:** US-BC-04, US-BC-08, US-BC-09 · **Rules:** BR-BC-01, BR-BC-03, BR-BC-06
 
-**Export and conventions**
-- **Q-BC-11**: Is PDF needed? Can satisfaction comments be exported (they may contain personal information)?
-- **Q-BC-12**: Permission names differ between documents: `mvp.md` uses `user:read`, Workflow uses `workflowConfigManage`, `ticketReassign`. Which convention does the team keep?
+### UC-BC-04 Requester Satisfaction
 
-See also: [01-user-stories.md](01-user-stories.md) · [03-information-architecture.md](03-information-architecture.md) · [Activity log](../f08-activity-log/02-use-cases.md)
+- **Actors:** Admin; Technician (scope)
+- **Preconditions:** `report:read`
+- **Main flow:**
+  1. The user opens *Reports → Satisfaction*.
+  2. The system shows M-07: average next to response rate, distribution 1–5, by type, group and handler (AI only / with a technician).
+  3. Tickets rated 1–2 are listed with a link to the ticket.
+- **Alternative flows:**
+  - Technician: tickets in scope only; no colleagues' individual figures (Q-BC-02). Team Lead: per technician for the team they lead.
+  - Comments are shown to Admin only.
+- **Exceptions:** response rate below the threshold → score shown with "Few ratings, not representative"
+- **Result:** conclusions are not drawn from a handful of ratings
+- **Stories:** US-BC-05 · **Rules:** BR-BC-01, BR-BC-02
+
+### UC-BC-05 Filter and Export
+
+- **Actors:** Admin
+- **Preconditions:** `report:export`; a report open with filters
+- **Main flow:**
+  1. The Admin clicks *Export* on a report and picks CSV or XLSX; the modal shows the row count.
+  2. The system writes `REPORT_EXPORTED` to the audit log (report, filters, format, row count).
+  3. It builds the file from allowlisted columns only, escaping formula cells (BR-BC-04).
+  4. The file downloads; it contains the same rows and figures as the screen.
+- **Alternative flows:** filters live in the URL, so the same report can be reopened and shared
+- **Exceptions:** more rows than the limit (demo 50,000) → `422 EXPORT_TOO_LARGE`; audit log unavailable → `503 AUDIT_UNAVAILABLE`, **no file** (BR-BC-05); not Admin → `403`
+- **Result:** management gets figures that match the screen, with no sensitive data
+- **Stories:** US-BC-06 · **Rules:** BR-BC-02, BR-BC-04, BR-BC-05
+
+### UC-BC-06 Report Parameters
+
+- **Actors:** Admin
+- **Preconditions:** `report:configure`
+- **Main flow:**
+  1. The Admin opens *Report settings*.
+  2. Edits N days for M-04, the satisfaction response-rate threshold, the self-resolution target line, the export row limit, the maximum period, the digest recipients.
+  3. Saves → audit entry `REPORT_CONFIG_UPDATED` with before and after values.
+- **Alternative flows:** SLA targets and the calendar are not here; a link opens F05 SCR-WF-02. Each report states the parameters in use ("N = 7 days"); files already exported do not change.
+- **Exceptions:** negative value, N = 0, limit = 0, target outside 1–100% → `422`; not Admin → `403`
+- **Result:** figures match how the organization works, and every change is traceable
+- **Stories:** US-BC-07 · **Rules:** BR-BC-01, BR-BC-05
+
+### UC-BC-07 Team Workload
+
+- **Actors:** Admin; Team Lead (team they lead)
+- **Preconditions:** `report:read`; Team Lead = `is_lead` in the team
+- **Main flow:**
+  1. The user opens *Reports → Workload*.
+  2. The system shows M-12 per technician and group: open now, assigned and resolved in the period, oldest open ticket, open tickets in `NEEDS_INFO` (not counted as active work).
+  3. Clicking a technician opens the ticket list filtered on them.
+- **Alternative flows:** a technician who is not a lead sees only their own row and the group total
+- **Exceptions:** team the user does not lead → `403`
+- **Result:** leads rebalance work before tickets breach (reassigning is F05 SCR-WF-11)
+- **Stories:** US-BC-10 · **Rules:** BR-BC-02, BR-BC-03
+
+### UC-BC-08 Weekly Digest
+
+- **Actors:** Admin (receives, manages recipients)
+- **Trigger:** every Monday 08:00 `Asia/Ho_Chi_Minh`
+- **Main flow:**
+  1. The system computes last week's key figures with the M-xx definitions over all tickets: volume, M-03, M-04 against target, M-10, M-07 with response rate.
+  2. It sends EML-BC-01 to the recipients, each figure linking to its report (sign-in required).
+  3. It writes `REPORT_DIGEST_SENT` (source `AUTOMATION`, recipients, week).
+- **Alternative flows:** an Admin sends a test digest to themselves from Report settings
+- **Exceptions:** figures unavailable → the digest says which ones and is still sent; email failure → retried, the Admin is notified (F05 SCR-91)
+- **Result:** management sees the trend without opening the system
+- **Stories:** US-BC-11 · **Rules:** BR-BC-01, BR-BC-07

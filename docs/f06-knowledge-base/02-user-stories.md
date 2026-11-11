@@ -14,7 +14,7 @@
 | :--- | :--- | :--- |
 | **Requester** | `REQUESTER` | Business employee seeking immediate self-help solutions for common IT issues (VPN, printers, credentials) without opening a ticket. |
 | **Technician** | `TECHNICIAN` | Support engineer standardizing troubleshooting steps, contributing new articles, and converting resolved tickets into KB drafts with AI. |
-| **Administrator / Lead** | `ADMIN` | IT Lead governing content quality, validating technical accuracy, reviewing visual diffs, and auditing flagged articles. |
+| **Administrator** | `ADMIN` | IT Lead governing content quality, validating technical accuracy, reviewing visual diffs, and auditing flagged articles. |
 | **AI Knowledge Engine** | `AI` | Background intelligence service reading closed tickets, masking sensitive PII, and drafting structured knowledge drafts. |
 
 ---
@@ -130,7 +130,7 @@ Feature: AI Synthesis & PII Sanitization
 ---
 
 ### US-KB-05: Approval Workflow & Visual Diff Review
-> *As an* **Admin / Tech Lead**,  
+> *As an* **Administrator**,  
 > *I want to* inspect proposed revisions using side-by-side visual diffing,  
 > *So that* only accurate, secure, and policy-compliant instructions reach production.
 
@@ -163,7 +163,7 @@ Feature: Article Feedback & Quality Assurance
 
   Scenario: Submitting an issue report
     Given A user encounters a broken link or obsolete command in "KB-1042"
-    When The user clicks "👎 Not Helpful / Report Issue"
+    When The user clicks "Not Helpful / Report Issue"
     And Selects reason "Outdated instructions" with description text
     And Submits the modal
     Then A feedback record is created with status "PENDING"

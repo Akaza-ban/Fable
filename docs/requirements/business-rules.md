@@ -36,7 +36,7 @@ Only rules confirmed by project documentation are catalogued here.
 ## BR-WF-05 — Action source in the audit log
 
 - **Source:** `08-invest-requirements.md` cross-cutting constraints
-- **Related US:** US-WF-01 … US-WF-20
+- **Related US:** US-WF-01 … US-WF-21
 - **Related API:** all mutating operations
 - **Rule:** Every audit record has `source` ∈ {`USER`, `AI`, `AUTOMATION`}. `USER` is tied to a user account; `AI` is the AI Service actor; `AUTOMATION` is an internal system task (rules, timers, API execution) — **not an actor**. `AI`/`AUTOMATION` records must include their grounds (`decisionId`, `ruleId`, `slaPolicyVersion` or `runId`).
 
@@ -52,7 +52,7 @@ Only rules confirmed by project documentation are catalogued here.
 - **Source:** AC-UC-WF-02
 - **Related US:** US-WF-04
 - **Related API:** internal (SLA engine)
-- **Rule:** The SLA clock pauses while the ticket is in `NEEDS_INFO` and resumes when the requester answers. In `TRIAGE` the clock keeps running.
+- **Rule:** The SLA clock pauses while the ticket is in `NEEDS_INFO` and resumes when the requester answers. While a ticket waits in a team queue (`ASSIGNED` to a team, no technician yet) the clock keeps running.
 
 ## BR-WF-08 — SLA policy versioning
 
@@ -66,14 +66,14 @@ Only rules confirmed by project documentation are catalogued here.
 - **Source:** AC-UC-WF-01, AC-UC-WF-05
 - **Related US:** US-WF-01, US-WF-02, US-WF-10
 - **Related API:** `reorderAssignmentRules`, `dryRunAssignmentRules`
-- **Rule:** Enabled rules are evaluated in ascending order; the first matching rule wins. No rule matches → `TRIAGE`.
+- **Rule:** Enabled rules are evaluated in ascending order; the first matching rule gives the target team. No rule matches → the configured **default support team**. There is no manual triage queue.
 
-## BR-WF-10 — Available technicians
+## BR-WF-10 — Eligible technicians
 
 - **Source:** AC-UC-WF-05
-- **Related US:** US-WF-10
+- **Related US:** US-WF-10, US-WF-11
 - **Related API:** internal (assignment engine)
-- **Rule:** Tickets are only assigned to members of the target team whose account is active and who are not marked absent.
+- **Rule:** A new ticket is only assigned to a member of the target team whose account is active, whose availability status is `AVAILABLE`, who holds no P1 ticket and whose workload is below the maximum load. If every member holds a P1 ticket, the P1 condition is ignored. If nobody is eligible, the ticket waits in the team queue. When a technician switches to `OFF`, their not-started (`ASSIGNED`) tickets are reassigned; `IN_PROGRESS` tickets stay with them. There is no Team Lead; only the Admin may reassign manually, with a reason.
 
 ## BR-WF-11 — Automating tickets are never auto-closed
 
@@ -123,3 +123,10 @@ Only rules confirmed by project documentation are catalogued here.
 - **Related US:** US-WF-16
 - **Related API:** `listAiDecisions`, `getAiDecision`
 - **Rule:** Each AI decision stores confidence, extracted information, the result of each policy condition, the configuration version and the reason. Records are immutable once created.
+
+## BR-WF-18 — Assignment by workload score
+
+- **Source:** UC-WF-01, UC-WF-05, AC-UC-WF-05
+- **Related US:** US-WF-10, US-WF-11, US-WF-21
+- **Related API:** `updateWorkloadSettings`, internal (assignment engine)
+- **Rule:** Among eligible technicians (BR-WF-10), the ticket goes to the one with the lowest workload score; ties go to the one who received a ticket least recently. Workload score = Σ (priority points × complexity factor) over the technician's `ASSIGNED` and `IN_PROGRESS` tickets. Defaults: P1 = 5, P2 = 3, P3 = 2, P4 = 1; Simple ×1, Medium ×1.5, Complex ×2; maximum load 20. In V1 the complexity comes from the request type configured by the Admin, not from the AI. The number of tickets alone is never used to choose a technician.

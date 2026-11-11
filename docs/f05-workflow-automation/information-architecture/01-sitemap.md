@@ -17,7 +17,7 @@
 ```mermaid
 flowchart TB
     req["<span style='font-size:40px'>👤</span><br/><b>Requester</b>"]
-    tech["<span style='font-size:40px'>👤</span><br/><b>Technician</b><br/>(and Team Lead)"]
+    tech["<span style='font-size:40px'>👤</span><br/><b>Technician</b><br/>(sets own availability)"]
     admin["<span style='font-size:40px'>👤</span><br/><b>Admin</b>"]
 
     subgraph access["Access"]
@@ -40,14 +40,9 @@ flowchart TB
         scr91["<b>SCR-91 Notifications</b><br/>• My events and reminders<br/>• Unread count in the top bar<br/>• Each item opens its object"]
     end
 
-    subgraph dispatch["Dispatch — Admin, Team Lead"]
-        direction TB
-        wf10["<b>SCR-WF-10 Triage queue</b><br/>• Tickets matching no rule<br/>• AI summary, remaining SLA<br/>• Assign (reason required)"]
-    end
-
     subgraph config["Workflow configuration — Admin"]
         direction TB
-        wf01["<b>SCR-WF-01 Assignment rules</b><br/>• Ordered list, drag and drop<br/>• Conditions → team, distribution<br/>• Enable/Disable, Dry run"]
+        wf01["<b>SCR-WF-01 Assignment rules</b><br/>• Rules tab: conditions → team, order, Enable/Disable, Dry run<br/>• Workload tab: priority points, complexity by request type,<br/>maximum load, default support team"]
         wf02["<b>SCR-WF-02 SLA & business calendar</b><br/>• P1–P4 table: response, resolution, threshold<br/>• Working hours, holidays<br/>• Raise priority on breach"]
         wf03["<b>SCR-WF-03 AI scope</b><br/>• AI actions tab: on/off, threshold, clarification rounds<br/>• Automation actions tab: whitelist, connectors<br/>• Entitlement catalog tab by department"]
     end
@@ -59,11 +54,10 @@ flowchart TB
         wf30 --> wf31
     end
 
-    wf10 --> t02
     wf31 --> t02
     t02 --> wf31
     scr91 --> t02
-    scr91 --> wf10
+    scr91 --> wf30
 
     req -.-> access
     req -.-> tickets
@@ -71,16 +65,14 @@ flowchart TB
     tech -.-> access
     tech -.-> tickets
     tech -.-> notif
-    tech -.->|"Team Lead only"| dispatch
     admin -.-> access
     admin -.-> tickets
     admin -.-> notif
-    admin -.-> dispatch
     admin -.-> config
     admin -.-> monitor
 
     classDef ai fill:#7b3fbf,color:#fff,stroke:#5a2d8c
-    class t02,wf30,wf31,wf10 ai
+    class t02,wf30,wf31 ai
 ```
 
 ## Screens by role
@@ -89,7 +81,6 @@ flowchart TB
 |---|---|---|
 | **Requester** | SCR-T-03 *My tickets* | SCR-01, SCR-T-01, SCR-T-02, SCR-T-03, SCR-91 |
 | **Technician** | SCR-T-03 *Assigned to me* | SCR-01, SCR-T-01, SCR-T-02, SCR-T-03, SCR-91 |
-| **Technician — Team Lead** | SCR-T-03 *Assigned to me* | Same as Technician + SCR-WF-10 |
 | **Admin** | SCR-WF-30 *AI decisions* (temporary, until the F02 Dashboard) | Every page in the sitemap |
 
 **Related:** [Information architecture index](README.md) · [Routes and permissions](02-routes-and-permissions.md) · [Navigation](03-navigation.md)

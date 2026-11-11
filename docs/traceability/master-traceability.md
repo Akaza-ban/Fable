@@ -18,10 +18,10 @@ Screens (`SCR-*`), operationIds, tables and components are **proposed names**; t
 | US-WF-07 | UC-WF-03 | AC-UC-WF-03 | SCR-WF-03, SCR-WF-07 | Policy Engine | `listDepartmentEntitlements`, `updateDepartmentEntitlements` | `department_entitlements` | BR-WF-02 | `INT-WF-ENT-001` PLANNED |
 | US-WF-08 | UC-WF-04 | AC-UC-WF-04 | SCR-T-01, SCR-T-02 | Ticket Router, AI Gateway | `createTicket` + internal | `tickets`, `ai_decisions` | BR-WF-03 | `INT-WF-ROUTE-001`, `PERF-WF-ROUTE-001` PLANNED |
 | US-WF-09 | UC-WF-04 | AC-UC-WF-04 | SCR-T-02 | Ticket Router, AI Gateway | `answerClarification` | `ticket_messages`, `ai_decisions` | BR-WF-06 | `INT-WF-ROUTE-002` PLANNED |
-| US-WF-10 | UC-WF-05 | AC-UC-WF-05 | SCR-91, SCR-T-02 | Assignment Engine | internal (ticket enters flow C) | `ticket_assignments`, `group_members`, `audit_logs` | BR-WF-03, BR-WF-09, BR-WF-10 | `UNIT-APP-WF-ASSIGN-001`, `PERF-WF-ASSIGN-001` PLANNED |
-| US-WF-11 | UC-WF-05 | AC-UC-WF-05 | SCR-WF-10, SCR-WF-11 | Assignment Engine | `listTriageQueue`, `reassignTicket` | `tickets`, `ticket_assignments`, `audit_logs` | BR-WF-09 | `INT-WF-RBAC-001` PLANNED |
+| US-WF-10 | UC-WF-05 | AC-UC-WF-05 | SCR-91, SCR-T-02 | Assignment Engine | internal (ticket enters flow C) | `ticket_assignments`, `group_members`, `technician_availability`, `audit_logs` | BR-WF-03, BR-WF-09, BR-WF-10, BR-WF-18 | `UNIT-APP-WF-ASSIGN-001`, `PERF-WF-ASSIGN-001` PLANNED |
+| US-WF-11 | UC-WF-05 | AC-UC-WF-05 | Top bar availability switch (F09), SCR-WF-11 (Admin reassign) | Assignment Engine | `updateMyAvailability` (F09), `reassignTicket`, internal (status change) | `technician_availability`, `ticket_assignments`, `audit_logs` | BR-WF-10, BR-WF-18 | `UNIT-APP-WF-ASSIGN-002`, `INT-WF-RBAC-001` PLANNED |
 | US-WF-12 | UC-WF-06 | AC-UC-WF-06 | SCR-91 | SLA Engine, Notification | internal (scheduler) | `ticket_sla_timers`, `notifications` | — | `INT-WF-SLA-002` PLANNED |
-| US-WF-13 | UC-WF-06 | AC-UC-WF-06 | SCR-91, SCR-T-02 | SLA Engine, Notification | internal (scheduler) | `tickets`, `sla_events`, `notifications` | — | `INT-WF-SLA-003` PLANNED |
+| US-WF-13 | UC-WF-06 | AC-UC-WF-06 | SCR-91, SCR-T-02 | SLA Engine, Notification | internal (scheduler) | `tickets`, `sla_events`, `ticket_assignments`, `notifications` | BR-WF-10, BR-WF-18 | `INT-WF-SLA-003` PLANNED |
 | US-WF-14 | UC-WF-06 | AC-UC-WF-06 | SCR-91 | SLA Engine, Notification | `reopenTicket` | `tickets`, `notifications` | BR-WF-11 | `INT-WF-SLA-004` PLANNED |
 | US-WF-15 | UC-WF-07 | AC-UC-WF-07 | SCR-T-02 | Policy Engine, AI Gateway | internal (flow A) | `ai_decisions`, `department_entitlements` | BR-WF-02, BR-WF-16 | `UNIT-APP-WF-POLICY-001`, `SEC-WF-AIPOLICY-001` PLANNED |
 | US-WF-16 | UC-WF-07 | AC-UC-WF-07 | SCR-WF-30, SCR-WF-31 | Policy Engine | `listAiDecisions`, `getAiDecision` | `ai_decisions` | BR-WF-17 | `INT-WF-DECISION-001` PLANNED |
@@ -29,6 +29,7 @@ Screens (`SCR-*`), operationIds, tables and components are **proposed names**; t
 | US-WF-18 | UC-WF-08 | AC-UC-WF-08 | SCR-91 | Automation Executor | internal (scheduler) | `access_grants`, `workflow_runs` | BR-WF-14 | `INT-WF-REVOKE-001` PLANNED |
 | US-WF-19 | UC-WF-09 | AC-UC-WF-09 | SCR-T-02, SCR-WF-22 | Automation Executor, Connectors | `confirmTicketResolution`, `reopenTicket` | `workflow_runs`, `tickets` | BR-WF-13 | `INT-WF-VERIFY-001` PLANNED |
 | US-WF-20 | UC-WF-09 | AC-UC-WF-09 | SCR-T-02, SCR-WF-20, SCR-WF-21 | Automation Executor | `getWorkflowRun`, `retryWorkflowRun`, `resolveWorkflowRunManually` | `workflow_runs`, `workflow_run_attempts`, `audit_logs` | BR-WF-04, BR-WF-12, BR-WF-13 | `INT-WF-FAIL-001`, `INT-WF-RBAC-003` PLANNED |
+| US-WF-21 | UC-WF-01 | AC-UC-WF-01 | SCR-WF-01 (Workload tab) | Workflow Rules, Assignment Engine | `getWorkloadSettings`, `updateWorkloadSettings` | `workload_settings`, `request_type_complexity`, `audit_logs` | BR-WF-18 | `UNIT-APP-WF-WORKLOAD-001` PLANNED |
 
 ## Screen inventory
 
