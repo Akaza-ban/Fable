@@ -15,11 +15,10 @@ The system helps an enterprise receive, classify, and dispatch internal IT suppo
 ## 2. User Stories
 
 ### Personas & Roles
-*   **Requester:** Business employee seeking quick self-service or IT assistance.
-*   **Technician:** Support engineer troubleshooting issues, executing fixes, and authoring KB articles.
-*   **Operations Lead:** Team supervisor overseeing triage queues, escalations, and article reviews.
-*   **Administrator:** System owner configuring routing rules, SLA policies, and AI auto-approval scopes.
-*   **AI Service:** Intelligent background actor classifying requests, extracting context, and synthesizing articles.
+*   **Admin:** Quản trị viên hệ thống (Xem danh sách ticket, cấu hình quy tắc phân luồng, SLA, dashboard, thống kê & báo cáo, duyệt KB).
+*   **Requester (Người gửi ticket):** Nhân viên doanh nghiệp (Tạo ticket đính kèm minh chứng, xem trạng thái, bổ sung thông tin khi AI hỏi lại, tự khắc phục qua KB, xác nhận hoàn thành/mở lại).
+*   **Technician (Kỹ thuật viên):** Nhân viên kỹ thuật IT (Xem ticket được phân công, cập nhật trạng thái & giải pháp, xem tóm tắt AI, thêm ghi chú nội bộ, sửa phân loại AI, soạn thảo KB).
+*   **AI (Hệ thống AI):** Trợ lý thông minh (Phân luồng ticket, tự động xử lý ticket đơn giản, hỏi lại khi thiếu context, gợi ý giải pháp KB, gộp ticket trùng, tóm tắt cho KTV, trích xuất bài KB).
 
 ### Core Backlog User Stories
 
@@ -48,30 +47,30 @@ The system organizes capabilities across 14 discrete use cases (`UC01` to `UC14`
 
 ```mermaid
 flowchart TB
-    subgraph actors["System Actors"]
+    subgraph actors["System Actors & Roles"]
         direction LR
-        admin(["Administrator"]):::actorPill
-        operator(["Operations Lead"]):::actorPill
-        tech(["Technician"]):::actorPill
-        requester(["Requester"]):::actorPill
+        admin(["1. Admin"]):::actorPill
+        requester(["2. Requester"]):::actorPill
+        tech(["3. Technician"]):::actorPill
+        ai(["4. AI"]):::actorPill
     end
 
     subgraph dwopBoundary["AI-Powered IT Service Desk — System Boundary (Role-Based Use Case Allocation)"]
         direction LR
 
-        cardAdmin["<b>Administrator</b><br/><br/>• <b>UC01</b> Login & SSO Auth<br/>• <b>UC02</b> Logout<br/>• <b>UC03</b> View Dashboard & Telemetry<br/>• <b>UC08</b> Claim & Triage Tickets<br/>• <b>UC09</b> Update Fix & Root Cause<br/>• <b>UC10</b> AI Synthesize KB from Ticket<br/>• <b>UC11</b> Author & Edit KB Articles<br/>• <b>UC12</b> Escalate Ticket to Tier 2/3<br/>• <b>UC13</b> Review & Publish (Diff View)<br/>• <b>UC14</b> Configure Rules, SLA & Scope"]:::colCard
+        cardAdmin["<b>1. Admin</b><br/><br/>• <b>UC01</b> Login & SSO Auth<br/>• <b>UC02</b> Logout<br/>• <b>UC03</b> View All Tickets<br/>• <b>UC04</b> Operational Dashboard<br/>• <b>UC05</b> Reports & Analytics<br/>• <b>UC06</b> Config Routing Rules & SLA<br/>• <b>UC07</b> Config AI Whitelist Scope<br/>• <b>UC08</b> Review & Publish KB (Diff)<br/>• <b>UC09</b> User & Team Management"]:::colCard
 
-        cardOp["<b>Operations Lead</b><br/><br/>• <b>UC01</b> Login & SSO Auth<br/>• <b>UC02</b> Logout<br/>• <b>UC03</b> View Dashboard & Telemetry<br/>• <b>UC06</b> Search KB Solutions<br/>• <b>UC08</b> Claim & Triage Tickets<br/>• <b>UC09</b> Update Fix & Root Cause<br/>• <b>UC10</b> AI Synthesize KB from Ticket<br/>• <b>UC11</b> Author & Edit KB Articles<br/>• <b>UC12</b> Escalate Ticket to Tier 2/3<br/>• <b>UC13</b> Review & Publish (Diff View)"]:::colCard
+        cardReq["<b>2. Requester</b><br/><br/>• <b>UC01</b> Login & SSO Auth<br/>• <b>UC02</b> Logout<br/>• <b>UC10</b> Submit Ticket & Evidence<br/>• <b>UC11</b> View Created Tickets Status<br/>• <b>UC12</b> Answer AI Clarification<br/>• <b>UC13</b> Self-Service with KB Guide<br/>• <b>UC14</b> Confirm Resolution / Reopen<br/>• <b>UC15</b> Cancel Request & Rating"]:::colCard
 
-        cardTech["<b>Technician</b><br/><br/>• <b>UC01</b> Login & SSO Auth<br/>• <b>UC02</b> Logout<br/>• <b>UC03</b> View Dashboard & Telemetry<br/>• <b>UC06</b> Search KB Solutions<br/>• <b>UC07</b> Rate & Report KB Article<br/>• <b>UC08</b> Claim & Triage Tickets<br/>• <b>UC09</b> Update Fix & Root Cause<br/>• <b>UC10</b> AI Synthesize KB from Ticket<br/>• <b>UC11</b> Author & Edit KB Articles<br/>• <b>UC12</b> Escalate Ticket to Tier 2/3"]:::colCard
+        cardTech["<b>3. Technician</b><br/><br/>• <b>UC01</b> Login & SSO Auth<br/>• <b>UC02</b> Logout<br/>• <b>UC16</b> View Assigned Tickets<br/>• <b>UC17</b> Review AI Summary & Context<br/>• <b>UC18</b> Update Status & Solution<br/>• <b>UC19</b> Internal Notes & Fix AI Tag<br/>• <b>UC20</b> Search & Author KB Guide<br/>• <b>UC21</b> Escalate to Tier 2/3"]:::colCard
 
-        cardReq["<b>Requester</b><br/><br/>• <b>UC01</b> Login & SSO Auth<br/>• <b>UC02</b> Logout<br/>• <b>UC03</b> View Dashboard (My Tickets)<br/>• <b>UC04</b> Submit Ticket & Evidence<br/>• <b>UC05</b> Track Ticket & Clarification<br/>• <b>UC06</b> Search KB Solutions<br/>• <b>UC07</b> Rate & Report KB Article"]:::colCard
+        cardAI["<b>4. AI</b><br/><br/>• <b>UC22</b> Ticket Routing & Triage<br/>• <b>UC23</b> Auto-Resolve Simple Tickets<br/>• <b>UC24</b> Ask Back When Low Context<br/>• <b>UC25</b> Suggest KB Solutions to User<br/>• <b>UC26</b> Summarize for Technician<br/>• <b>UC27</b> Deduplicate & Link Tickets<br/>• <b>UC28</b> Synthesize KB from Resolved"]:::colCard
     end
 
     admin --> cardAdmin
-    operator --> cardOp
-    tech --> cardTech
     requester --> cardReq
+    tech --> cardTech
+    ai --> cardAI
 
     classDef actorPill fill:#334155,color:#ffffff,stroke:#64748b,stroke-width:2px;
     classDef colCard fill:#1d4ed8,color:#ffffff,stroke:#60a5fa,stroke-width:2px;
