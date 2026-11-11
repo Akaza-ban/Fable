@@ -6,18 +6,16 @@
 
 These criteria describe target product behavior. The UI may satisfy a criterion visually, but authorization and business rules **must** be enforced by the API.
 
-## AC-UC-WF-01 — Configure assignment rules
+## AC-UC-WF-01 — Configure workload scoring
 
-*(US-WF-01, US-WF-02, US-WF-21)*
+*(US-WF-21)*
 
-- Only Admin can create, edit, enable/disable, reorder and archive rules and change workload settings; other roles receive `403`.
-- A new rule is saved as Disabled and placed at the end of the ordered list.
-- Target team without active members → `400`; empty name or no condition → `400`.
-- When several rules match, the rule with the lowest order is applied.
-- Dry run returns the matching rule, the team, each member's availability status and workload score, and the expected technician; the number of assignment and audit records is unchanged afterwards.
-- Workload settings: priority points, complexity factors or maximum load ≤ 0 → `400`; every request type has exactly one complexity (Simple / Medium / Complex); a default support team is mandatory.
-- New workload settings apply from the next assignment; tickets already assigned are not moved.
-- Every change produces a `WORKFLOW_RULE_*` or `WORKLOAD_SETTINGS_*` audit record with before and after values.
+- Only Admin can change workload settings; other roles receive `403`.
+- Priority points, complexity factors or maximum load ≤ 0 → `400`; every request type has exactly one complexity (Simple / Medium / Complex); a default support team with at least one active member is mandatory.
+- The preview returns the AI category, the responsible team, each member's status (`ON` / `OFF`) and workload score, who is excluded and why, and the expected technician; the number of assignment and audit records is unchanged afterwards.
+- New settings apply from the next assignment; tickets already assigned are not moved.
+- Every change produces a `WORKLOAD_SETTINGS_*` audit record with before and after values.
+- There is no screen or API to create assignment rules.
 
 ## AC-UC-WF-02 — Configure SLA
 
@@ -26,7 +24,8 @@ These criteria describe target product behavior. The UI may satisfy a criterion 
 - Only Admin can update SLA policies and the business calendar.
 - Resolution time shorter than response time, or warning threshold outside 1–99% → `400`.
 - Tickets created after saving use the new version; open tickets keep their attached version unless their priority changes.
-- Deadlines skip non-working hours and holidays: a P3 ticket created at 16:30 on Friday (working hours 08:00–17:00) has its response deadline at 11:30 on Monday.
+- Only three priority levels exist (P1 High, P2 Medium, P3 Low); a policy or ticket with any other priority → `400`.
+- Deadlines skip non-working hours and holidays: a P2 ticket created at 16:30 on Friday (working hours 08:00–17:00) has its response deadline at 11:30 on Monday.
 - Time spent in `NEEDS_INFO` is not counted toward the SLA; each pause/resume is stored with its timestamp.
 
 ## AC-UC-WF-03 — Configure the AI processing scope
@@ -57,15 +56,16 @@ These criteria describe target product behavior. The UI may satisfy a criterion 
 
 *(US-WF-10, US-WF-11)*
 
-- A flow-C ticket is assigned within ≤ 10 seconds (P95) to a technician of the target team who is `AVAILABLE`, holds no P1 ticket and is below the maximum load.
-- Among eligible technicians, the one with the **lowest workload score** is chosen (score = Σ priority points × complexity factor of their `ASSIGNED` and `IN_PROGRESS` tickets). Example: Mai (2 × P1 Complex = 20) and Hung (5 × P4 Simple = 5) are both available → a new ticket goes to Hung.
-- A technician who is `BUSY` or `OFF` never receives a new ticket, even with the lowest score.
-- If every member holds a P1 ticket, the P1 focus rule is ignored and the lowest score wins; if nobody is `AVAILABLE` or everyone is at maximum load, the ticket waits in the team queue and is assigned within ≤ 1 minute after a technician becomes eligible.
-- No rule matches → the default support team is used with the same selection rule; no ticket is left without a team.
+- A flow-C ticket is assigned within ≤ 10 seconds (P95) to a technician of the target team who is `ON` and below the maximum load.
+- Among eligible technicians, the one with the **lowest workload score** is chosen (score = Σ priority points × complexity factor of their `ASSIGNED` and `IN_PROGRESS` tickets). Example: Mai (3 × P1 Complex = 18) and Hung (5 × P3 Simple = 5) are both `ON` → a new ticket goes to Hung.
+- A technician who is `OFF` never receives a new ticket, even with the lowest score.
+- If nobody is `ON` or everyone is at maximum load, the ticket waits in the team queue and is assigned within ≤ 1 minute after a technician becomes eligible.
+- The ticket goes to the team responsible for its AI category (F09). Example: category *Hardware* → Hardware Team.
+- No team is responsible for the category, or the AI could not classify the ticket → the default support team is used with the same selection rule; no ticket is left without a team.
 - A technician switching to `OFF` → their `ASSIGNED` (not started) tickets are reassigned within ≤ 1 minute; their `IN_PROGRESS` tickets stay with them.
 - The technician notification includes the AI summary **and the routing reason** (e.g. *"Hardware request"*, *"Entitlement X is not in the department catalog"*).
 - Manual reassignment is Admin only (other roles → `403`) and requires a reason (missing → `400`).
-- Automatic assignment audit records have source `AUTOMATION`, the `ruleId` and the workload scores compared.
+- Automatic assignment audit records have source `AUTOMATION`, the AI category, the team and the workload scores compared.
 
 ## AC-UC-WF-06 — Reminders and SLA warnings
 
@@ -73,7 +73,7 @@ These criteria describe target product behavior. The UI may satisfy a criterion 
 
 - When a warning threshold is reached, the assignee receives exactly one notification per threshold within ≤ 2 minutes.
 - On breach, the ticket gets `sla_breached = true`, the Admin is notified, and an `SLA_BREACHED` event is recorded.
-- On breach, a ticket that is not started (`ASSIGNED`) or whose assignee is no longer `AVAILABLE` is reassigned automatically with the selection rule; a ticket `IN_PROGRESS` with an available assignee is not moved.
+- On breach, a ticket that is not started (`ASSIGNED`) or whose assignee is now `OFF` is reassigned automatically with the selection rule; a ticket `IN_PROGRESS` whose assignee is `ON` is not moved.
 - If priority raise is enabled, priority increases by exactly one level and never above P1.
 - `NEEDS_INFO` tickets are reminded on day 1 and day N−1, and automatically become `CLOSED` on day N with reason *no response*.
 - The requester can reopen an auto-closed ticket within 7 days; afterwards → `409`.

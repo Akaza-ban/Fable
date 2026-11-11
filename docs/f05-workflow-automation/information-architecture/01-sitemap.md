@@ -42,8 +42,8 @@ flowchart TB
 
     subgraph config["Workflow configuration — Admin"]
         direction TB
-        wf01["<b>SCR-WF-01 Assignment rules</b><br/>• Rules tab: conditions → team, order, Enable/Disable, Dry run<br/>• Workload tab: priority points, complexity by request type,<br/>maximum load, default support team"]
-        wf02["<b>SCR-WF-02 SLA & business calendar</b><br/>• P1–P4 table: response, resolution, threshold<br/>• Working hours, holidays<br/>• Raise priority on breach"]
+        wf01["<b>SCR-WF-01 Workload settings</b><br/>• Priority points, complexity by request type<br/>• Maximum load, default support team<br/>• Assignment preview (no assignment rules)"]
+        wf02["<b>SCR-WF-02 SLA & business calendar</b><br/>• P1–P3 table: response, resolution, threshold<br/>• Working hours, holidays<br/>• Raise priority on breach"]
         wf03["<b>SCR-WF-03 AI scope</b><br/>• AI actions tab: on/off, threshold, clarification rounds<br/>• Automation actions tab: whitelist, connectors<br/>• Entitlement catalog tab by department"]
     end
 

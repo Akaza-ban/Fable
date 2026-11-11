@@ -4,7 +4,7 @@
 >
 > Implementation status: NOT STARTED
 
-Information architecture IDs carry the `IA` prefix so they do not clash with other documents: decisions **D-IA-01..D-IA-10**, defaults **DF-IA-01..DF-IA-08**. All of them are **the author's proposals**, awaiting user confirmation; none changes the meaning of a user story or business rule.
+Information architecture IDs carry the `IA` prefix so they do not clash with other documents: decisions **D-IA-01..D-IA-13**, defaults **DF-IA-01..DF-IA-08**. All of them are **the author's proposals**, awaiting user confirmation; none changes the meaning of a user story or business rule.
 
 ## Decisions made in this document set
 
@@ -16,12 +16,13 @@ Information architecture IDs carry the `IA` prefix so they do not clash with oth
 | D-IA-04 | **One ticket detail page (SCR-T-02) serves all three roles**, with role-dependent panels: the Requester sees the AI conversation, progress bar and confirm buttons; the Technician sees the AI summary, the routing reason and the Automation tab; the Admin sees everything plus a link to the AI decision. | Avoids three near-identical pages; the server returns only what the role may see. | Proposed |
 | D-IA-05 | **The AI scope is one page with 3 tabs** (AI actions, Automation actions, Entitlement catalog), not three pages. | All three answer one question: "what may the AI do on its own?". The Admin needs to see them side by side. | Proposed |
 | D-IA-06 | **AI decisions have their own pages (SCR-WF-30, SCR-WF-31), Admin only.** Technicians see only a decision summary in SCR-T-02; Requesters see only a summary reason. | US-WF-16 belongs to the Admin; policy-condition details are administrative information (DF-IA-08). | Proposed |
-| D-IA-07 | **There is no Team Lead and no manual triage queue.** The system assigns every flow-C ticket from availability and workload score (UC-WF-05); a ticket that matches no rule goes to the default support team. The *Reassign* modal (SCR-WF-11) is Admin only, as a last resort. SCR-WF-10 *Triage queue* is removed and its number is not reused. | User decision: nobody should distribute work by hand; the system knows who is available and how loaded they are. | Decided by the user |
+| D-IA-07 | **There is no Team Lead and no manual triage queue.** The system assigns every flow-C ticket from availability and workload score (UC-WF-05); a ticket whose category has no responsible team goes to the default support team. The *Reassign* modal (SCR-WF-11) is Admin only, as a last resort. SCR-WF-10 *Triage queue* is removed and its number is not reused. | User decision: nobody should distribute work by hand; the system knows who is available and how loaded they are. | Decided by the user |
 | D-IA-08 | **The Requester talks to the AI through a conversation panel in SCR-T-02**, not a separate chat page. AI questions and requester answers are ticket messages. | An AI question always belongs to a ticket; a separate chat page would separate the requester from the ticket status. | Proposed |
 | D-IA-09 | **There is a shared notification centre (SCR-91)** with an unread count in the top bar, for all three roles. | The workflow produces many events that need to be announced (AI clarification, results, SLA warnings, automation failures). | Proposed |
 | D-IA-10 | **There is no "approval" screen for humans.** The AI approves in the background; the requester only sees progress, and the Admin reviews afterwards through SCR-WF-30/31. | Follows the agreed flow: basic requests are approved by the AI, without Admin approval. | Proposed |
-| D-IA-11 | **Technicians set their availability from the top bar** (Available / Busy / Off), next to their name. The switch belongs to F09 User Management; F05 only reads the status. | The assignment rule needs the status (BR-WF-10); one click from any page keeps it up to date. | Proposed |
-| D-IA-12 | **Workload scoring is a second tab of SCR-WF-01** (*Rules* / *Workload*), not a separate page. | Rules choose the team, workload chooses the person: the Admin configures both together. | Proposed |
+| D-IA-11 | **Technicians set their status from the top bar** with an ON / OFF switch, next to their name. The switch belongs to F09 User Management; F05 only reads the status. | Technician selection needs the status (BR-WF-10); one click from any page keeps it up to date. | Proposed |
+| D-IA-12 | **SCR-WF-01 is a single page "Workload settings"** (no tabs): priority points, complexity by request type, maximum load, default support team, and an *Assignment preview* button (SCR-WF-05). | Only the person is configured in F05; the team comes from the AI category (D-IA-13). | Proposed |
+| D-IA-13 | **There are no assignment rules.** The team is the one responsible for the AI category of the ticket (declared per team in F09); otherwise the default support team. SCR-WF-04 *Assignment rule form* is removed and its number is not reused; SCR-WF-05 becomes *Assignment preview*. | User decision: removing a configuration step the AI category already covers. | Decided by the user |
 
 ## Defaults pending confirmation
 
@@ -40,7 +41,7 @@ Information architecture IDs carry the `IA` prefix so they do not clash with oth
 
 | Topic | What the requirements say | What the information architecture does and why |
 |---|---|---|
-| Screen inventory | Traceability listed 8 proposed screens, no modals. | Adds 8 modals (SCR-WF-04..07, 11, 20..22), the ticket list page SCR-T-03, the notification page SCR-91, and the shared pages SCR-01 and SCR-90. Existing IDs are kept. |
+| Screen inventory | Traceability listed 8 proposed screens, no modals. | Adds 8 modals (SCR-WF-04..07, 11, 20..22; SCR-WF-04 later removed by D-IA-13), the ticket list page SCR-T-03, the notification page SCR-91, and the shared pages SCR-01 and SCR-90. Existing IDs are kept. |
 | Notifications | The use cases mention "notifications" but no screen. | Adds SCR-91 and an unread count in the top bar (D-IA-09). |
 | Who is told when the AI fails | NFR-WF-REL-004 only says tickets are routed to humans. | The Admin is notified (DF-IA-06). |
 | Admin home page | No Dashboard yet (F02 not specified). | SCR-WF-30 is used temporarily (DF-IA-02). |

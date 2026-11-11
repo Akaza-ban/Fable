@@ -68,11 +68,10 @@ A chip always carries its text. Colour supports the text and never replaces it.
 
 | Chip | Code | Meaning |
 |---|---|---|
-| Available | `AVAILABLE` | Receives new tickets. |
-| Busy | `BUSY` | Keeps current tickets, receives no new ones. |
-| Off | `OFF` | Off shift or on leave; not-started tickets are moved to colleagues. |
+| ON | `ON` | Taking work: receives new tickets. |
+| OFF | `OFF` | Not taking work (off shift, leave, away): no new tickets; not-started tickets are moved to colleagues. |
 
-Next to the status, the Workload tab and the Reassign modal show the **workload score** as a number with its maximum, e.g. *"12 / 20"*, and a text marker *"Holding a P1"* when the focus rule applies.
+Next to the status, the Workload tab and the Reassign modal show the **workload score** as a number with its maximum, e.g. *"12 / 20"*.
 
 **Automation run** (Automation tab)
 
@@ -94,7 +93,6 @@ Next to the status, the Workload tab and the Reassign modal show the **workload 
 
 - **Requesters can use their screens on a phone:** SCR-T-01, SCR-T-02, SCR-T-03 and SCR-91 must work on narrow screens; the AI conversation panel takes the full width; the *Confirm* / *Not fixed* buttons are always visible.
 - **Configuration and monitoring screens** (SCR-WF-01..31) target desktops; on narrow screens tables scroll horizontally or switch to summary cards, never hiding data permanently.
-- **Drag-and-drop rule ordering** (SCR-WF-01) has a keyboard alternative: *Up* / *Down* buttons on each row.
 - **Modals** fit within the viewport, keep their action buttons visible, trap focus, close with `Esc` when no submission is running, and return focus to the button that opened them.
 - Every input has a visible label; icon-only buttons have accessible names; status is never conveyed by colour alone.
 - Policy conditions on SCR-WF-31 use **✓ / ✗ with the words** "Pass" / "Fail", not only green/red.

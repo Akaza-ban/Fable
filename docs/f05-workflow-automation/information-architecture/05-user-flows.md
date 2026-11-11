@@ -68,7 +68,7 @@ flowchart TD
 
 ## Flow 3: Request that needs a human (flow C)
 
-Example: Lan reports *"The left button of my mouse doesn't work"*. In the Hardware team, Mai holds 2 P1 Complex tickets (score 20) and Hung holds 5 P4 Simple tickets (score 5); Nam is *Busy* in a meeting. The ticket goes to Hung.
+Example: Lan reports *"The left button of my mouse doesn't work"*. In the Hardware team, Mai holds 3 P1 Complex tickets (score 18) and Hung holds 5 P3 Simple tickets (score 5); Nam is *OFF* (in a meeting). The ticket goes to Hung.
 
 ```mermaid
 flowchart TD
@@ -76,11 +76,11 @@ flowchart TD
     actAdmin["<span style='font-size:40px'>👤</span><br/><b>Admin</b>"]:::actor
     actReq["<span style='font-size:40px'>👤</span><br/><b>Requester</b>"]:::actor
     start(["ROUTE_TO_HUMAN<br/>hardware / out of scope / policy check failed<br/>/ clarification limit / AI failure"]) --> summary["AI: summarize the ticket + routing reason"]:::ai
-    summary --> rules{"Matches an assignment rule?"}
-    rules -->|"Yes"| team["Target team from the rule"]
-    rules -->|"No"| deflt["Default support team"]
+    summary --> rules{"A team is responsible for<br/>the AI category? (F09)"}
+    rules -->|"Yes"| team["Responsible team<br/>e.g. Hardware → Hardware Team"]
+    rules -->|"No / not classified"| deflt["Default support team"]
     team --> select
-    deflt --> select{"Eligible technician?<br/>AVAILABLE · no P1 held · below max load"}
+    deflt --> select{"Eligible technician?<br/>ON · below max load"}
     select -->|"Yes"| assign["ASSIGNED to the lowest workload score<br/>notification SCR-91 with summary"]
     select -->|"No"| queue["Waits in the team queue"]
     queue -->|"A technician becomes eligible"| select
@@ -92,7 +92,7 @@ flowchart TD
     assign --> work["👤 TE: SCR-T-02<br/>read the AI summary, do the work (e.g. replace the mouse)"]
     work -->|"SLA threshold reached"| warn["SLA warning SCR-91"]
     warn --> work
-    work -->|"👤 TE switches to Off<br/>ticket not started"| select
+    work -->|"👤 TE switches OFF<br/>ticket not started"| select
     work --> done["👤 TE: record the result → RESOLVED"]
     actReq --> confirm
     done --> confirm{"👤 RQ: result?"}
@@ -145,26 +145,23 @@ flowchart TD
     classDef actor fill:none,stroke:none,color:#111
 ```
 
-## Flow 6: Admin configures assignment rules and workload
+## Flow 6: Admin configures workload scoring
 
-Rules choose the **team**; the *Workload* tab of the same page (points per priority, complexity by request type, maximum load, default support team) decides **who** in the team receives the ticket. The dry run shows both.
+There are no assignment rules: the **team** comes from the AI category and the categories each team is responsible for (set up in F09). The Admin only configures how the **person** inside the team is chosen, and can preview the result.
 
 ```mermaid
 flowchart TD
     actAdmin["<span style='font-size:40px'>👤</span><br/><b>Admin</b>"]:::actor
-    actAdmin --> list["👤 AD: SCR-WF-01 Assignment rules"]
-    list --> add["👤 AD: SCR-WF-04 Add rule<br/>'Hardware + Printer' → Printer Team"]
-    add --> valid{"Valid?"}
-    valid -->|"Team has no members"| err["400 — entered data kept"]
-    err --> add
-    valid -->|"Yes"| off["Saved as Disabled, at the end of the list"]
-    off --> order["👤 AD: drag above the generic 'Hardware' rule"]
-    order --> dry["👤 AD: SCR-WF-05 Dry run<br/>sample ticket 'Printer paper jam'<br/>→ team, members' status and workload, expected technician"]
-    dry --> result{"Result as expected?"}
-    result -->|"No"| add
-    result -->|"Yes"| on(["👤 AD: Enable — applies to tickets<br/>entering flow C from now on"])
-    actAdmin --> wl["👤 AD: SCR-WF-01 Workload tab<br/>e.g. request type 'Server' = Complex ×2<br/>maximum load 20"]
-    wl --> wlsave(["Saved, audited — applies<br/>from the next assignment"])
+    actAdmin --> page["👤 AD: SCR-WF-01 Workload settings"]
+    page --> edit["👤 AD: edit e.g. request type 'Server' = Complex ×2<br/>maximum load 20, default support team"]
+    edit --> valid{"Valid?"}
+    valid -->|"Value ≤ 0 / no default team"| err["400 — entered data kept"]
+    err --> edit
+    valid -->|"Yes"| saved["Saved, audited — applies<br/>from the next assignment"]
+    saved --> preview["👤 AD: SCR-WF-05 Assignment preview<br/>sample ticket 'Printer paper jam'<br/>→ AI category, team, members' status and workload, expected technician"]
+    preview --> result{"Result as expected?"}
+    result -->|"No"| edit
+    result -->|"Yes"| done(["Done"])
 
     classDef actor fill:none,stroke:none,color:#111
 ```

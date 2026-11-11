@@ -4,7 +4,7 @@
 >
 > Implementation status: NOT IMPLEMENTED
 
-The Workflow & Automation branch of the mind map: assignment rules, SLA, the AI routing decision (flows A, B and C), the policy check and API execution.
+The Workflow & Automation branch of the mind map: team and technician assignment by AI category and workload, SLA, the AI routing decision (flows A, B and C), the policy check and API execution.
 
 | File | Content |
 |---|---|
