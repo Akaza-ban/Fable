@@ -2,6 +2,8 @@
 
 > Design status: TARGET V1
 >
+> Implementation status: NOT STARTED
+>
 > Related: [Use cases](02-use-cases.md) · [User stories](03-user-stories-invest.md) · [Acceptance criteria](04-acceptance-criteria.md)
 
 ## Context
@@ -21,7 +23,7 @@ About **8,000 tickets per day** arrive, most by email. F04 domain agents and F05
 | F07.5 | **AI output quality.** Classification corrected by a person, helpful votes on summaries and KB suggestions, invalid / failed analyses; by model and prompt version | Admin | Should |
 | F07.6 | **Requester satisfaction.** Average 1–5, distribution, response rate shown next to the average, low ratings list | Admin, Technician (scope) | Should |
 | F07.8 | **Filter and export.** CSV / XLSX of the report on screen, allowlisted columns only, every export logged | Admin | Must |
-| F07.9 | **Weekly digest and parameters.** Weekly email with the key figures; report parameters (observation window N, thresholds, limits, target) | Admin | Could (digest), Must (parameters) |
+| F07.9 | **Weekly digest and parameters.** Weekly email with the key figures; report parameters (thresholds, limits, target; the observation window N is shown, read from the F03 reopen window) | Admin | Could (digest), Must (parameters) |
 
 ## Out of scope for F07
 

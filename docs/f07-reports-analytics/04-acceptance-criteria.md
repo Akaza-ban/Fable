@@ -77,10 +77,12 @@ Demo values: observation window **N = 7 days**, self-resolution target **50%**, 
 
 *(US-BC-07)*
 
-- **AC-BC-07.1** *Given* Thu changes N from 7 to 14, *then* `REPORT_CONFIG_UPDATED` stores before and after, and the next view of M-04 uses 14.
-- **AC-BC-07.2** *Given* N = 0, a negative value, a limit of 0 or a target outside 1–100%, *then* `422`.
+- **AC-BC-07.1** *Given* Thu changes the low-response threshold from 20% to 25%, *then* `REPORT_CONFIG_UPDATED` stores before and after, and the next view of M-07 uses 25%.
+- **AC-BC-07.2** *Given* a negative value, a limit of 0 or a target outside 1–100%, *then* `422`.
 - **AC-BC-07.3** *Given* the settings page, *then* SLA targets are not editable there; a link opens F05 SCR-WF-02.
 - **AC-BC-07.4** *Given* a non-Admin, *then* `403`.
+- **AC-BC-07.5** *Given* the settings page, *then* N is shown read-only as the F03 reopen window ("N = 7 days"); a request that sets N returns `422`.
+- **AC-BC-07.6** *Given* the reopen window (F03 BR-TK-11) changes from 7 to 14 days, *then* the next view of M-04 uses N = 14 and the report states "N = 14 days".
 
 ## AC-UC-BC-08 — Weekly digest
 
