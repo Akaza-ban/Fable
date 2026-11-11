@@ -1,120 +1,236 @@
-# Use cases — Activity Log
+# Actors, Roles, and Use Cases — F08 Activity Log
 
-Roles, ticket visibility scope, permission matrix and `BR-xx` rules are reused from [mvp.md](../mvp.md). AI decisions and workflow runs are reused from the Workflow module ([03-use-cases.md](../f05-workflow-automation/02-use-cases.md), `BR-WF-xx` in [business-rules.md](../requirements/business-rules.md)). This file only adds `UC-NK-xx`, `BR-NK-xx` and **proposes** new permissions (section 4). The proposed permissions take effect only once the owner of `mvp.md` accepts them.
+> Design status: TARGET V1
+>
+> Scope: F08 Activity Log (UC-NK-01 … UC-NK-05)
 
-Related module: [Reporting & Analytics](../f07-reports-analytics/02-use-cases.md) (`UC-BC-xx`, `BR-BC-xx`) — report exports are written to this log.
+## Actors and roles
 
-This module only **reads** data owned by other modules; it never redefines or changes it:
+The role codes are the same as in F01, F04 and F05. **Team Lead is not a role**: it is a Technician with the `is_lead` flag in a team (F05 D-IA-07).
 
-| Data | Owner | Used for |
+| Role code | Display name | Role in F08 |
 |---|---|---|
-| Ticket statuses, replies, internal notes, assignment, escalation | Ticket / Workflow | Ticket history |
-| `ai_decisions` (outcome `AUTO_APPROVED` / `NEEDS_INFO` / `ROUTE_TO_HUMAN`, immutable, BR-WF-17) | Workflow | Approval view |
-| `workflow_runs`, `workflow_run_attempts` (payload already masked, BR-WF-15), `access_grants` | Workflow | Approval view, workflow errors |
-| SLA `SLA_WARNING` / `SLA_BREACHED` events | Workflow | Ticket history |
-| `AuditLog` (BR-09) | Shared | Every view |
+| `ADMIN` | Administrator | Searches every entry, sees full approval chains and every workflow run |
+| `TECHNICIAN` | Technician | Sees the full history of tickets in scope; the full run history and approval chain of tickets assigned to them (Team Lead: their team); a summary otherwise |
+| `REQUESTER` | Requester | Sees an allowlisted history and a summary approval status of their own tickets |
 
-## 1. Overview
-
-| Code | Use case | Actor |
+| System actor | Code in the audit log | Role in F08 |
 |---|---|---|
-| UC-NK-01 | View ticket change history | ADMIN; TECHNICIAN, REQUESTER (within scope) |
-| UC-NK-02 | Track actions by users and AI | ADMIN |
-| UC-NK-03 | View approval requests and their outcome | ADMIN; TECHNICIAN, REQUESTER (within scope) |
-| UC-NK-04 | Look up errors and workflow run history | ADMIN; TECHNICIAN (within scope) |
-| UC-NK-05 | Write the log (append-only, sensitive data masked) | System |
+| AI Service | `AI` | Writes entries for what it decides or sends (analysis, question, KB answer, escalation, approval within policy). Reads ticket history through the `AI_AGENT` service account to learn from corrections (read-only) |
 
-The activity log uses the audit log exactly as defined in **BR-09**: who (`actor_type` = `USER` / `AI` / `SYSTEM`), what (`action`), when, on which target, **before and after values**, plus `suggestion_id` when present (BR-15). Workflow records automated actions with source `AUTOMATION` (BR-WF-05); this file treats `AUTOMATION` as `SYSTEM` until the team picks one name (Q-NK-03). Automated entries carry their evidence (`decisionId`, `ruleId`, `slaPolicyVersion` or `runId`, BR-WF-05), and the log shows it as links.
+> As in F04 and F05, the system has three user roles and **one system actor, the AI Service**. Background jobs (assignment rules, SLA timers, API execution, verification, Microsoft sync, digests) are internal behaviour, logged with source **`AUTOMATION`** (BR-WF-05, Q-NK-03). They are not actors.
 
----
+## Permission matrix
 
-## 2. Use cases
+| Function | Admin | Technician | Requester |
+|---|---|---|---|
+| Ticket history (UC-NK-01) | ✓ all | Tickets in their scope, full | Own tickets, allowlist only (BR-NK-04) |
+| Activity log search (UC-NK-02) | ✓ | | |
+| Approval chain (UC-NK-03) | ✓ full, link to SCR-WF-31 | Assigned (Team Lead: own team) full; group: summary | Own tickets, summary |
+| Workflow runs (UC-NK-04) | ✓ full | Assigned: full attempts; group: summary | |
+| Edit or delete an entry | ✗ (`405`) | ✗ | ✗ |
 
-### UC-NK-01 View ticket change history
-- **Main flow:** open a ticket (checked against `ticket:read`) → History tab → events in time order, newest first: created, AI classification and routing decision, questions to the requester (`NEEDS_INFO`), type / group / assignee / priority / status changes, escalation, replies, internal notes, workflow runs, SLA warnings and breaches, resolved, closed, reopened, cancelled, rated → each row shows the actor (person's name, "AI" or "System"), time, before / after values and evidence links.
-- **Alternative — REQUESTER:** only sees events on the **allowlist** (BR-NK-04): created, status change, public reply, AI question and their answer, approval / execution outcome (summary), resolved, closed, reopened, cancelled, rated. Not shown: internal notes, assignment between technicians, AI confidence, policy check details, workflow attempts, SLA events. An AI actor is shown as "AI Assistant".
-- **Alternative — TECHNICIAN:** sees everything for tickets within scope.
-- **Exceptions:** ticket outside scope → `403` (same as `ticket:read`; not `404`, so the response does not reveal whether the ticket exists). Calling an API to edit / delete a history entry → no such endpoint, `405` (BR-NK-02).
-- **BR:** BR-09, BR-WF-05, BR-NK-01, BR-NK-02, BR-NK-04.
+"Tickets in their scope" means assigned to the technician or one of their groups (F01, `ticket:read`). **The API enforces every row**; hiding a tab is only for usability.
 
-### UC-NK-02 Track actions by users and AI
-- **Main flow:** the Admin opens the Activity Log page → filters by `actor_type`, actor (user or service account), `action`, target type, target id, evidence id (`suggestion_id`, `decisionId`, `ruleId`, `runId`), time range → paginated table → opening a row shows `before` / `after` as a diff.
-- **Alternative:** "View log" on a user, service account, assignment rule or SLA policy opens the log pre-filtered to it. `actor_type = AI` reviews everything the AI did; `actor_type = SYSTEM` shows automated changes (Microsoft sync BR-18 / BR-20, assignment rules, SLA timers, API execution). Disabled or removed users still appear with their names (BR-20 keeps the `User` record).
-- **Exceptions:** no `audit:read` → `403`. Range longer than the maximum → `422` `INVALID_DATE_RANGE`.
-- **BR:** BR-09, BR-15, BR-18, BR-20, BR-WF-05, BR-NK-02, BR-NK-03.
+Proposed permissions, for the F01 owner to accept (naming: F07 Q-BC-12):
 
-### UC-NK-03 View approval requests and their outcome
-- **Main flow:** open the request from its ticket or from the list → show the chain in time order, each step with actor, time, result and evidence:
-  1. **Request:** requester, recipient, operation (`CHECK_ACCOUNT` / `CREATE_ACCOUNT` / `GRANT_ACCESS` / `REVOKE_ACCESS`), target system, requested duration, source ticket.
-  2. **AI understanding:** category, confidence, extracted fields (from `ai_decisions`).
-  3. **Fixed policy check:** the result of **each** condition (whitelist, department entitlement, maximum duration, valid recipient BR-WF-16, not already granted), read from `ai_decisions` (BR-WF-02, BR-WF-17).
-  4. **Decision:** `AUTO_APPROVED` ("approved by policy", `actor_type = AI`, with `decisionId`), `NEEDS_INFO` (question to requester), or `ROUTE_TO_HUMAN` with the reason. Routed requests are handled by the assigned technician; their actions appear as further steps.
-  5. **Execution:** `workflow_run` status and every attempt (time, result code, duration, masked payload), idempotency key (BR-WF-04), policy re-check at run time (BR-WF-12).
-  6. **Verification:** connector check result → `SUCCEEDED` or mismatch.
+| Permission | Admin | Technician | Requester | `AI_AGENT` |
+|---|---|---|---|---|
+| `ticket_history:read` | all | scope | own (allowlist) | all, read-only |
+| `audit:read` | ✓ | ✗ | ✗ | ✗ |
+| `approval:read` | all | assigned / lead: full; group: summary | own: summary | ✗ |
+| `workflow_log:read` | ✓ | assigned: full; group: summary | ✗ | ✗ |
+
+No `audit:write`, `audit:update` or `audit:delete` exists for any role: only the backend writes, and nobody edits or deletes (BR-NK-02).
+
+## Audit record
+
+F08 uses the record of F01 **BR-09** unchanged and adds evidence ids (Q-NK-04).
+
+| Field | Content |
+|---|---|
+| `id`, `created_at` | Append order; UTC |
+| `actor_type` | `USER`, `AI`, `AUTOMATION` |
+| `actor_id` | User, or service account (`AI_AGENT`); empty for `AUTOMATION` |
+| `action` | From the event catalog below |
+| `target_type`, `target_id` | Ticket, rule, SLA policy, user, service account, report, … |
+| `before`, `after` | Masked values (BR-NK-03) |
+| Evidence | `ticket_id`, `decision_id`, `analysis_id`, `rule_id`, `sla_policy_version`, `run_id`, `suggestion_id`; `model_version`, `prompt_version` and `agent` for AI entries |
+| `corrects_id` | For a correction: the entry it corrects |
+
+## Event catalog
+
+Each event type has a **visibility class**. A new type is `INTERNAL` until classified (BR-NK-04).
+
+| Group | Actions (examples) | Written by | Visibility to the requester |
+|---|---|---|---|
+| Ticket | `TICKET_CREATED`, `STATUS_CHANGED`, `PUBLIC_REPLY`, `RESOLVED`, `CLOSED`, `REOPENED`, `CANCELLED`, `RATED` | F03 | Shown |
+| Ticket (internal) | `INTERNAL_NOTE`, `ASSIGNED`, `REASSIGNED`, `PRIORITY_CHANGED`, `ESCALATED` | F03, F05 | Hidden |
+| AI | `AI_ANALYSIS_COMPLETED` / `_INVALID` / `_FAILED`, `AI_FIELDS_CORRECTED`, `AI_ESCALATED` (`escalationClass`), `AI_PRIORITY_SUGGESTED` | F04 | Hidden |
+| AI (to requester) | `AI_QUESTION_SENT`, `REQUESTER_ANSWERED`, `AI_KB_ANSWER_SENT` (`ANSWERED_BY_KB`), `KB_SOLVED_BY_REQUESTER` (`SOLVED_BY_KB`) | F04 | Shown |
+| Routing | `AI_DECISION` (`AUTO_APPROVED` / `NEEDS_INFO` / `ROUTE_TO_HUMAN`), `TICKET_ROUTED_TO_HUMAN` (`AI_UNAVAILABLE`, `AI_INVALID_OUTPUT`, …) | F05 | Summary only |
+| Workflow | `RUN_QUEUED`, `RUN_STARTED`, `RUN_ATTEMPT`, `RUN_VERIFIED`, `RUN_FAILED`, `RUN_RETRIED`, `RUN_MANUALLY_RESOLVED`, `ACCESS_REVOKED` | F05 | Summary only |
+| SLA | `SLA_WARNING`, `SLA_BREACHED`, `SLA_PAUSED`, `SLA_RESUMED` | F05 | Hidden |
+| Configuration | `WORKFLOW_RULE_*`, `SLA_POLICY_*`, `AI_SCOPE_*`, `REPORT_CONFIG_UPDATED`, user / group / service account changes | F05, F07, F01 | — |
+| Reports | `REPORT_EXPORTED`, `REPORT_DIGEST_SENT` | F07 | — |
+
+## Use case diagram
+
+```mermaid
+flowchart LR
+    subgraph left["Actors"]
+        direction TB
+        admin(["Admin"])
+        tech(["Technician<br/>(Team Lead: is_lead)"])
+        req(["Requester"])
+    end
+
+    subgraph system["Activity Log — System Boundary"]
+        direction TB
+        subgraph read["Read the trail"]
+            direction LR
+            uc01["UC-NK-01 Ticket history"]
+            uc02["UC-NK-02 Track actions of people and AI"]
+            uc03["UC-NK-03 Approval chain"]
+            uc04["UC-NK-04 Workflow runs and errors"]
+        end
+        subgraph write["Write the trail"]
+            uc05["UC-NK-05 Write the log<br/>(append-only, masked)"]
+        end
+    end
+
+    subgraph right["Writers"]
+        direction TB
+        ai(["AI Service"])
+        branches(["F01, F03, F04,<br/>F05, F07"])
+    end
+
+    admin --> uc01 & uc02 & uc03 & uc04
+    tech --> uc01 & uc03 & uc04
+    req --> uc01 & uc03
+    ai --> uc05
+    branches --> uc05
+
+    classDef actor fill:#666,color:#fff,stroke:#333
+    classDef sysactor fill:#8a5cf6,color:#fff,stroke:#5b34c9
+    classDef usecase fill:#1168bd,color:#fff,stroke:#0b4f9e
+    classDef core fill:#0b4f9e,color:#fff,stroke:#062f5e,stroke-width:3px
+    classDef ext fill:#f3f3f3,color:#333,stroke:#999,stroke-dasharray:4 3
+    class admin,tech,req actor
+    class ai sysactor
+    class branches ext
+    class uc02,uc04 usecase
+    class uc01,uc03,uc05 core
+    style left fill:#fff,stroke:#bbb,stroke-dasharray:5 5
+    style right fill:#fff,stroke:#bbb,stroke-dasharray:5 5
+    style system fill:#f8fbff,stroke:#1168bd,stroke-dasharray:5 5
+```
+
+Thick border: core use cases. Purple: system actor. UC-NK-05 has no user actor: every branch writes through it.
+
+### Shared rules
+
+```mermaid
+flowchart LR
+    auth["Authenticate session"]:::shared
+    authorize["Check permission"]:::shared
+    scope["Filter by ticket scope in the query"]:::rule
+    allow["Requester allowlist"]:::rule
+    mask["Mask secrets"]:::rule
+    append["Append only (INSERT, SELECT)"]:::rule
+    same["Same transaction as the change"]:::rule
+
+    readUc["UC-NK-01..04 Read"] --> auth & authorize & scope
+    readUc --> allow
+    writeUc["UC-NK-05 Write"] --> mask & append & same
+
+    classDef shared fill:#1168bd,color:#fff,stroke:#0b4884
+    classDef rule fill:#e8f1fc,color:#123,stroke:#3a7bd5
+```
+
+## Use case specifications
+
+### UC-NK-01 View Ticket History
+
+- **Actors:** Admin; Technician (scope); Requester (own tickets)
+- **Preconditions:** the user can open the ticket (`ticket:read`)
+- **Main flow:**
+  1. The user opens SCR-T-02 and the `#history` tab (SEC-NK-01).
+  2. The system returns entries for the ticket, newest first: created, AI analysis and routing decision, questions and answers, type / group / assignee / priority / status changes, escalations, replies, internal notes, workflow runs, SLA events, resolved, closed, reopened, cancelled, rated.
+  3. Each row shows the actor (name, **AI** with the domain agent, or **Automation**), time, before → after and evidence links (`decision_id` → SCR-WF-31 for Admin, `run_id` → SCR-NK-05, `analysis_id`).
+  4. The user filters by event group (status, assignment, replies, AI, workflow, SLA).
+- **Alternative flows:**
+  - **Requester:** only events visible to the requester in the catalog (BR-NK-04); routing and workflow events as one summary line; the AI shown as "IT assistant"; technician display name only (Q-NK-08).
+  - **Technician:** everything for tickets in scope.
+- **Exceptions:** ticket outside scope → `403` (not `404`, so existence is not revealed); any edit / delete call → `405`
+- **Result:** anyone involved can pick up the ticket without asking around
+- **Stories:** US-NK-01, US-NK-02 · **Rules:** BR-09, BR-WF-05, BR-NK-02, BR-NK-04
+
+### UC-NK-02 Track Actions of People and AI
+
+- **Actors:** Admin
+- **Preconditions:** `audit:read`
+- **Main flow:**
+  1. The Admin opens *Audit → Activity log* (SCR-NK-02).
+  2. Filters by actor type (`USER` / `AI` / `AUTOMATION`), actor, action, target type, target id, evidence id, model or prompt version, period.
+  3. The system returns a paginated table (time, actor, action, target, summary).
+  4. Opening a row shows `before` / `after` as a diff and the evidence links.
+- **Alternative flows:**
+  - *View log* on a user, service account, assignment rule or SLA policy opens SCR-NK-02 pre-filtered (`?actor=…`, `?target=…`).
+  - `actor_type = AI` reviews everything the AI decided or sent; filter by `agent` (F04) to review one domain agent.
+  - Disabled or removed users still appear with their names (F01 BR-20 keeps the user record).
+- **Exceptions:** not Admin → `403`; period longer than the maximum → `422 INVALID_DATE_RANGE`
+- **Result:** the Admin can review AI behaviour and investigate incidents
+- **Stories:** US-NK-04, US-NK-10 · **Rules:** BR-09, BR-15, BR-18, BR-20, BR-NK-02, BR-NK-03
+
+### UC-NK-03 View the Approval Chain
+
+- **Actors:** Admin; Technician (assigned / Team Lead); Requester (own tickets)
+- **Preconditions:** the ticket has an access request handled by F05 (`CHECK_ACCOUNT`, `CREATE_ACCOUNT`, `GRANT_ACCESS`, `REVOKE_ACCESS`)
+- **Main flow:** SEC-NK-02 on SCR-T-02 shows the chain in time order, each step with actor, time, result and evidence:
+  1. **Request:** requester, recipient, operation, target system, requested duration, source ticket.
+  2. **AI understanding:** category, extracted fields, confidence, domain agent (from F04 / `ai_decisions`).
+  3. **Policy check:** result of **each** condition (whitelist, department entitlement, maximum duration, valid recipient, not already granted) from `ai_decisions` (BR-WF-02, BR-WF-17).
+  4. **Decision:** `AUTO_APPROVED` (actor `AI`, `decision_id`), `NEEDS_INFO`, or `ROUTE_TO_HUMAN` with the reason and `escalationClass`.
+  5. **Execution:** run status and each attempt (time, result code, duration, masked payload), idempotency key, policy re-check at run time (BR-WF-12).
+  6. **Verification:** connector check → `SUCCEEDED` or mismatch.
   7. **Requester confirmation**, and for time-limited grants the scheduled / executed `REVOKE_ACCESS` (BR-WF-14).
-- **Alternative — approved but execution failed:** run `FAILED` (permanent error, retries exhausted, `PRECONDITION_FAILED`) or verification mismatch → shown highlighted as "Approved — execution failed", with the assigned technician. Retry adds **new steps**; earlier steps are never overwritten. "Resolved manually" shows the technician's mandatory note (BR-WF-13).
-- **Alternative — REQUESTER:** only requests on their own tickets, as a summary: received / need more info / approved / being processed / done / failed, being handled by IT, with the short reason. No confidence, policy details, payload or attempts.
-- **Exceptions:** request on a ticket outside scope → `403`. No `approval:read` → `403`.
-- **BR:** BR-09, BR-WF-02, BR-WF-04, BR-WF-12, BR-WF-13, BR-WF-14, BR-WF-17, BR-NK-03, BR-NK-04.
+- **Alternative flows:**
+  - **Approved but execution failed:** highlighted "Approved — execution failed", with the assigned technician. A retry adds new steps; earlier steps never change. *Resolved manually* shows the technician's note (BR-WF-13).
+  - **Admin:** *View AI decision* opens F05 SCR-WF-31 (configuration version, compared values).
+  - **Technician in the group, not assigned:** summary (steps and results, no payloads or attempts).
+  - **Requester:** one status line (received / need more info / approved / in progress / done / failed, being handled by IT) and the short reason (F05 DF-IA-08). No confidence, conditions, payloads or attempts.
+- **Exceptions:** ticket outside scope → `403`
+- **Result:** anyone can see why a request was approved, asked back or sent to a person
+- **Stories:** US-NK-05 · **Rules:** BR-WF-02, BR-WF-04, BR-WF-12, BR-WF-13, BR-WF-14, BR-WF-17, BR-NK-04
 
-### UC-NK-04 Look up errors and workflow run history
-- **Main flow:** the Admin opens the list of workflow runs → filters by operation, status (`QUEUED`, `RUNNING`, `RETRY_WAIT`, `VERIFYING`, `SUCCEEDED`, `FAILED`, `MANUALLY_RESOLVED`), error type, ticket, connector, time range → opens a run: attempts with time, duration, result code, masked request / response (BR-WF-15, BR-NK-03), error message.
-- **Error types shown:** `AI_UNAVAILABLE` (AI Service did not respond, UC-WF-04); `AI_INVALID_OUTPUT` (missing fields or wrong format, UC-WF-07 — name proposed here); transient connector errors (timeout, `5xx`, `429`, retried after 1 / 5 / 15 minutes); permanent connector errors (`4xx`, access denied); `PRECONDITION_FAILED` (BR-WF-12); verification mismatch; `AUDIT_UNAVAILABLE` (BR-NK-06).
-- **Alternative — AI failure → manual handling:** on `AI_UNAVAILABLE` or `AI_INVALID_OUTPUT`, Workflow does **not apply** the AI result and routes the ticket to route C (UC-WF-05): assigned by rule, or `TRIAGE` if no rule matches. The log shows a `TICKET_ROUTED_TO_HUMAN` entry with the error type, also visible in UC-NK-01.
-- **Alternative — TECHNICIAN:** the **assigned** technician sees the full attempt history of runs on their tickets (needed to retry, UC-WF-09). Other technicians in the group see a summary only: operation, status, error type, time, current assignee.
-- **Exceptions:** no `workflow_log:read` → `403`. Run of a ticket outside scope → `403`.
-- **BR:** BR-09, BR-WF-05, BR-WF-12, BR-WF-15, BR-NK-01, BR-NK-03, BR-NK-05, BR-NK-06.
+### UC-NK-04 Look Up Workflow Runs and Errors
 
-### UC-NK-05 Write the log (System)
-- **Main flow:** an action in the scope of BR-09 or BR-NK-01 happens → mask sensitive data (BR-NK-03) → write a new, **append-only** record (BR-NK-02). For changes in the system database, the record is written **in the same transaction** as the change (as in NFR-WF-AUD-001); if the log write fails, the change is rolled back.
-- **Alternative — operations that change an external system** (`CREATE_ACCOUNT`, `GRANT_ACCESS`, `REVOKE_ACCESS`): write an "execution started" record **before** calling the connector. If that write fails → **the connector is not called**, the run is `FAILED` with `AUDIT_UNAVAILABLE`, and the ticket goes to a technician (BR-NK-06). If the call succeeds but writing the result fails → queue the record for retry and alert the Admin; the connector is not called again (idempotency, BR-WF-04).
-- **Exceptions:** a sensitive field not recognized by name is still masked by pattern (BR-NK-03). Any edit / delete request → `405`.
-- **BR:** BR-09, BR-13, BR-WF-04, BR-WF-15, BR-NK-02, BR-NK-03, BR-NK-06.
+- **Actors:** Admin; Technician (assigned / group summary)
+- **Preconditions:** `workflow_log:read`
+- **Main flow:**
+  1. The Admin opens *Audit → Workflow runs* (SCR-NK-04): counters by status and a table (run id, ticket, operation, status, error type, attempts, started, duration).
+  2. Filters by status (`QUEUED`, `RUNNING`, `RETRY_WAIT`, `VERIFYING`, `SUCCEEDED`, `FAILED`, `MANUALLY_RESOLVED`), error type, operation, connector, ticket, period.
+  3. Opens a run (SCR-NK-05): attempts with time, duration, result code, masked request / response, error message, link to the ticket.
+- **Error types:** `AI_UNAVAILABLE` (F05 UC-WF-04); `AI_INVALID_OUTPUT` (F04 analysis `INVALID` / `FAILED`); transient connector error (timeout, `5xx`, `429`, retried after 1 / 5 / 15 minutes); permanent connector error (`4xx`, access denied); `PRECONDITION_FAILED` (BR-WF-12); verification mismatch; `AUDIT_UNAVAILABLE` (BR-NK-06).
+- **Alternative flows:**
+  - **AI failure → a person:** on `AI_UNAVAILABLE` or `AI_INVALID_OUTPUT`, F05 does not apply the AI result and routes the ticket to a human (assigned by rule, or `TRIAGE`); the log has `TICKET_ROUTED_TO_HUMAN` with the error type, also visible in UC-NK-01.
+  - **Technician:** opens runs from the `#automation` tab of their ticket; the assigned technician sees full attempts (needed to retry, UC-WF-09); others in the group see a summary. *Retry* and *Resolved manually* are F05 buttons, shown only to the assigned technician and Admin.
+- **Exceptions:** no permission → `403`; run of a ticket outside scope → `403`
+- **Result:** broken connectors and AI outages are found quickly
+- **Stories:** US-NK-06, US-NK-07 · **Rules:** BR-WF-05, BR-WF-12, BR-WF-15, BR-NK-03, BR-NK-05, BR-NK-06
 
----
+### UC-NK-05 Write the Log
 
-## 3. New business rules
-
-- **BR-NK-01**: Extend the logging scope of BR-09, keeping the record structure, to: ticket changes (created, type, group, assignee, priority, status, escalation, reply, internal note, resolved, closed, reopened, cancelled, rated); AI decisions; every workflow run step; routing to humans after AI failure; report exports and report parameter changes (BR-BC-05). AI actions use `actor_type = AI`; automated actions use `actor_type = SYSTEM` (Workflow's `AUTOMATION`) and carry their evidence id (BR-WF-05).
-- **BR-NK-02**: The log is **append-only**. Nobody can edit or delete it, **including ADMIN**: there is no edit / delete API (`405`), and the application's database account only has `INSERT` and `SELECT` on the audit log table. Corrections are new records that reference the old one.
-- **BR-NK-03**: Before writing, all `before` / `after` values, workflow payloads and API responses are **masked**: fields whose name contains `password`, `token`, `secret`, `api_key`, `authorization`, `cookie`, `otp` → `"***"`; strings matching `Bearer …`, JWT or API key patterns → `"***"`. `password_hash`, `totp_secret_enc`, `api_key_hash` and connector credentials are never written (BR-05, BR-13, BR-WF-15).
-- **BR-NK-04**: A REQUESTER only sees events on the **allowlist** (UC-NK-01, UC-NK-03), filtered in the backend. A new event type not yet classified is **hidden** from REQUESTER by default.
-- **BR-NK-05**: When the AI does not respond or returns an invalid result, the AI result is not applied and the ticket is routed to a human (UC-WF-04, UC-WF-07); the log records `TICKET_ROUTED_TO_HUMAN` with the error type.
-- **BR-NK-06**: For operations that change an external system, a successful "execution started" log write is a precondition. If it fails → **the connector is not called** and the permission is not granted.
-
----
-
-## 4. Proposed additions to the permission matrix
-
-Proposals for the owner of [mvp.md](../mvp.md) to decide. This file does **not** edit `mvp.md`. Naming convention: see Q-BC-12 in [reporting-analytics](../f07-reports-analytics/02-use-cases.md).
-
-| Proposed permission | ADMIN | TECHNICIAN | REQUESTER | AI_AGENT | Used in |
-|---|---|---|---|---|---|
-| `ticket_history:read` | all | assigned, group | own (allowlist, BR-NK-04) | all (read-only, to learn from corrections, mvp.md section 8) | UC-NK-01 |
-| `audit:read` | ✅ (system-wide) | ❌ | ❌ | ❌ | UC-NK-02 |
-| `approval:read` | all | assigned, group (Q-NK-09) | own (summary) | ❌ | UC-NK-03 |
-| `workflow_log:read` | ✅ (detail) | assigned: detail; group: summary | ❌ | ❌ | UC-NK-04 |
-
-No `audit:write`, `audit:update` or `audit:delete` permission is proposed for any role: only the backend writes the log (UC-NK-05), and nobody may edit or delete it (BR-NK-02).
-
----
-
-## 5. Open questions (for the team to decide)
-
-**Actors and approval**
-- **Q-NK-01**: The mindmap lists "Approve access requests", but Workflow V1 has **no human approver**: the AI approves after a fixed policy check, and anything outside scope goes to a technician. Is a human approver (manager, resource owner) needed later? UC-NK-03 can show that step without changes if it is added.
-- **Q-NK-02**: `mvp.md` defines `AI_AGENT` as a role that "may not grant permissions itself". Workflow defines "AI Service" as a system actor that **does** auto-approve grants within policy. The two owners need to agree on one wording; this file assumes AI auto-approval is allowed only within BR-WF-02.
-
-**Logging**
-- **Q-NK-03**: Automated actions are `actor_type = SYSTEM` in BR-09 but `source = AUTOMATION` in BR-WF-05. Pick one name; this file uses `SYSTEM` and maps `AUTOMATION` to it.
-- **Q-NK-04**: Does the owner of `mvp.md` agree to extend BR-09 to tickets, AI decisions and workflows (BR-NK-01)? Should `AuditLog` get fields for the evidence ids (`ticket_id`, `decision_id`, `rule_id`, `sla_policy_version`, `run_id`), today only `suggestion_id` exists?
-- **Q-NK-05**: UC-03 logs "every AI request", including reads. Do reads go into `AuditLog` or a separate access log? At ~8,000 tickets/day (Workflow NFR), logging every read would make UC-NK-02 very large.
-- **Q-NK-06**: When `actor_type = AI`, does `actor_id` point to `ServiceAccount` or `User`?
-- **Q-NK-07**: How long is the audit log kept? Does "nobody can delete it" (BR-NK-02) need an exception for automatic deletion after retention?
-
-**Visibility**
-- **Q-NK-08**: Can a REQUESTER see the name of the technician handling their ticket in the history?
-- **Q-NK-09**: Workflow lets a technician see AI decisions only for tickets **assigned** to them; `mvp.md` scope is assigned **and group**. Which applies to `approval:read`?
-- **Q-NK-10**: Is exporting the audit log (UC-NK-02) needed? If so, add `audit:export` and log the export.
-
-See also: [01-user-stories.md](01-user-stories.md) · [03-information-architecture.md](03-information-architecture.md) · [Reporting & Analytics](../f07-reports-analytics/02-use-cases.md)
+- **Actors:** none (every branch writes through it; source `USER`, `AI` or `AUTOMATION`)
+- **Trigger:** an action in the event catalog
+- **Main flow:**
+  1. The caller passes actor, action, target, before / after and evidence.
+  2. F08 masks secrets (BR-NK-03).
+  3. It appends a new entry (BR-NK-02). For changes in the system database the entry is written **in the same transaction** (NFR-WF-AUD-001); if the write fails, the change is rolled back.
+- **Alternative flows:**
+  - **Operations that change an external system** (`CREATE_ACCOUNT`, `GRANT_ACCESS`, `REVOKE_ACCESS`): an "execution started" entry is written **before** the connector call. If it fails, the connector is not called, the run ends `FAILED` with `AUDIT_UNAVAILABLE` and the ticket goes to a technician (BR-NK-06). If the call succeeds but the result entry fails, the entry is queued for retry and the Admin is alerted; the connector is not called again (idempotency, BR-WF-04).
+  - **Correction:** a new entry with `corrects_id`; the old entry is unchanged.
+- **Exceptions:** a sensitive value not recognized by field name is still masked by pattern; any edit / delete request → `405`
+- **Result:** the trail is complete, unchangeable and free of secrets
+- **Stories:** US-NK-03, US-NK-08, US-NK-09 · **Rules:** BR-09, BR-13, BR-WF-04, BR-WF-15, BR-NK-01, BR-NK-02, BR-NK-03, BR-NK-06, BR-NK-07

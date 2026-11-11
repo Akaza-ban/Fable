@@ -363,7 +363,7 @@ The ticket console must clearly show the AI summary (at most 150 words, in fixed
 
 Detailed routes, standard component states (loading, empty, validation, saving, success, error, 403) and the role-based navigation matrix are maintained in [Information Architecture](docs/information-architecture.md).
 
-Each branch also has its own information architecture: [F02 Dashboard](docs/f02-dashboard/03-information-architecture.md), [F03 Ticket Management](docs/f03-ticket-management/03-information-architecture.md), [F04 AI Ticket Processing](docs/f04-ai-ticket-processing/information-architecture/README.md), [F05 Workflow & Automation](docs/f05-workflow-automation/information-architecture/README.md), [F06 Knowledge Base](docs/f06-knowledge-base/04-information-architecture.md), [F07 Reports & Analytics](docs/f07-reports-analytics/03-information-architecture.md), [F08 Activity Log](docs/f08-activity-log/03-information-architecture.md).
+Each branch also has its own information architecture: [F02 Dashboard](docs/f02-dashboard/03-information-architecture.md), [F03 Ticket Management](docs/f03-ticket-management/03-information-architecture.md), [F04 AI Ticket Processing](docs/f04-ai-ticket-processing/information-architecture/README.md), [F05 Workflow & Automation](docs/f05-workflow-automation/information-architecture/README.md), [F06 Knowledge Base](docs/f06-knowledge-base/04-information-architecture.md), [F07 Reports & Analytics](docs/f07-reports-analytics/information-architecture/README.md), [F08 Activity Log](docs/f08-activity-log/information-architecture/README.md).
 
 ## Documentation
 
@@ -373,8 +373,8 @@ Each branch also has its own information architecture: [F02 Dashboard](docs/f02-
 - F04 AI Ticket Processing: [Index](docs/f04-ai-ticket-processing/README.md), [Features](docs/f04-ai-ticket-processing/01-features.md), [Use cases](docs/f04-ai-ticket-processing/02-use-cases.md), [User stories (INVEST)](docs/f04-ai-ticket-processing/03-user-stories-invest.md), [Acceptance criteria](docs/f04-ai-ticket-processing/04-acceptance-criteria.md), [Business rules](docs/f04-ai-ticket-processing/05-business-rules.md), [Information architecture](docs/f04-ai-ticket-processing/information-architecture/README.md).
 - F05 Workflow & Automation: [Index](docs/f05-workflow-automation/README.md), [Features](docs/f05-workflow-automation/01-features.md), [Use cases](docs/f05-workflow-automation/02-use-cases.md), [Acceptance criteria](docs/f05-workflow-automation/03-acceptance-criteria.md), [INVEST backlog](docs/f05-workflow-automation/04-invest-requirements.md), [Information architecture](docs/f05-workflow-automation/information-architecture/README.md).
 - F06 Knowledge Base: [Index](docs/f06-knowledge-base/README.md), [Mind map](docs/f06-knowledge-base/01-mindmap.md), [User stories](docs/f06-knowledge-base/02-user-stories.md), [Use cases](docs/f06-knowledge-base/03-use-cases.md), [Information architecture](docs/f06-knowledge-base/04-information-architecture.md), [Wireframes](docs/f06-knowledge-base/05-wireframes.md).
-- F07 Reports & Analytics: [Index](docs/f07-reports-analytics/README.md), [User stories](docs/f07-reports-analytics/01-user-stories.md), [Use cases](docs/f07-reports-analytics/02-use-cases.md), [Information architecture](docs/f07-reports-analytics/03-information-architecture.md).
-- F08 Activity Log: [Index](docs/f08-activity-log/README.md), [User stories](docs/f08-activity-log/01-user-stories.md), [Use cases](docs/f08-activity-log/02-use-cases.md), [Information architecture](docs/f08-activity-log/03-information-architecture.md).
+- F07 Reports & Analytics: [Index](docs/f07-reports-analytics/README.md), [Features](docs/f07-reports-analytics/01-features.md), [Use cases](docs/f07-reports-analytics/02-use-cases.md), [User stories (INVEST)](docs/f07-reports-analytics/03-user-stories-invest.md), [Acceptance criteria](docs/f07-reports-analytics/04-acceptance-criteria.md), [Business rules](docs/f07-reports-analytics/05-business-rules.md), [Information architecture](docs/f07-reports-analytics/information-architecture/README.md).
+- F08 Activity Log: [Index](docs/f08-activity-log/README.md), [Features](docs/f08-activity-log/01-features.md), [Use cases](docs/f08-activity-log/02-use-cases.md), [User stories (INVEST)](docs/f08-activity-log/03-user-stories-invest.md), [Acceptance criteria](docs/f08-activity-log/04-acceptance-criteria.md), [Business rules](docs/f08-activity-log/05-business-rules.md), [Information architecture](docs/f08-activity-log/information-architecture/README.md).
 - Requirements catalogs: [Business rules](docs/requirements/business-rules.md), [Non-functional requirements](docs/requirements/non-functional-requirements.md).
 - Traceability: [Master traceability matrix](docs/traceability/master-traceability.md).
 
@@ -390,8 +390,8 @@ Fable/
 │   ├── f04-ai-ticket-processing/  # AI ticket processing: features, use cases, INVEST, AC, business rules, IA
 │   ├── f05-workflow-automation/   # Workflow and automation: features, use cases, AC, INVEST, IA
 │   ├── f06-knowledge-base/        # Knowledge base: mind map, user stories, use cases, IA, wireframes
-│   ├── f07-reports-analytics/     # Reports and analytics: user stories, use cases, IA
-│   ├── f08-activity-log/          # Activity log: user stories, use cases, IA
+│   ├── f07-reports-analytics/     # Reports and analytics: features, use cases, INVEST, AC, business rules, IA
+│   ├── f08-activity-log/          # Activity log: features, use cases, INVEST, AC, business rules, IA
 │   ├── requirements/              # Shared business rules and non-functional requirements
 │   ├── traceability/              # Master traceability matrix
 │   ├── information-architecture.md  # System-wide information architecture
@@ -412,8 +412,8 @@ Every branch folder is named `fNN-<branch>` after its number in the mind map, it
 - [x] F04 AI Ticket Processing: use cases, INVEST, acceptance criteria, business rules, IA (draft)
 - [x] F05 Workflow & Automation: use cases, INVEST, acceptance criteria, IA (draft)
 - [x] F06 Knowledge Base: user stories, use cases, IA, wireframes (draft)
-- [x] F07 Reports & Analytics: user stories, use cases, IA (draft)
-- [x] F08 Activity Log: user stories, use cases, IA (draft)
+- [x] F07 Reports & Analytics: use cases, INVEST, acceptance criteria, business rules, IA (draft)
+- [x] F08 Activity Log: use cases, INVEST, acceptance criteria, business rules, IA (draft)
 - [ ] Specify F01 Authentication & Authorization and F09 User Management
 - [ ] C4 System Context, Container, Component
 - [ ] Database design (ERD)
