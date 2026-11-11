@@ -17,7 +17,7 @@ The mind map groups features by area (8 groups); the specification folders are o
 | Mind map group | Specified in | Branch design status |
 | :--- | :--- | :--- |
 | 1. Requester Self-Service | [F03 Ticket Management](docs/f03-ticket-management/README.md); KB deflection in [F06](docs/f06-knowledge-base/README.md) | TARGET V1 |
-| 2. Technician Workspace | [F03 Ticket Management](docs/f03-ticket-management/README.md); AI summary in [F04](docs/f04-ai-ticket-processing/README.md) | TARGET V1 |
+| 2. Technician Workspace | [F03 Ticket Management](docs/f03-ticket-management/README.md); ticket summary on handoff in F03, AI resolution in [F04](docs/f04-ai-ticket-processing/README.md) | TARGET V1 |
 | 3. Administration & Coordination | [F05 Workflow & Automation](docs/f05-workflow-automation/README.md) (rules, SLA, AI scope); RBAC and user directory in F09 (not specified) | TARGET V1 |
 | 4. Knowledge Base | [F06 Knowledge Base](docs/f06-knowledge-base/README.md) | TARGET V1 |
 | 5. AI Intelligent Processing | [F04 AI Ticket Processing](docs/f04-ai-ticket-processing/README.md) | TARGET V1 (draft for team review) |
