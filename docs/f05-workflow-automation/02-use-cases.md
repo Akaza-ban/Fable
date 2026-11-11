@@ -2,7 +2,7 @@
 
 > Design status: TARGET V1
 >
-> Scope: F05 Workflow & Automation (UC-WF-01 … UC-WF-09)
+> Scope: F05 Workflow & Automation (UC-WF-01 … UC-WF-11)
 
 ## Actors / roles
 
@@ -179,6 +179,13 @@ flowchart TD
 | Submit requests | ✓ | ✓ | ✓ |
 | Answer AI questions | ✓ | ✓ | ✓ (own tickets) |
 | Retry / resolve manually on failure | ✓ | Assigned tickets | |
+| See duplicate / related tickets linked by the system | ✓ | Assigned tickets | Own tickets only |
+| Undo a merge ("Not the same problem") | | | Own merged ticket, within 7 days |
+| Unlink related tickets (reason required) | ✓ | Assigned tickets | |
+| Configure duplicate handling (on/off, threshold, burst) | ✓ | | |
+| Return a misrouted ticket for re-routing (reason required) | ✓ | Assigned tickets | |
+| See the routing history of a ticket | ✓ | Assigned tickets | Own tickets (summary) |
+| Configure automatic re-routing (on/off, maximum re-routes) | ✓ | | |
 | Confirm result / report not fixed | | | Own tickets |
 
 Menus and buttons are hidden when the user lacks permission. Unauthorized URL access → `#/403`. **The backend enforces authorization**; hiding frontend controls serves UI/UX only.
@@ -206,6 +213,8 @@ flowchart LR
             uc04["UC-WF-04 Route ticket"]
             uc05["UC-WF-05 Auto-assign technician"]
             uc06["UC-WF-06 SLA reminders & warnings"]
+            uc10["UC-WF-10 Handle duplicate / similar tickets"]
+            uc11["UC-WF-11 AI re-routes on failure or misroute"]
         end
         subgraph automation["Automated handling"]
             direction LR
@@ -221,10 +230,10 @@ flowchart LR
         ai(["AI Service"])
     end
 
-    admin --> uc01 & uc02 & uc03 & uc05
-    tech --> uc05 & uc06 & uc09
-    requester --> uc04 & uc06 & uc08 & uc09
-    ai --> uc04 & uc05 & uc07
+    admin --> uc01 & uc02 & uc03 & uc05 & uc10 & uc11
+    tech --> uc05 & uc06 & uc09 & uc10 & uc11
+    requester --> uc04 & uc06 & uc08 & uc09 & uc10
+    ai --> uc04 & uc05 & uc07 & uc10 & uc11
 
     classDef actor fill:#666,color:#fff,stroke:#333
     classDef sysactor fill:#8a5cf6,color:#fff,stroke:#5b34c9
@@ -232,14 +241,14 @@ flowchart LR
     classDef core fill:#0b4f9e,color:#fff,stroke:#062f5e,stroke-width:3px
     class admin,tech,requester actor
     class ai sysactor
-    class uc01,uc02,uc03,uc06,uc09 usecase
+    class uc01,uc02,uc03,uc06,uc09,uc10,uc11 usecase
     class uc04,uc05,uc07,uc08 core
     style left fill:#fff,stroke:#bbb,stroke-dasharray:5 5
     style right fill:#fff,stroke:#bbb,stroke-dasharray:5 5
     style system fill:#f8fbff,stroke:#1168bd,stroke-dasharray:5 5
 ```
 
-Thick border: core business use cases. Purple: system actor (AI Service). UC-WF-05, 06, 08 and 09 are triggered automatically by the system; the connected actors are those who benefit from the result or act on it (reassign, retry, confirm).
+Thick border: core business use cases. Purple: system actor (AI Service). UC-WF-05, 06, 08, 09, 10 and 11 are triggered automatically by the system; the connected actors are those who benefit from the result or act on it (reassign, retry, confirm).
 
 ### Shared rules and constraints
 
@@ -304,10 +313,14 @@ stateDiagram-v2
     AUTOMATING --> ASSIGNED: permanent error / retries exhausted → technician
     ASSIGNED --> IN_PROGRESS: technician starts
     IN_PROGRESS --> AUTOMATING: technician retries automation
+    ASSIGNED --> ASSIGNED: AI re-routes to another group (UC-WF-11)
+    IN_PROGRESS --> ASSIGNED: returned as misrouted → AI re-routes (UC-WF-11)
     IN_PROGRESS --> RESOLVED: technician done
     RESOLVED --> CLOSED: requester confirms
     RESOLVED --> IN_PROGRESS: requester reports not fixed
     NEEDS_INFO --> CLOSED: no response after N days
+    NEW --> CLOSED: duplicate of the requester's own open ticket (merged)
+    CLOSED --> NEW: requester says "Not the same problem" (within 7 days)
     NEW --> CANCELLED: requester cancels
     CLOSED --> [*]
     CANCELLED --> [*]
@@ -349,6 +362,8 @@ stateDiagram-v2
 - **Actor:** Admin
 - **Preconditions:** logged in as `ADMIN`; connectors to the external access-management system are declared in deployment configuration (secrets are never entered through the UI)
 - **Main flow — AI actions:** SCR-WF-03 tab *AI actions* → enable/disable each action (`AUTO_CLASSIFY`, `AUTO_FILL_FIELDS`, `SET_PRIORITY`, `ASK_FOR_INFO`, `AUTO_APPROVE`, `SUGGEST_KB`) and, **per domain**, `AGENT_FIRST` (the domain's AI agent owns the ticket before any technician) → set the confidence threshold (0.00–1.00), the default priority when the AI is not confident (default P2), and the maximum clarification rounds (default 2) → `updateAiActionSetting` → audit
+- **Main flow — duplicates:** same tab → enable/disable `HANDLE_DUPLICATES` → set the duplicate threshold (default 0.85, shared with F04) and the burst rule (default 5 similar open tickets within 60 minutes) → `updateAiActionSetting` → audit
+- **Main flow — re-routing:** same tab → enable/disable `AUTO_REROUTE` → set the maximum number of re-routes per ticket (default 2) → `updateAiActionSetting` → audit
 - **Main flow — whitelist:** tab *Automation actions* → *Add* → enter request type, connector, operation, required parameters, maximum access duration, fallback team on failure → `createAutomationAction` → audit. V1 operations:
 
   | Operation | Meaning | Changes data? |
@@ -366,14 +381,15 @@ stateDiagram-v2
 ### UC-WF-04 Route ticket
 
 - **Actors:** Requester; AI Service
-- **Trigger:** a new ticket is created from the support mailbox (`EMAIL`) or the portal (`PORTAL`), or the requester answers an AI question
+- **Trigger:** a new ticket is created from the support mailbox (`EMAIL`) or the portal (`PORTAL`), the requester answers an AI question, or a re-route is requested (UC-WF-11)
 - **Main flow:**
   1. The AI Service (F04) reads the **full ticket** — request, requester and source — and returns the analysis: request type, `domain/subcategory`, **support level** (`L1` / `L2`), extracted fields, missing fields, confidence and a suggested priority (see *What F05 reads from each ticket*)
   2. The system **auto-fills** the ticket fields marked "Filled by AI" (`AUTO_FILL_FIELDS`, BR-WF-21)
   3. The system **sets the priority** — the AI's priority when confident, otherwise P2 — and attaches the SLA (`SET_PRIORITY`, BR-WF-20)
   4. The system places the ticket in the **group** of its domain and the **sub-group** of its subcategory (BR-WF-09)
-  5. The system writes an `ai_decisions` record and selects the flow according to the *Routing principles* table; the owner is the domain's **AI agent** (flows A and B, when `AGENT_FIRST` is on) or a **technician** (flow C)
-  6. Flow A → UC-WF-07; flow C → UC-WF-05
+  5. The system checks for **duplicate and similar tickets** (UC-WF-10): a duplicate of the requester's own open ticket is merged and routing stops; a ticket related to another person's open ticket keeps the same owner
+  6. The system writes an `ai_decisions` record and selects the flow according to the *Routing principles* table; the owner is the domain's **AI agent** (flows A and B, when `AGENT_FIRST` is on) or a **technician** (flow C)
+  7. Flow A → UC-WF-07; flow C → UC-WF-05
 - **Alternative — sender unknown** (external address, shared mailbox): fields stay empty, the ticket is never automated → flow C with reason `UNKNOWN_SENDER`
 - **Alternative — no AI agent for the domain**, or `AGENT_FIRST` off → flows A and B are handled by the AI Service without an agent owner; flow C unchanged
 - **Alternative — a technician or the Admin corrects the category or support level** before work starts → the ticket is routed again from step 4; the correction and its reason are audited
@@ -450,11 +466,71 @@ stateDiagram-v2
 - **Trigger:** automatically after UC-WF-08 finishes
 - **Main flow — verification:** the system calls the connector's check operation (e.g. the account exists, the user is in the access group) → match → `workflow_run` `SUCCEEDED` → ticket `RESOLVED` → notify the requester → requester clicks *Confirm* → `confirmTicketResolution` → `CLOSED`
 - **Alternative — requester reports not fixed:** `reopenTicket` → assigned to a technician of the owning team (UC-WF-05)
-- **Alternative — failure:** `workflow_run` `FAILED` or verification mismatch → assigned to a technician of the owning team with the error code, failed step and attempt history → the technician opens SCR-T-02 tab *Automation*:
+- **Alternative — failure:** `workflow_run` `FAILED` or verification mismatch → the AI first checks whether the failure means the ticket was **sent to the wrong target** (UC-WF-11); if not, it is assigned to a technician of the owning team with the error code, failed step and attempt history → the technician opens SCR-T-02 tab *Automation*:
   - *Retry* → `retryWorkflowRun` → back to UC-WF-08 (policy re-checked)
   - *Resolved manually* (note required) → `resolveWorkflowRunManually` → `MANUALLY_RESOLVED`, ticket `RESOLVED`
 - **Exception:** retry when the current policy no longer allows it → `409`
 - **Permission:** confirm: ticket owner; retry / manual resolution: `workflowRunRetry` + assignee or Admin
 - **Result:** a ticket is never marked resolved without successful verification or a technician's confirmation (BR-WF-13)
+
+### UC-WF-10 Handle duplicate and similar tickets
+
+> **Split with F04 and F03.** F04 *finds* the candidates (UC-AI-06: similarity 0–100 %, duplicate threshold, warning to the requester before submitting, suggested-bug bursts). F03 *stores* the links (link / merge). F05 decides **what the workflow does automatically** with them, so that the same problem is not handled twice.
+
+- **Actors:** Requester (merged ticket, undo); Technician (owner of related tickets, unlink); Admin (configuration, possible-incident alert); AI Service (finds candidates)
+- **Trigger:** UC-WF-04 step 5, for every new ticket and every re-route, when `HANDLE_DUPLICATES` is on
+- **Preconditions:** the F04 analysis lists candidates with their similarity, filtered to open tickets
+- **Main flow — duplicate of the requester's own open ticket** (similarity ≥ duplicate threshold, same requester, the earlier ticket is not `RESOLVED`, `CLOSED` or `CANCELLED`; typically an email sent twice, or *Submit anyway* on the portal):
+  1. The system links the new ticket to the earlier one as **duplicate** (F03 link operation) and copies its text and attachments as a comment on the earlier ticket
+  2. The new ticket becomes `CLOSED` with reason *"Duplicate of #T-1024"*; it consumes no SLA and is never assigned
+  3. The requester is notified: *"Your request was added to your open ticket #T-1024"*, with a **Not the same problem** action valid for 7 days
+  4. The owner of the earlier ticket (AI agent or technician) is notified of the new comment
+- **Main flow — related to another person's open ticket** (similarity ≥ duplicate threshold, different requester, same system):
+  1. The new ticket is **not** closed — each requester gets their own answer
+  2. The system links both tickets as **related** and routes the new one to the **same owner** as the open ticket, instead of the workload selection (UC-WF-05), when that owner is still able to take it (`ON` and below the maximum load, or an AI agent)
+  3. The owner is notified that a related ticket was added; resolving the main ticket lets the owner resolve the related ones together (F03)
+- **Main flow — burst of similar tickets** (at least 5 similar open tickets on the same system within 60 minutes; F04 flags them `SUSPECTED_BUG`):
+  1. The oldest open ticket becomes the **main ticket**; the others are linked to it as related and routed to its owner
+  2. The main ticket's priority is raised by one level (never above P1) and its SLA recalculated
+  3. The Admin is notified once per burst: *"Possible incident: 5 similar tickets on SAP in 60 minutes"*
+- **Alternatives:**
+  - The earlier ticket is already `RESOLVED`, `CLOSED` or `CANCELLED` → no merge; the new ticket is routed normally and the earlier one is shown to the owner as a similar past ticket (F04)
+  - The owner of the open ticket is `OFF` or at maximum load → the new ticket is linked as related but assigned by the normal selection rule (UC-WF-05)
+  - The requester chooses **Not the same problem** within 7 days → the link is removed, the ticket is reopened as `NEW` and routed normally; the pair is never merged again
+  - A technician or the Admin chooses **Unlink** with a reason (SCR-WF-23) → the link is removed, the ticket is routed normally; the pair is never linked again
+  - Candidate below the duplicate threshold → nothing is linked automatically; F04 still shows it to the technician as similar
+- **Exceptions:** a requester never sees, and is never merged into, another person's ticket (BR-AI-08); a merge never crosses requesters
+- **Permission:** automatic: internal system; undo: ticket owner (requester); unlink: assigned technician or Admin
+- **Result:** the same problem is handled once by one owner; repeated messages from the same requester do not create parallel work; bursts surface as a possible incident
+
+### UC-WF-11 AI re-routes a ticket when processing fails or it was misrouted
+
+> **Split with F04 and F03.** F04 already re-classifies **once inside the first analysis** when the domain agent answers `WRONG_DOMAIN` (UC-AI-01 step 8). F03 lets people **transfer or escalate within the same division**. UC-WF-11 covers what happens **after** the ticket was routed: the AI routes it again, automatically, when the first route turns out to be wrong or the chosen handler fails.
+
+- **Actors:** AI Service (re-classifies); Technician (returns a misrouted ticket, receives re-routed tickets); Admin (configuration, loop alert); Requester (sees the routing history)
+- **Trigger** (when `AUTO_REROUTE` is on) — one of these **re-route reasons**:
+
+  | Reason code | Signal |
+  |---|---|
+  | `RETURNED_MISROUTED` | The assigned technician clicks *Return for re-routing* (SCR-WF-24) with a reason, e.g. *"This is an SAP authorization problem, not a network issue"* |
+  | `AGENT_WRONG_DOMAIN` | The domain AI agent, while working on the ticket, finds it belongs to another domain |
+  | `AGENT_NOT_SOLVED` | The domain AI agent cannot resolve the ticket (no allowed action, no self-service fix, the requester answered *Not solved*) or does not answer within its time budget |
+  | `AUTOMATION_WRONG_TARGET` | An API execution failed with an error showing the account, entitlement or system belongs to another domain (e.g. *"user not found in this directory"*) |
+
+- **Main flow — misrouted** (`RETURNED_MISROUTED`, `AGENT_WRONG_DOMAIN`, `AUTOMATION_WRONG_TARGET`):
+  1. The system asks the AI Service for a **new analysis** of the ticket, giving it the technician's reason or the agent / API error as extra context and the group just left as **excluded**
+  2. A new `ai_decisions` version is stored with the reason code; the previous decision is kept
+  3. The ticket goes through routing again (UC-WF-04 from step 4): new group and sub-group, new owner (AI agent or technician), new flow
+  4. The new owner is notified with the AI summary **and the routing history** (previous group, who returned it and why)
+  5. The requester sees *"Your request was moved to the right team"* in the ticket timeline
+- **Main flow — agent could not resolve** (`AGENT_NOT_SOLVED`): the domain is right, the handler is wrong → the ticket stays in its group and sub-group and goes to flow C: a technician is chosen by the selection rule (UC-WF-05), with the agent's attempt in the summary
+- **Alternatives — loop protection:**
+  - The new analysis points to the **same group** that was just left → the ticket goes to the **default support team** instead
+  - The ticket has already been re-routed the **maximum number of times** (default 2) → no new AI routing: it goes to the default support team with reason `REROUTE_LIMIT_REACHED`, and the Admin is notified
+  - The AI Service is unavailable or returns an invalid analysis → default support team with reason `AI_UNAVAILABLE`
+- **Rules:** the SLA is **not reset** by a re-route (BR-WF-08); the priority is kept unless the new analysis sets a higher one; fields corrected by a person are kept; a duplicate link (UC-WF-10) is kept
+- **Exceptions:** *Return for re-routing* without a reason → `400`; by someone other than the assigned technician or the Admin → `403`; on a `RESOLVED`, `CLOSED` or `CANCELLED` ticket → `409`
+- **Permission:** automatic: internal system; return for re-routing: assigned technician or Admin
+- **Result:** a misrouted or failed ticket reaches the right team without the requester resubmitting it and without a person dispatching it, and it can never bounce between teams endlessly
 
 **Related:** [Features](01-features.md) · [INVEST backlog](04-invest-requirements.md) · [Acceptance criteria](03-acceptance-criteria.md) · [Business rules](../requirements/business-rules.md)

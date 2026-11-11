@@ -36,7 +36,7 @@ Only rules confirmed by project documentation are catalogued here.
 ## BR-WF-05 — Action source in the audit log
 
 - **Source:** `08-invest-requirements.md` cross-cutting constraints
-- **Related US:** US-WF-03 … US-WF-24 (US-WF-01, 02 removed)
+- **Related US:** US-WF-03 … US-WF-30 (US-WF-01, 02 removed)
 - **Related API:** all mutating operations
 - **Rule:** Every audit record has `source` ∈ {`USER`, `AI`, `AUTOMATION`}. `USER` is tied to a user account; `AI` is the AI Service actor; `AUTOMATION` is an internal system task (rules, timers, API execution) — **not an actor**. `AI`/`AUTOMATION` records must include their grounds (`decisionId`, the category and team chosen, `slaPolicyVersion` or `runId`).
 
@@ -151,3 +151,17 @@ Only rules confirmed by project documentation are catalogued here.
 - **Related US:** US-WF-10, US-WF-11, US-WF-21
 - **Related API:** `updateWorkloadSettings`, internal (assignment engine)
 - **Rule:** Among eligible technicians (BR-WF-10), the ticket goes to the one with the lowest workload score; ties go to the one who received a ticket least recently. Workload score = Σ (priority points × complexity factor) over the technician's `ASSIGNED` and `IN_PROGRESS` tickets. The system has three priority levels (no "critical" level). Defaults: P1 High = 3, P2 Medium = 2, P3 Low = 1; Simple ×1, Medium ×1.5, Complex ×2; maximum load 20. In V1 the complexity comes from the request type configured by the Admin, not from the AI. The number of tickets alone is never used to choose a technician.
+
+## BR-WF-22 — Duplicate and similar tickets are handled once
+
+- **Source:** UC-WF-10, AC-UC-WF-10
+- **Related US:** US-WF-25, US-WF-26, US-WF-27
+- **Related API:** internal (routing), `undoDuplicateMerge`, `unlinkTickets`, `updateAiActionSetting`
+- **Rule:** With `HANDLE_DUPLICATES` on, and using the F04 candidates and duplicate threshold (default 0.85): (1) a ticket that duplicates an **open ticket of the same requester** is merged into it — linked as duplicate through F03, closed with reason "Duplicate of …", never assigned — and the requester may undo the merge within 7 days; (2) a ticket similar to an open ticket of **another requester** is never closed, is linked as related and goes to the same owner when that owner can take it; (3) a burst of at least 5 similar open tickets on the same system within 60 minutes is grouped under the oldest one, whose priority rises by one level (never above P1), and the Admin is alerted once. A merge never crosses requesters or targets a resolved, closed or cancelled ticket. An undone or unlinked pair is never linked again.
+
+## BR-WF-23 — Automatic re-routing is bounded
+
+- **Source:** UC-WF-11, AC-UC-WF-11
+- **Related US:** US-WF-28, US-WF-29, US-WF-30
+- **Related API:** `returnForRerouting`, internal (routing), `updateAiActionSetting`
+- **Rule:** With `AUTO_REROUTE` on, a ticket is routed again by a new AI analysis when its technician returns it as misrouted (reason required), when its domain agent reports a wrong domain, or when an API execution fails on a wrong target; the group just left is excluded. When the agent simply cannot resolve the ticket, the group is kept and a technician takes it. A ticket is re-routed at most the configured number of times (default 2); beyond that, or when the new analysis points to the group just left, it goes to the default support team and the Admin is alerted. A re-route never resets the SLA, never lowers the priority, keeps human corrections and duplicate links, and is recorded as a new `ai_decisions` version with its reason code.

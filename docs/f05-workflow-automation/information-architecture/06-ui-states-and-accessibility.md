@@ -47,6 +47,10 @@ The interface copy in this document is written in English; the product UI langua
 | *Email* / *Portal* | Source channel of the ticket. |
 | *AI agent — Helpdesk* / *Technician — Hung* | Current owner of the ticket. |
 | *P1 High · set by AI* / *P2 Medium · default* | Priority and how it was set. |
+| *Duplicate of #T-1024* | The ticket was merged into the requester's open ticket; *Not the same problem* is shown for 7 days. |
+| *Related (3)* | Tickets of other people about the same problem, handled by the same owner. |
+| *Re-routed 1 / 2* | The ticket was routed again after a misroute or a failure; the routing history explains why. |
+| *Main ticket · possible incident* | The oldest ticket of a burst of similar tickets; its related tickets are listed under it. |
 
 ### Status chips
 

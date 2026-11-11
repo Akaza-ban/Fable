@@ -40,6 +40,8 @@ System name: **AI-Powered IT Ticket Routing and Automated Resolution System**.
 - F05.7 **AI approval of in-scope requests** (AI understanding + deterministic policy check)
 - F05.8 **API execution after approval** (idempotent, with retries, automatic revocation on expiry)
 - F05.9 Result verification and hand-off to a technician on failure
+- F05.10 **Detect and handle duplicate / similar tickets**: merge a requester's repeated ticket into their open one (undo within 7 days), route related tickets of other people to the same owner, group bursts of similar tickets and alert the Admin (candidates found by F04, links stored by F03)
+- F05.11 **AI re-routes a ticket when processing fails or it was misrouted**: technician returns a misrouted ticket, agent reports a wrong domain or cannot resolve, API fails on the wrong target → new AI analysis excluding the group just left; at most 2 re-routes, then the default support team and an Admin alert
 
 **Outside F05 (owned by other features):**
 

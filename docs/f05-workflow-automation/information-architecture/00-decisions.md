@@ -4,7 +4,7 @@
 >
 > Implementation status: NOT STARTED
 
-Information architecture IDs carry the `IA` prefix so they do not clash with other documents: decisions **D-IA-01..D-IA-13**, defaults **DF-IA-01..DF-IA-08**. All of them are **the author's proposals**, awaiting user confirmation; none changes the meaning of a user story or business rule.
+Information architecture IDs carry the `IA` prefix so they do not clash with other documents: decisions **D-IA-01..D-IA-15**, defaults **DF-IA-01..DF-IA-08**. All of them are **the author's proposals**, awaiting user confirmation; none changes the meaning of a user story or business rule.
 
 ## Decisions made in this document set
 
@@ -22,6 +22,8 @@ Information architecture IDs carry the `IA` prefix so they do not clash with oth
 | D-IA-10 | **There is no "approval" screen for humans.** The AI approves in the background; the requester only sees progress, and the Admin reviews afterwards through SCR-WF-30/31. | Follows the agreed flow: basic requests are approved by the AI, without Admin approval. | Proposed |
 | D-IA-11 | **Technicians set their status from the top bar** with an ON / OFF switch, next to their name. The switch belongs to F09 User Management; F05 only reads the status. | Technician selection needs the status (BR-WF-10); one click from any page keeps it up to date. | Proposed |
 | D-IA-12 | **SCR-WF-01 is a single page "Workload settings"** (no tabs): priority points, complexity by request type, maximum load, default support team, and an *Assignment preview* button (SCR-WF-05). | Only the person is configured in F05; the team comes from the AI category (D-IA-13). | Proposed |
+| D-IA-14 | **Duplicates have no page of their own.** A merged ticket shows a banner on SCR-T-02 with *Not the same problem*; related tickets appear in a panel on SCR-T-02; *Unlink* is a modal (SCR-WF-23) because it needs a reason. | Duplicates are part of a ticket's context; the links themselves are stored by F03 and the candidates found by F04. | Proposed |
+| D-IA-15 | **Re-routing is an action on SCR-T-02**, not a page: *Return for re-routing* opens a modal (SCR-WF-24) because a reason is required; the **routing history** is a panel of SCR-T-02. | The reason is the AI's main input for the new analysis; the history explains to the new owner why the ticket arrives. | Proposed |
 | D-IA-13 | **There are no assignment rules.** The team is the one responsible for the AI category of the ticket (declared per team in F09); otherwise the default support team. SCR-WF-04 *Assignment rule form* is removed and its number is not reused; SCR-WF-05 becomes *Assignment preview*. | User decision: removing a configuration step the AI category already covers. | Decided by the user |
 
 ## Defaults pending confirmation
