@@ -510,7 +510,7 @@ Pages and modals by owner branch. "Proposed" screens come from the mind map leav
 | SCR-DB-02 | Technician workbench: my queue by SLA, sub-group queue with claim, personal figures | Page | `/technician/dashboard` | Technician | F02 |
 | SCR-DB-01 | Admin dashboard: volume, open by status, daily AI resolution rate, SLA breach radar, P1 alerts, workload | Page | `/admin/dashboard` | Admin | F02 |
 | SCR-DB-10 | Live incident / P1 drawer | Drawer | Alert banner on the dashboards | Admin, on-duty technician | F02 |
-| SCR-DB-11 | SLA escalation | Modal | SLA widget | Admin, technician | F02 |
+| SCR-DB-11 | SLA escalation: nudge the assignee; reassign (Admin only) | Modal | SLA widget | Admin; technician (nudge only) | F02 |
 | SCR-T-01 | New request: free text, *for someone else*, attachments; no category form; KB suggestions | Page | `/tickets/new` | All | F03 |
 | SCR-T-03 | My tickets: Open · Needs my action · Resolved & closed · Cancelled | Page | `/my-tickets` | All | F03 |
 | SCR-T-04 | Work queues: views, filters, saved views | Page | `/tickets` | Technician, Admin | F03 |
@@ -518,6 +518,7 @@ Pages and modals by owner branch. "Proposed" screens come from the mind map leav
 | DLG-T-02 … 08 | Transfer within the group · Escalate · Ask requester · Resolve · Cancel · Not fixed / reopen · Confirm & rate | Dialogs | SCR-T-02, email links | Per action | F03 |
 | SCR-WF-11 · 23 · 24 | Reassign (Admin) · Unlink tickets · Return for re-routing | Modals | SCR-T-02 | Admin; assignee | F05 |
 | SCR-AI-04 · 06 · 07 | Review requirement brief · Resolve run manually · Correct domain form | Modals | SCR-T-02, email link | Requester; assignee; technician | F04 |
+| SCR-AI-05 | *This article solved my problem* on an open ticket (closes it as `SOLVED_BY_KB`) | Modal | SEC-AI-04, acknowledgement email EML-AI-01 | Requester (own ticket) | F04 |
 | SCR-KB-01 | KB search | Page | `/kb` | All (requesters see public articles only) | F06 |
 | SCR-KB-02 | Article | Page | `/kb/articles/:id` | All | F06 |
 | SCR-KB-03 | Article editor | Page | `/kb/editor`, `/kb/editor/:id` | Technician, Admin | F06 |
@@ -555,7 +556,7 @@ One page for every role, hosted by F03; the other branches plug their sections i
 | Action bar | Confirm (DLG-T-08), Not fixed / Reopen (DLG-T-07), Cancel (DLG-T-06), follow-up ticket | Start work, Ask requester (DLG-T-04), Resolve (DLG-T-05), Transfer (DLG-T-02), Escalate (DLG-T-03), Cancel; Return for re-routing (SCR-WF-24); Reassign (SCR-WF-11, Admin) | F03, F05 |
 | Banners | On hold: the question and *Waiting for your reply* (SEC-T-02); *Resolved — is it working now?*; merge banner (*Not the same problem*) | Summary (SEC-T-01); escalation banner (SEC-AI-05); *On hold since …*; *Automation running — actions locked* | F03, F04, F05 |
 | Conversation tab | Messages, AI messages (SEC-AI-03), guidance step card (SEC-AI-17), reply box | + internal notes, public / internal toggle, `@mention` | F03, F04 |
-| KB panel | Up to 3 articles with *This solved my problem* (SEC-KB-02 + SEC-AI-04) | Cited solution steps with *Insert into reply* (SEC-AI-09) | F06, F04 |
+| KB panel | Up to 3 articles with *This solved my problem* → SCR-AI-05 (SEC-KB-02 + SEC-AI-04) | Cited solution steps with *Insert into reply* (SEC-AI-09) | F06, F04 |
 | Details panel | Submitted on, source, team, Resolution when resolved, related tickets (SEC-T-03) | Requester, beneficiary, fields marked *Filled by AI* with *Correct*, domain form (SEC-AI-07), related tickets with *Unlink* (SCR-WF-23) | F03, F05, F04 |
 | Tab *Attachments* | Public attachments | + internal ones, blocked files | F03 |
 | Tab *Email* | — | Original email (`EMAIL` tickets) | F03 |
@@ -624,12 +625,13 @@ flowchart LR
 
 | Topic | Branch docs say | Decision for UI | Basis |
 |---|---|---|---|
-| Requester home | F03, F05: *My tickets* | `/portal` (SCR-DB-03); *My tickets* is the second item | Mind map: Dashboard › *Requester self-service portal & active ticket tracking* |
+| Home pages | F03, F05: requester → *My tickets*; F05: technician → *Assigned to me*, Admin → *AI decisions* | Requester → `/portal` (SCR-DB-03), technician → workbench (SCR-DB-02), Admin → dashboard (SCR-DB-01) | Mind map: Dashboard leaves (*Requester self-service portal*, *Technician personal workbench*, *Real-time operational overview*) |
 | Ticket routes | F02 and the older system IA: `/requests/*`; F05: one list for all roles | F03's routes: `/tickets/new`, `/my-tickets`, `/tickets`, `/tickets/:code` | F03 owns the ticket pages |
 | **SCR-T-03** | F03: *My tickets*; F05: *Ticket list* for all roles | **SCR-T-03 = My tickets.** Staff lists are SCR-T-04 *Work queues* | F03 owns the ticket pages |
 | Triage queue, assignment rules | Still in the F02 sidebar | Removed: no triage queue, no assignment rules | F05 D-IA-07, D-IA-13 |
 | Login | F05 SCR-01: email and password | Microsoft SSO only | Mind map: *Log in / log out (SSO)* |
-| Confirm / not fixed | F03 DLG-T-07/08, F04 SCR-AI-05, F05 SCR-WF-22 | **One pair: DLG-T-08 Confirm & rate, DLG-T-07 Not fixed**, also for AI resolutions and email links | Mind map: Ticket Management › *Confirm / close / reopen / cancel ticket* |
+| Confirm / not fixed **on a resolved ticket** | F03 DLG-T-07/08, F04 SCR-AI-05, F05 SCR-WF-22 | **One pair: DLG-T-08 Confirm & rate, DLG-T-07 Not fixed**, also for AI resolutions and email links. SCR-AI-05 stays only for *This article solved my problem* on an open ticket | Mind map: Ticket Management › *Confirm / close / reopen / cancel ticket* |
+| Manual reassignment | F02 SCR-DB-11 lets technicians reassign | **Admin only** (SCR-WF-11 or SCR-DB-11); technicians can only nudge | F05: the Admin is the only person who reassigns by hand |
 | Automation tab | F05: tab with SCR-WF-20 Retry, SCR-WF-21 Resolved manually | F04 SEC-AI-16 with *Retry* and SCR-AI-06 | Mind map: AI Ticket Processing › *Execute*, *Verify* |
 | AI analysis, ticket fields, priority, duplicates | Some docs still name F04 | F05 | Mind map: Workflow & Automation leaves |
 | KB, reports, audit routes | `/kb/explore`, `/reports/*`, `/analytics/executive-dashboard` in older docs | `/kb`, `/analytics/*`, `/audit/*` | Owners F06, F07, F08 |
