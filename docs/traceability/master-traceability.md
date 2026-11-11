@@ -30,6 +30,9 @@ Screens (`SCR-*`), operationIds, tables and components are **proposed names**; t
 | US-WF-19 | UC-WF-09 | AC-UC-WF-09 | SCR-T-02, SCR-WF-22 | Automation Executor, Connectors | `confirmTicketResolution`, `reopenTicket` | `workflow_runs`, `tickets` | BR-WF-13 | `INT-WF-VERIFY-001` PLANNED |
 | US-WF-20 | UC-WF-09 | AC-UC-WF-09 | SCR-T-02, SCR-WF-20, SCR-WF-21 | Automation Executor | `getWorkflowRun`, `retryWorkflowRun`, `resolveWorkflowRunManually` | `workflow_runs`, `workflow_run_attempts`, `audit_logs` | BR-WF-04, BR-WF-12, BR-WF-13 | `INT-WF-FAIL-001`, `INT-WF-RBAC-003` PLANNED |
 | US-WF-21 | UC-WF-01 | AC-UC-WF-01 | SCR-WF-01 Workload settings, SCR-WF-05 Assignment preview | Assignment Engine | `getWorkloadSettings`, `updateWorkloadSettings`, `previewAssignment` | `workload_settings`, `request_type_complexity`, `team_categories` (F09), `audit_logs` | BR-WF-09, BR-WF-18 | `UNIT-APP-WF-WORKLOAD-001` PLANNED |
+| US-WF-22 | UC-WF-04 | AC-UC-WF-04 | SCR-T-01, SCR-T-02 ("Filled by AI" fields) | Ticket Router, AI Gateway | internal (routing), `correctTicketField` | `tickets`, `ai_decisions`, `audit_logs` | BR-WF-19, BR-WF-21 | `INT-WF-FIELDS-001` PLANNED |
+| US-WF-23 | UC-WF-04 | AC-UC-WF-04 | SCR-T-02 (priority and SLA) | Ticket Router, SLA Engine | internal (routing), `changeTicketPriority` | `tickets`, `ticket_sla_timers`, `audit_logs` | BR-WF-08, BR-WF-20 | `UNIT-APP-WF-PRIORITY-001` PLANNED |
+| US-WF-24 | UC-WF-04, UC-WF-05 | AC-UC-WF-04, AC-UC-WF-05 | SCR-T-02 (group, sub-group, owner), SCR-WF-05 | Ticket Router, Assignment Engine | internal (routing), `previewAssignment` | `tickets`, `ticket_assignments`, `team_categories` (F09) | BR-WF-09 | `INT-WF-ROUTE-003` PLANNED |
 
 ## Screen inventory
 

@@ -39,10 +39,20 @@ These criteria describe target product behavior. The UI may satisfy a criterion 
 - Entitlement referencing a system without a connector → `400`.
 - Entitlement catalog changes take effect immediately for decisions and executions after saving.
 - API responses and the UI never contain connector secrets.
+- Disabling `AUTO_FILL_FIELDS` → new tickets keep empty fields for a technician to fill; disabling `SET_PRIORITY` → new tickets get the default priority; disabling `AGENT_FIRST` for a domain → its tickets have no AI agent owner.
+- The default priority must be one of P1–P3 → otherwise `400`.
 
 ## AC-UC-WF-04 — Route ticket
 
-*(US-WF-08, US-WF-09)*
+*(US-WF-08, US-WF-09, US-WF-22, US-WF-23, US-WF-24)*
+
+- The routing decision uses the full AI analysis: request, requester (department, business unit, site), source `channel` (`EMAIL` / `PORTAL`) and `createdBy`; the source is shown on the ticket.
+- A ticket from an unknown sender (`UNKNOWN_SENDER`) is never routed to flow A and goes to flow C.
+- Every routed ticket shows its support level `L1` or `L2` as computed by F04; `HELPDESK` domains are `L1`, application domains and business requirements are `L2`.
+- With `AUTO_FILL_FIELDS` on, request type, category, subcategory, support level, requested for, business unit, site and priority are filled and each is marked *"Filled by AI"*; a field below the confidence threshold stays empty and is asked for (flow B).
+- With `SET_PRIORITY` on, the AI priority is applied when its confidence ≥ threshold, otherwise P2; the SLA of that priority is attached in the same step.
+- A technician or the Admin can change an AI-filled field or the priority only with a reason (missing → `400`); the change is audited with before/after values and recalculates the SLA. A change of category or support level before work starts re-routes the ticket.
+- When the domain has an AI agent and `AGENT_FIRST` is on, the ticket's owner is that agent in flows A and B; the owner becomes a technician when the ticket enters flow C.
 
 - Every new ticket has exactly one current `ai_decisions` record with `outcome` ∈ {`AUTO_APPROVED`, `NEEDS_INFO`, `ROUTE_TO_HUMAN`}, a confidence and a reason.
 - *"Please grant me read access to the shared Accounting folder"* from an Accounting employee, entitlement in the catalog, confidence ≥ threshold → flow A.
@@ -60,8 +70,8 @@ These criteria describe target product behavior. The UI may satisfy a criterion 
 - Among eligible technicians, the one with the **lowest workload score** is chosen (score = Σ priority points × complexity factor of their `ASSIGNED` and `IN_PROGRESS` tickets). Example: Mai (3 × P1 Complex = 18) and Hung (5 × P3 Simple = 5) are both `ON` → a new ticket goes to Hung.
 - A technician who is `OFF` never receives a new ticket, even with the lowest score.
 - If nobody is `ON` or everyone is at maximum load, the ticket waits in the team queue and is assigned within ≤ 1 minute after a technician becomes eligible.
-- The ticket goes to the team responsible for its AI category (F09). Example: category *Hardware* → Hardware Team.
-- No team is responsible for the category, or the AI could not classify the ticket → the default support team is used with the same selection rule; no ticket is left without a team.
+- The ticket is placed in the group of its domain and the sub-group of its subcategory (F09). Example: `HELPDESK/PRINTER` → IT Helpdesk group, Printer sub-group; the technician is chosen among the Printer sub-group members.
+- No sub-group handles the subcategory → members of the group are used; no group owns the domain, or the AI could not classify the ticket → the default support team is used with the same selection rule; no ticket is left without a team.
 - A technician switching to `OFF` → their `ASSIGNED` (not started) tickets are reassigned within ≤ 1 minute; their `IN_PROGRESS` tickets stay with them.
 - The technician notification includes the AI summary **and the routing reason** (e.g. *"Hardware request"*, *"Entitlement X is not in the department catalog"*).
 - Manual reassignment is Admin only (other roles → `403`) and requires a reason (missing → `400`).

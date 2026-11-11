@@ -76,9 +76,9 @@ flowchart TD
     actAdmin["<span style='font-size:40px'>👤</span><br/><b>Admin</b>"]:::actor
     actReq["<span style='font-size:40px'>👤</span><br/><b>Requester</b>"]:::actor
     start(["ROUTE_TO_HUMAN<br/>hardware / out of scope / policy check failed<br/>/ clarification limit / AI failure"]) --> summary["AI: summarize the ticket + routing reason"]:::ai
-    summary --> rules{"A team is responsible for<br/>the AI category? (F09)"}
-    rules -->|"Yes"| team["Responsible team<br/>e.g. Hardware → Hardware Team"]
-    rules -->|"No / not classified"| deflt["Default support team"]
+    summary --> rules{"A group owns the domain?<br/>sub-group for the subcategory? (F09)"}
+    rules -->|"Yes"| team["Sub-group, or group if none<br/>e.g. HELPDESK/PRINTER → Printer sub-group"]
+    rules -->|"No group / not classified"| deflt["Default support team"]
     team --> select
     deflt --> select{"Eligible technician?<br/>ON · below max load"}
     select -->|"Yes"| assign["ASSIGNED to the lowest workload score<br/>notification SCR-91 with summary"]

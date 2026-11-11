@@ -2,7 +2,7 @@
 
 > Design status: TARGET V1
 >
-> Scope: F05 — US-WF-01 … US-WF-21
+> Scope: F05 — US-WF-01 … US-WF-24
 
 Each user story is small enough to implement and test independently. Authentication, authorization, validation, auditing and error handling are **shared acceptance constraints**, not hidden features.
 
@@ -44,6 +44,9 @@ MoSCoW priority: **Must** (required for V1), **Should** (important), **Could** (
 | US-WF-19 | As a **Requester**, I want the system to verify the result on the external access-management system and then ask me to confirm, so that I am sure my request was really fulfilled. | Trustworthy result | US-WF-17 | Must | AC-UC-WF-09 |
 | US-WF-20 | As a **Technician**, I want tickets whose execution or verification failed to be handed to me with the error log so I can retry or resolve manually, so that automation failures are never forgotten. | Clear ownership of failures | US-WF-17, US-WF-10 | Must | AC-UC-WF-09 |
 | US-WF-21 | As an **Admin**, I want to configure workload scoring (points per priority, complexity of each request type, maximum load per technician, default support team), and to preview who would receive a sample ticket, so that tickets go to the technician who is really the least busy, not just the one holding the fewest tickets. | Realistic load balancing | Technical teams and their categories (F09) | Must | AC-UC-WF-01 |
+| US-WF-22 | As a **Requester**, I want the ticket fields (request type, category, support level, requested for, business unit, site) to be filled automatically from what I wrote, whether I wrote an email or used the portal, so that I never have to pick a category or fill a form. | No category form | F04 analysis (UC-AI-01) | Must | AC-UC-WF-04 |
+| US-WF-23 | As a **Technician**, I want every ticket to arrive with a priority already set from its impact and urgency, and its SLA attached, and to be able to correct it with a reason, so that I work on the right tickets first. | Correct order of work | US-WF-03, F04 priority (UC-AI-05) | Must | AC-UC-WF-04 |
+| US-WF-24 | As a **Requester**, I want my ticket to go first to the AI agent of its domain and, when a person is needed, to a technician of the right sub-group, so that the most specialized handler takes it without being passed around. | Fewer hand-offs | US-WF-22, groups and sub-groups (F09), domain agents (F04) | Must | AC-UC-WF-04, AC-UC-WF-05 |
 
 Grouped by use case:
 
@@ -51,8 +54,8 @@ Grouped by use case:
 US-WF-21          UC-WF-01  Configure workload scoring (US-WF-01, 02 removed)
 US-WF-03–04   UC-WF-02  Configure SLA
 US-WF-05–07   UC-WF-03  Configure AI processing scope
-US-WF-08–09   UC-WF-04  Route ticket (AI self-service / clarification)
-US-WF-10–11   UC-WF-05  Auto-assign technician
+US-WF-08–09, 22–24   UC-WF-04  Route ticket (full analysis, level, fields, priority, owner)
+US-WF-10–11   UC-WF-05  Auto-assign technician (group / sub-group)
 US-WF-12–14   UC-WF-06  SLA reminders & warnings
 US-WF-15–16   UC-WF-07  AI approves in-scope request
 US-WF-17–18   UC-WF-08  Execute via API
@@ -69,7 +72,7 @@ US-WF-19–20   UC-WF-09  Verify / hand off on failure
 | US-WF-02 | — | — | — | — | — | — | Removed with US-WF-01. |
 | US-WF-03 | PASS | PASS | PASS | PASS | PASS | PASS | Three priority levels P1–P3 with defaults; policies are versioned. |
 | US-WF-04 | PASS | PASS | PASS | PASS | PASS | PASS | Only pause state: `NEEDS_INFO`. |
-| US-WF-05 | PASS | PASS | PASS | PASS | PASS | PASS | 5 AI actions, threshold 0.00–1.00, default 2 clarification rounds. |
+| US-WF-05 | PASS | PASS | PASS | PASS | PASS | PASS | 6 AI actions plus `AGENT_FIRST` per domain, threshold 0.00–1.00, default priority P2, default 2 clarification rounds. |
 | US-WF-06 | PASS | PASS | PASS | PASS | PASS | PASS | 4 V1 operations: `CHECK_ACCOUNT`, `CREATE_ACCOUNT`, `GRANT_ACCESS`, `REVOKE_ACCESS`. |
 | US-WF-07 | PASS | PASS | PASS | PASS | PASS | PASS | Catalog per department; check does not use AI. |
 | US-WF-08 | PASS | PASS | PASS | PASS | PASS | PASS | Flows A/B/C have explicit conditions. |
@@ -86,6 +89,9 @@ US-WF-19–20   UC-WF-09  Verify / hand off on failure
 | US-WF-19 | PASS | PASS | PASS | PASS | PASS | PASS | Connectors must expose a check operation. |
 | US-WF-20 | PASS | PASS | PASS | PASS | PASS | PASS | Retry always re-checks the current policy. |
 | US-WF-21 | PASS | NEEDS CONFIRM | PASS | PASS | PASS | PASS | Default points (P1 = 3, P2 = 2, P3 = 1), factors (×1/×1.5/×2) and maximum load 20 are proposed values; complexity comes from the request type in V1. |
+| US-WF-22 | PASS | PASS | PASS | PASS | PASS | PASS | Fields come from the F04 analysis; each is marked "Filled by AI"; low-confidence fields are asked for. |
+| US-WF-23 | PASS | NEEDS CONFIRM | PASS | PASS | PASS | PASS | Default P2 when the AI is not confident. F04 still suggests P1–P4 while F05 uses P1–P3: the scales must be aligned. |
+| US-WF-24 | PASS | PASS | PASS | PASS | PASS | PASS | Depends on F09 for sub-groups and on F04 for domain agents. |
 
 ## Cross-cutting acceptance constraints
 

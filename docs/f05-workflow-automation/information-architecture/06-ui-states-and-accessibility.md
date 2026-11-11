@@ -38,6 +38,16 @@ The interface copy in this document is written in English; the product UI langua
 
 **AI-generated content** (summaries, questions, reasons) always carries a text label **AI**, never only an icon.
 
+**Routing information** on SCR-T-02 and SCR-T-03:
+
+| Chip | Meaning |
+|---|---|
+| *Filled by AI* | The field was written from the AI analysis; a corrected field shows *Corrected by <name>* instead. |
+| `L1` / `L2` | Support level computed by F04 (Helpdesk vs application domain or business requirement). |
+| *Email* / *Portal* | Source channel of the ticket. |
+| *AI agent — Helpdesk* / *Technician — Hung* | Current owner of the ticket. |
+| *P1 High · set by AI* / *P2 Medium · default* | Priority and how it was set. |
+
 ### Status chips
 
 A chip always carries its text. Colour supports the text and never replaces it.

@@ -34,8 +34,8 @@ System name: **AI-Powered IT Ticket Routing and Automated Resolution System**.
 - F05.1 Configure **workload scoring** (priority points, complexity by request type, maximum load, default support team, assignment preview)
 - F05.2 Configure SLA policies by priority and business calendar
 - F05.3 Configure the **AI processing scope**: AI actions and confidence thresholds, automation action catalog (whitelist), department entitlement catalog
-- F05.4 **Ticket routing**: AI self-service / ask the requester / route to a human
-- F05.5 **Automatic technician assignment**: the AI category gives the responsible team (F09), then technician status and workload score choose the person — no assignment rules, no Team Lead, no manual triage queue
+- F05.4 **Ticket routing** from the full AI analysis (request, requester, source `EMAIL` / `PORTAL`): support level `L1` / `L2`, **fields filled automatically** ("Filled by AI"), **priority set automatically** with its SLA, then AI self-service / ask the requester / route to a human
+- F05.5 **Automatic routing to group, sub-group, AI agent or technician**: domain → group, subcategory → sub-group (F09); the domain's AI agent owns the ticket first (agent-first), a technician of the sub-group gets it in flow C, chosen by status ON/OFF and workload score — no assignment rules, no Team Lead, no manual triage queue
 - F05.6 Response reminders, SLA warnings and escalation on breach
 - F05.7 **AI approval of in-scope requests** (AI understanding + deterministic policy check)
 - F05.8 **API execution after approval** (idempotent, with retries, automatic revocation on expiry)
