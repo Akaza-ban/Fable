@@ -8,7 +8,7 @@
 
 This document reuses the roles, ticket data scope and permission style from the foundation modules (`mvp.md`, branch `feature/author`) and the ticket states, SLA, routing and AI rules from **F05 Workflow & Automation** (`03-use-cases.md`, `BR-WF-xx`, branch `docs/workflow-requirements`). It only adds `UC-TK-xx`, `BR-TK-xx` and **proposes** the changes to shared artifacts listed in [section 7](#7-proposed-changes-to-shared-artifacts).
 
-Related: [User stories & acceptance criteria](01-user-stories.md) · [Information architecture](03-information-architecture.md)
+Related: [User stories & acceptance criteria](01-user-stories.md) · [Information architecture](information-architecture/README.md)
 
 ## 1. Mind map → use case mapping
 
@@ -29,7 +29,7 @@ Related: [User stories & acceptance criteria](01-user-stories.md) · [Informatio
 | Routing (flows A/B/C), automatic assignment by rule, SLA timers and warnings, AI approval, API execution, automation retry | F05 Workflow & Automation | Triggers Workflow on create / answer / reopen; shows the result; never bypasses Workflow rules |
 | Ticket history browsing, audit storage | F08 Activity Log | Writes the events; the *History* tab is rendered by F08 |
 | Statistics, satisfaction reports | F07 Reports & Analytics | Produces status timestamps, escalation and rating data |
-| Users, technical teams, membership, `is_lead`, absence flag | F09 User Management | Reads them for assignment |
+| Users, technical teams, membership, absence flag | F09 User Management | Reads them for assignment |
 | Authentication, data scope enforcement | F01 Authentication & Authorization | Applies the scope on every query |
 
 ## 2. Actors
@@ -38,12 +38,12 @@ Related: [User stories & acceptance criteria](01-user-stories.md) · [Informatio
 |---|---|---|
 | Requester | `REQUESTER` | Creates tickets (for self or a colleague), adds information and evidence, answers questions, confirms / reopens / cancels own tickets, rates the result |
 | Technician | `TECHNICIAN` | Works on tickets assigned to them or to their teams: claims, starts, asks the requester, writes replies and internal notes, transfers, escalates, resolves |
-| Team Lead | `TECHNICIAN` + `is_lead` | Everything a technician does, plus: assigns / reassigns within own team, handles the triage queue, receives escalations |
-| Administrator | `ADMIN` | All tickets: assigns anywhere, cancels with reason, redacts sensitive content; any action on behalf of the organization |
+| Administrator | `ADMIN` | All tickets: handles the triage queue, assigns / reassigns anywhere, receives escalations, sets priority, cancels with reason, redacts sensitive content; any action on behalf of the organization |
 | AI Service | `AI` (system actor) | Writes clarification questions and summaries into the ticket conversation; suggests category / priority / similar tickets (F04). Never changes ticket ownership or closes tickets by itself |
 
 > Background jobs (auto-confirm, status timestamps, SLA) are **internal system behavior** with audit source `AUTOMATION` (BR-WF-05), not actors.
 > Every role can *create* tickets (Admins and technicians also have IT problems).
+> The system has **four roles only**: Requester, Technician, Admin and the AI Service. There is no Team Lead / Operations Lead role; the work such a role would do (triage, assignment, escalation target, priority approval) belongs to the Admin.
 
 ## 3. Use case diagram
 
@@ -67,7 +67,6 @@ flowchart LR
 
     subgraph right["Actors"]
         direction TB
-        lead(["Team Lead"])
         admin(["Admin"])
         ai(["AI Service"])
     end
@@ -76,7 +75,6 @@ flowchart LR
 
     requester --> uc01 & uc02 & uc04 & uc06
     tech --> uc02 & uc03 & uc04 & uc05
-    lead --> uc03
     admin --> uc02 & uc03 & uc06
     ai --> uc04
     uc01 -. "triggers routing" .-> wf
@@ -88,7 +86,7 @@ flowchart LR
     classDef core fill:#0b4f9e,color:#fff,stroke:#062f5e,stroke-width:3px
     classDef usecase fill:#1168bd,color:#fff,stroke:#0b4f9e
     classDef ext fill:#e8f1fc,color:#123,stroke:#3a7bd5
-    class requester,tech,lead,admin actor
+    class requester,tech,admin actor
     class ai sysactor
     class uc01,uc03,uc04,uc05,uc06 core
     class uc02 usecase
@@ -122,7 +120,7 @@ stateDiagram-v2
     NEW --> ASSIGNED: rule matched (WF)
     NEW --> TRIAGE: no rule matched (WF)
     NEEDS_INFO --> NEW: requester answers AI
-    TRIAGE --> ASSIGNED: lead/admin assigns (UC-TK-03)
+    TRIAGE --> ASSIGNED: admin assigns (UC-TK-03)
     ASSIGNED --> ASSIGNED: claim / reassign / transfer / escalate
     ASSIGNED --> IN_PROGRESS: assignee starts (UC-TK-05)
     IN_PROGRESS --> NEEDS_INFO: technician asks requester (UC-TK-04)
@@ -150,11 +148,11 @@ stateDiagram-v2
 | # | From | To | Action / operationId | Allowed actor | Required input |
 |---|---|---|---|---|---|
 | T1 | — | `NEW` | `createTicket` | Any authenticated user | Title, description |
-| T2 | `TRIAGE` | `ASSIGNED` | `assignTicket` | Team Lead (own team), Admin | Team (+ optional technician) |
+| T2 | `TRIAGE` | `ASSIGNED` | `assignTicket` | Admin | Team (+ optional technician) |
 | T3 | `ASSIGNED` (team only) | `ASSIGNED` | `claimTicket` | Technician member of the team | — |
-| T4 | `ASSIGNED`, `IN_PROGRESS` | `ASSIGNED` | `reassignTicket` | Team Lead (own team), Admin | Target technician, reason |
-| T5 | `ASSIGNED`, `IN_PROGRESS` | `ASSIGNED` | `transferTicket` | Assignee, Team Lead (source team), Admin | Target team, reason |
-| T6 | `ASSIGNED`, `IN_PROGRESS` | `ASSIGNED` | `escalateTicket` | Assignee, Team Lead, Admin | Escalation type, reason, work done so far |
+| T4 | `ASSIGNED`, `IN_PROGRESS` | `ASSIGNED` | `reassignTicket` | Admin | Target technician, reason |
+| T5 | `ASSIGNED`, `IN_PROGRESS` | `ASSIGNED` | `transferTicket` | Assignee, Admin | Target team, reason |
+| T6 | `ASSIGNED`, `IN_PROGRESS` | `ASSIGNED` | `escalateTicket` | Assignee, Admin | Escalation type, reason, work done so far |
 | T7 | `ASSIGNED` | `IN_PROGRESS` | `startTicketWork` | Individual assignee | — |
 | T8 | `IN_PROGRESS` | `NEEDS_INFO` (`waiting_on = TECHNICIAN`) | `requestTicketInfo` | Assignee | Question (public message) |
 | T9 | `NEEDS_INFO` (`TECHNICIAN`) | `IN_PROGRESS` | `addTicketMessage` by requester (automatic) or `resumeTicketWork` | Requester / Assignee | Message, or resume reason |
@@ -165,7 +163,7 @@ stateDiagram-v2
 | T14 | `RESOLVED` | `IN_PROGRESS` / `ASSIGNED` | `reopenTicket` | Requester (owner), Admin | Reason |
 | T15 | `CLOSED` | `IN_PROGRESS` / `ASSIGNED` | `reopenTicket` | Requester (owner), Admin | Reason; within window (BR-TK-11) |
 | T16 | `NEW`, `NEEDS_INFO`, `TRIAGE`, `ASSIGNED` | `CANCELLED` | `cancelTicket` | Requester (owner) | Optional note |
-| T17 | `NEW`, `NEEDS_INFO`, `TRIAGE`, `ASSIGNED`, `IN_PROGRESS` | `CANCELLED` | `cancelTicket` | Assignee, Team Lead, Admin | Cancel reason code + note |
+| T17 | `NEW`, `NEEDS_INFO`, `TRIAGE`, `ASSIGNED`, `IN_PROGRESS` | `CANCELLED` | `cancelTicket` | Assignee, Admin | Cancel reason code + note |
 
 Transitions marked *(WF)* in the diagram are owned by Workflow (UC-WF-04 … UC-WF-09) and are not repeated here. **No F03 action can move a ticket out of `AUTOMATING`** (BR-TK-08).
 
@@ -200,16 +198,16 @@ Transitions marked *(WF)* in the diagram are owned by Workflow (UC-WF-04 … UC-
 
 ### UC-TK-02 View, search and filter tickets
 
-- **Actors:** Requester, Technician, Team Lead, Admin
+- **Actors:** Requester, Technician, Admin
 - **Goal:** find the right tickets quickly and see a ticket's full, role-appropriate picture.
 - **Preconditions:** logged in.
 - **Main flow — list:**
-  1. User opens the ticket list. Default view by role: Requester → *My tickets* (SCR-T-03); Technician → *Assigned to me*; Team Lead → *My team — unassigned*; Admin → *All open tickets* (SCR-T-04).
+  1. User opens the ticket list. Default view by role: Requester → *My tickets* (SCR-T-03); Technician → *Assigned to me*; Admin → *All open tickets* (SCR-T-04).
   2. Backend applies the **data scope** in the query (BR-TK-01) before any filter, then returns a page (default 25, max 100) sorted by default by *SLA due soonest* for staff and *last updated* for requesters.
   3. User searches by keyword (ticket code exact match, or full-text on title / description / public messages) and filters by: status (multi), priority, category / request type, team, assignee (incl. *unassigned*), requester, requester department, created / updated date range, SLA state (`ON_TRACK`, `AT_RISK`, `BREACHED`, `PAUSED`), routing flow (A / B / C), `waiting_on`, *has attachments*, *escalated*, *reopened*.
   4. Filters, sort and page are reflected in the URL so a view can be shared / bookmarked; results update without full page reload.
 - **Main flow — detail:**
-  5. User opens a ticket → `getTicket` (scope re-checked) → SCR-T-02 shows header (code, title, status, priority, SLA countdown), conversation, details panel and role-dependent tabs (see IA §3.2).
+  5. User opens a ticket → `getTicket` (scope re-checked) → SCR-T-02 shows header (code, title, status, priority, SLA countdown), conversation, details panel and role-dependent tabs (see [screen content §1.2](information-architecture/02-screen-content.md#12-scr-t-02-ticket-detail)).
   6. Requester sees only public messages, AI questions/answers and an outcome summary; staff see internal notes, AI summary, routing reason, AI confidence and the automation tab (BR-TK-10).
 - **Alternative flows:**
   - **A1 — Saved views:** staff save the current filter set as a named personal view (max 20) → `createSavedView`; it appears in the left navigation.
@@ -220,38 +218,38 @@ Transitions marked *(WF)* in the diagram are owned by Workflow (UC-WF-04 … UC-
   - E2 Ticket code does not exist → `404`.
   - E3 Invalid filter value or date range (from > to, range > 366 days) → `400`.
   - E4 Search backend unavailable → keyword search disabled with a banner; plain filters still work (DB query).
-- **Permission:** `ticket:read` with scope `own` (Requester, plus beneficiary), `assigned, group` (Technician, Team Lead), `all` (Admin).
+- **Permission:** `ticket:read` with scope `own` (Requester, plus beneficiary), `assigned, group` (Technician), `all` (Admin).
 - **Postconditions:** no data changes (read-only), except saved views.
 
 ### UC-TK-03 Assign, transfer team, escalate
 
-- **Actors:** Team Lead, Admin (assign / reassign); Technician (claim, transfer, escalate); Workflow (automatic assignment — UC-WF-05, not repeated here)
+- **Actors:** Admin (assign / reassign); Technician (claim, transfer, escalate); Workflow (automatic assignment — UC-WF-05, not repeated here)
 - **Goal:** every ticket that needs a human has the **right owner** at the **right level**, with a traceable reason.
 - **Preconditions:** ticket in `TRIAGE`, `ASSIGNED` or `IN_PROGRESS`; **not** `AUTOMATING` (BR-TK-08); the actor has the ticket in scope.
-- **Main flow — assign from triage (Team Lead / Admin):**
-  1. Lead opens the triage queue (SCR-WF-10, or SCR-T-04 view *Triage*) or a ticket in `TRIAGE`.
-  2. Clicks *Assign* → DLG-T-01: choose team (Lead: only own teams; Admin: any) and optionally a technician. The dialog shows each candidate's open-ticket count and absence flag; unavailable members are disabled (BR-TK-15).
+- **Main flow — assign from triage (Admin):**
+  1. Admin opens the triage queue (SCR-WF-10, or SCR-T-04 view *Triage*) or a ticket in `TRIAGE`.
+  2. Clicks *Assign* → DLG-T-01: choose any team and optionally a technician. The dialog shows each candidate's open-ticket count and absence flag; unavailable members are disabled (BR-TK-15).
   3. `assignTicket` → ticket `ASSIGNED` (team, assignee) → assignment record, audit `TICKET_ASSIGNED` (`source = USER`) → the assignee (or the team, if no individual) is notified with the AI summary.
 - **Alternative flows:**
   - **A1 — Claim (Technician):** in *My team — unassigned*, technician clicks *Claim* → `claimTicket` → becomes the assignee. Two technicians claiming the same ticket → the second gets `409 ALREADY_ASSIGNED`.
-  - **A2 — Reassign within team (Team Lead / Admin):** DLG-T-01 with a mandatory reason → `reassignTicket` → previous and new assignee are notified; status returns to `ASSIGNED` (the new owner must start it).
-  - **A3 — Transfer to another team (chuyển nhóm):** the assignee (or source Team Lead / Admin) clicks *Transfer* → DLG-T-02: target team (list of active teams with their categories), reason code (`WRONG_TEAM`, `NEEDS_OTHER_SKILL`, `OTHER`) + note (≥ 10 chars) → `transferTicket` → ticket `ASSIGNED` to the target team **without individual assignee**; Workflow picks a member using that team's distribution strategy (UC-WF-05), otherwise the target team lead is notified. The previous assignee loses edit rights but keeps read access via history. If the reason is `WRONG_TEAM`, the event is flagged as a **routing correction** for AI learning (F04).
+  - **A2 — Reassign (Admin):** DLG-T-01 with a mandatory reason → `reassignTicket` → previous and new assignee are notified; status returns to `ASSIGNED` (the new owner must start it).
+  - **A3 — Transfer to another team (chuyển nhóm):** the assignee (or an Admin) clicks *Transfer* → DLG-T-02: target team (list of active teams with their categories), reason code (`WRONG_TEAM`, `NEEDS_OTHER_SKILL`, `OTHER`) + note (≥ 10 chars) → `transferTicket` → ticket `ASSIGNED` to the target team **without individual assignee**; Workflow picks a member using that team's distribution strategy (UC-WF-05); otherwise the ticket waits in the target team queue and Admins are notified. The previous assignee loses edit rights but keeps read access via history. If the reason is `WRONG_TEAM`, the event is flagged as a **routing correction** for AI learning (F04).
   - **A4 — Functional escalation (chuyển cấp chuyên môn):** assignee clicks *Escalate* → DLG-T-03, type *To higher support tier*: system proposes teams with a higher `support_tier` (L1 → L2 → L3) covering the ticket category; technician selects one, enters reason and **work done so far** (mandatory, ≥ 20 chars, stored as an internal note) → `escalateTicket` → `escalation_level` +1, ticket `ASSIGNED` to the target team, audit `TICKET_ESCALATED`.
-  - **A5 — Hierarchical escalation (báo cấp quản lý):** DLG-T-03, type *To team lead*: ticket stays with its owner, the team lead is notified with the reason, `is_escalated_to_lead = true`; the lead may reassign (A2) or raise priority (UC-TK-05 A3). Workflow's SLA-breach escalation (UC-WF-06) uses the same flag with `source = AUTOMATION`.
-  - **A6 — Assignee becomes unavailable:** the assignee is disabled, removed from the team or marked absent (F09) → their open tickets in `ASSIGNED` / `IN_PROGRESS` go back to the team queue (assignee cleared, status `ASSIGNED`), the lead is notified (BR-TK-20).
+  - **A5 — Escalation to Admin (báo cấp quản lý):** DLG-T-03, type *To Admin*: ticket stays with its owner, Admins are notified with the reason, `is_escalated_to_admin = true`; an Admin may reassign (A2) or raise priority (UC-TK-05 A3). Workflow's SLA-breach escalation (UC-WF-06) uses the same flag with `source = AUTOMATION`.
+  - **A6 — Assignee becomes unavailable:** the assignee is disabled, removed from the team or marked absent (F09) → their open tickets in `ASSIGNED` / `IN_PROGRESS` go back to the team queue (assignee cleared, status `ASSIGNED`), Admins are notified (BR-TK-20).
 - **Exceptions:**
   - E1 Missing reason where required → `400`.
-  - E2 Team Lead assigns outside own team, technician transfers a ticket they don't own → `403`.
+  - E2 Technician calls assign / reassign, or transfers a ticket they don't own → `403`.
   - E3 Target technician inactive / absent / not a member of the target team → `400 ASSIGNEE_UNAVAILABLE`.
-  - E4 Target team = current team (transfer) or no higher tier available (functional escalation at L3) → `400`; UI suggests hierarchical escalation instead.
+  - E4 Target team = current team (transfer) or no higher tier available (functional escalation at L3) → `400`; UI suggests escalation to Admin instead.
   - E5 Ticket is `AUTOMATING`, `RESOLVED`, `CLOSED` or `CANCELLED` → `409 INVALID_TRANSITION`.
   - E6 Ticket changed since it was loaded (version mismatch) → `409 STALE_VERSION`; UI reloads and lets the user retry.
-- **Permission:** `ticket:assign` (Lead: own team; Admin: all), `ticket:claim`, `ticket:transfer`, `ticket:escalate` (assignee, lead, admin).
+- **Permission:** `ticket:assign` (Admin), `ticket:claim`, `ticket:transfer`, `ticket:escalate` (assignee, Admin).
 - **Postconditions:** exactly one current owner (team, optionally person); the **SLA clock is not reset** by any of these actions (BR-TK-06); an assignment / escalation record and audit entry with before/after values exist.
 
 ### UC-TK-04 Communicate and add information
 
-- **Actors:** Requester, beneficiary, Technician, Team Lead, Admin; AI Service (writes clarification questions — F05/F04)
+- **Actors:** Requester, beneficiary, Technician, Admin; AI Service (writes clarification questions — F05/F04)
 - **Goal:** keep all communication about a ticket in one traceable conversation, separating what the requester sees from internal work notes.
 - **Preconditions:** ticket in scope; status is not `CLOSED` / `CANCELLED` (to talk about a closed ticket the requester reopens it — UC-TK-06).
 - **Main flow — public reply:**
@@ -277,9 +275,9 @@ Transitions marked *(WF)* in the diagram are owned by Workflow (UC-WF-04 … UC-
 
 ### UC-TK-05 Update status and resolution
 
-- **Actors:** Technician (assignee), Team Lead, Admin
+- **Actors:** Technician (assignee), Admin
 - **Goal:** reflect real progress, and record **how** the request was resolved so the requester can verify it and the knowledge can be reused.
-- **Preconditions:** ticket in scope; actor is the individual assignee (Lead/Admin for A3, A4).
+- **Preconditions:** ticket in scope; actor is the individual assignee (Admin for A3, A4).
 - **Main flow:**
   1. Assignee opens an `ASSIGNED` ticket → *Start work* → `startTicketWork` → `IN_PROGRESS`, `started_at` set, requester sees *"In progress"*.
   2. Assignee works; may write notes / replies (UC-TK-04), ask for info (UC-TK-04 A1), or retry an automation (UC-WF-09).
@@ -289,7 +287,7 @@ Transitions marked *(WF)* in the diagram are owned by Workflow (UC-WF-04 … UC-
 - **Alternative flows:**
   - **A1 — Duplicate:** code `DUPLICATE` requires the code of the **original** ticket (must exist, be in the resolver's scope and not be `CANCELLED`) → a `DUPLICATE_OF` link is stored; requester sees a link to the original (if they have scope; otherwise only its code and status).
   - **A2 — Correct category (classification):** assignee changes category / request type with a reason → `updateTicketClassification` → `category_source = TECHNICIAN`; the AI value and the human value are stored for F04 learning and F07 reports. If the new category belongs to another team, UI suggests *Transfer* (UC-TK-03 A3).
-  - **A3 — Change priority:** assignee proposes / Team Lead or Admin sets a new priority (P1–P4) with a mandatory reason → `updateTicketClassification` → SLA policy switches to the version in force for the new priority (BR-WF-08); raising to P1 notifies the team lead.
+  - **A3 — Change priority:** assignee proposes / Admin sets a new priority (P1–P4) with a mandatory reason → `updateTicketClassification` → SLA policy switches to the version in force for the new priority (BR-WF-08); raising to P1 notifies Admins.
   - **A4 — Link related tickets:** staff link tickets as `RELATED_TO` (no status effect), e.g. several users affected by the same outage.
   - **A5 — Automated ticket:** resolution of `AUTOMATING` tickets is done by Workflow verification (UC-WF-09) or *Resolved manually* (`resolveWorkflowRunManually`); `resolveTicket` is not available while `AUTOMATING`.
 - **Exceptions:**
@@ -297,12 +295,12 @@ Transitions marked *(WF)* in the diagram are owned by Workflow (UC-WF-04 … UC-
   - E2 Actor is not the assignee (and not Admin) → `403`.
   - E3 Transition not allowed from the current status (e.g. resolve from `ASSIGNED`, any action on `AUTOMATING`) → `409 INVALID_TRANSITION`.
   - E4 Stale version → `409 STALE_VERSION`.
-- **Permission:** `ticket:update_status` (assignee, Admin), `ticket:classify` (assignee, Lead, Admin; priority: Lead, Admin — assignee only *proposes*), `ticket:link`.
+- **Permission:** `ticket:update_status` (assignee, Admin), `ticket:classify` (assignee, Admin; priority: Admin — assignee only *proposes*), `ticket:link`.
 - **Postconditions:** status and timestamps reflect reality; a `RESOLVED` ticket always carries a resolution code and a requester-visible note (BR-TK-07).
 
 ### UC-TK-06 Confirm, close, reopen, cancel
 
-- **Actors:** Requester (owner), Technician / Team Lead (cancel with reason), Admin
+- **Actors:** Requester (owner), Technician (cancel with reason), Admin
 - **Goal:** let the requester decide when the request is really done, undo a premature closure, or withdraw a request — with clean, final states for reporting.
 - **Main flow — confirm & close:**
   1. Requester opens a `RESOLVED` ticket (from the notification or *My tickets* → filter *Needs my confirmation*).
@@ -312,10 +310,10 @@ Transitions marked *(WF)* in the diagram are owned by Workflow (UC-WF-04 … UC-
   - **A1 — No confirmation:** after the requester is reminded (day 1 and day N−1, UC-WF-06), on day N (default 5 business days) the system closes the ticket with `close_reason = AUTO_CONFIRMED`, `source = AUTOMATION` (BR-TK-12). The requester can still rate within the reopen window.
   - **A2 — Not fixed (from `RESOLVED`):** *No* → DLG-T-07: reason (≥ 10 chars) + optional evidence → `reopenTicket` → `IN_PROGRESS` with the **same assignee** if still available, otherwise `ASSIGNED` back to the owning team (UC-WF-05) → `reopen_count` +1 → assignee notified.
   - **A3 — Reopen a closed ticket:** within the reopen window (default **7 days** after `closed_at`, BR-TK-11) the requester clicks *Reopen* → same as A2. Tickets closed for *no response* (`NEEDS_INFO` → `CLOSED`) reopen to `NEW` and are routed again.
-  - **A4 — Reopen limit reached:** the 3rd reopen of the same ticket automatically escalates it to the team lead (UC-TK-03 A5) with reason *"Reopened 3 times"*.
+  - **A4 — Reopen limit reached:** the 3rd reopen of the same ticket automatically escalates it to Admin (UC-TK-03 A5) with reason *"Reopened 3 times"*.
   - **A5 — Window expired:** *Reopen* is replaced by **"Create follow-up ticket"** → UC-TK-01 pre-filled with the title and a `FOLLOW_UP_OF` link to the old ticket.
   - **A6 — Requester cancels:** in `NEW`, `NEEDS_INFO`, `TRIAGE` or `ASSIGNED` → *Cancel request* → DLG-T-06: optional note → `cancelTicket` → `CANCELLED`, `cancel_reason = REQUESTER_WITHDREW`; the assignee (if any) is notified. If the ticket is already `IN_PROGRESS`, the button is replaced by *"Ask to cancel"*, which posts a public message to the technician.
-  - **A7 — Staff cancels:** assignee, Team Lead or Admin cancels a non-final, non-automating ticket with reason code (`DUPLICATE`, `SPAM_OR_TEST`, `REQUESTER_WITHDREW`, `OUT_OF_SCOPE`) + note (≥ 10 chars) → `CANCELLED` → requester notified with the reason. `DUPLICATE` requires the original ticket code.
+  - **A7 — Staff cancels:** assignee or Admin cancels a non-final, non-automating ticket with reason code (`DUPLICATE`, `SPAM_OR_TEST`, `REQUESTER_WITHDREW`, `OUT_OF_SCOPE`) + note (≥ 10 chars) → `CANCELLED` → requester notified with the reason. `DUPLICATE` requires the original ticket code.
   - **A8 — Admin acts on behalf of the requester:** Admin can confirm or reopen when the requester asks offline (reason required; audit shows the Admin as actor and `on_behalf_of = requester`).
 - **Exceptions:**
   - E1 Confirm / reopen by someone other than the owner (or Admin) → `403`. The beneficiary can **reply** but not confirm, reopen or cancel.
@@ -330,7 +328,7 @@ Transitions marked *(WF)* in the diagram are owned by Workflow (UC-WF-04 … UC-
 
 | ID | Rule | Used in |
 |---|---|---|
-| **BR-TK-01** | **Data scope at query level.** Requester: tickets they created or are beneficiary of. Technician: tickets assigned to them + tickets of their teams (+ temporary read via @mention). Team Lead: tickets of their teams. Admin: all. The filter is applied by the backend query, not the UI; out-of-scope access → `403` (mvp.md §4). Scope changes take effect on the next request (BR-07). | UC-TK-02, all |
+| **BR-TK-01** | **Data scope at query level.** Requester: tickets they created or are beneficiary of. Technician: tickets assigned to them + tickets of their teams (+ temporary read via @mention). Admin: all. The filter is applied by the backend query, not the UI; out-of-scope access → `403` (mvp.md §4). Scope changes take effect on the next request (BR-07). | UC-TK-02, all |
 | **BR-TK-02** | **Ticket code** `TK-YYYY-NNNNNN` is generated by the server, unique, immutable, and is the human reference in UI, notifications and search. | UC-TK-01 |
 | **BR-TK-03** | **Attachments.** Allowed: `png, jpg, jpeg, gif, webp, pdf, txt, log, csv, docx, xlsx, pptx, zip, eml`; ≤ 10 MB per file; ≤ 10 files per message; ≤ 50 MB per ticket. Every file is malware-scanned before it is linked; infected files are quarantined and never downloadable. Files are stored outside the web root, served only via short-lived (5 min) signed URLs after a scope check, with `Content-Disposition: attachment` (images may be previewed inline). File names are sanitized. | UC-TK-01, UC-TK-04 |
 | **BR-TK-04** | **Allowed transitions only.** Status changes follow the transition table §4.1; the API rejects any other with `409 INVALID_TRANSITION`. The UI only shows actions allowed for the current status and role. | UC-TK-03, 05, 06 |
@@ -344,12 +342,12 @@ Transitions marked *(WF)* in the diagram are owned by Workflow (UC-WF-04 … UC-
 | **BR-TK-12** | **Auto-confirm (proposed).** A `RESOLVED` ticket without the requester's response for N business days (default 5, reminders on day 1 and N−1) is closed with `close_reason = AUTO_CONFIRMED`, `source = AUTOMATION`. `AUTOMATING` tickets are never auto-closed (BR-WF-11). *Requires extending BR-WF-11 — see Q-TK-01.* | UC-TK-06 |
 | **BR-TK-13** | **Append-only conversation.** Messages and attachments cannot be edited or deleted by their authors. Only Admin can redact (content replaced, original purged, reason audited). | UC-TK-04 |
 | **BR-TK-14** | **Audit everything.** Every F03 change writes an audit record in the same transaction: `TICKET_CREATED`, `_ASSIGNED`, `_CLAIMED`, `_REASSIGNED`, `_TRANSFERRED`, `_ESCALATED`, `_REPLIED`, `_NOTE_ADDED`, `_INFO_REQUESTED`, `_RESUMED`, `_STARTED`, `_RECLASSIFIED`, `_PRIORITY_CHANGED`, `_LINKED`, `_RESOLVED`, `_CLOSED`, `_REOPENED`, `_CANCELLED`, `_RATED`, `_MESSAGE_REDACTED`, `_ATTACHMENT_BLOCKED` — with actor, `source` (`USER` / `AI` / `AUTOMATION`, BR-WF-05), before/after values and reason. | all |
-| **BR-TK-15** | **Valid assignee.** An individual assignee must be `ACTIVE`, a member of the target team, and not marked absent (BR-WF-10). A Team Lead can only assign within teams where they are lead. | UC-TK-03 |
-| **BR-TK-16** | **Support tiers.** Each technical team has `support_tier` ∈ {L1, L2, L3} (proposed field, F09). Functional escalation only targets a team with a **higher** tier whose categories cover the ticket; at L3 only hierarchical escalation (to the lead) is possible. `escalation_level` never decreases. | UC-TK-03 |
+| **BR-TK-15** | **Valid assignee.** An individual assignee must be `ACTIVE`, a member of the target team, and not marked absent (BR-WF-10). Only an Admin assigns or reassigns. | UC-TK-03 |
+| **BR-TK-16** | **Support tiers.** Each technical team has `support_tier` ∈ {L1, L2, L3} (proposed field, F09). Functional escalation only targets a team with a **higher** tier whose categories cover the ticket; at L3 only escalation to Admin is possible. `escalation_level` never decreases. | UC-TK-03 |
 | **BR-TK-17** | **Final states are read-only.** `CLOSED` tickets accept only *reopen* and *rating* (within the window); `CANCELLED` tickets accept nothing. | UC-TK-04, UC-TK-06 |
 | **BR-TK-18** | **Requester-facing labels.** Requesters see plain-language statuses (§4) and an *outcome summary* instead of internal codes; AI messages are signed *"AI Assistant"*. | UC-TK-02 |
 | **BR-TK-19** | **No duplicate submissions.** `createTicket` requires an `Idempotency-Key` (valid 24 h); max 20 tickets per user per hour → `429`. | UC-TK-01 |
-| **BR-TK-20** | **Unavailable assignee.** When an assignee is disabled (incl. BR-20 Microsoft removal), removed from the team or marked absent, their `ASSIGNED` / `IN_PROGRESS` tickets are unassigned back to the team queue and the team lead is notified within 5 minutes. | UC-TK-03 |
+| **BR-TK-20** | **Unavailable assignee.** When an assignee is disabled (incl. BR-20 Microsoft removal), removed from the team or marked absent, their `ASSIGNED` / `IN_PROGRESS` tickets are unassigned back to the team queue and Admins are notified within 5 minutes. | UC-TK-03 |
 | **BR-TK-21** | **Optimistic concurrency.** Every mutating call carries the ticket `version` (`If-Match`); mismatch → `409 STALE_VERSION`. Prevents two technicians from overwriting each other at 8,000 tickets/day. | UC-TK-03, 05, 06 |
 | **BR-TK-22** | **Ownership rights.** Only the requester (not the beneficiary) can confirm, reopen or cancel; both can read and reply. | UC-TK-01, UC-TK-06 |
 
@@ -367,21 +365,21 @@ Transitions marked *(WF)* in the diagram are owned by Workflow (UC-WF-04 … UC-
 
 **Proposed permissions**
 
-| Permission | ADMIN | TECHNICIAN | Team Lead (TECHNICIAN + `is_lead`) | REQUESTER | AI_AGENT |
-|---|---|---|---|---|---|
-| `ticket:create` | ✅ | ✅ | ✅ | ✅ | ❌ |
-| `ticket:read` | all | assigned, group | assigned, group | own (+ beneficiary) | all (read-only) |
-| `ticket:comment` (public) | all | assigned, group | assigned, group | own | ✅ (clarification only) |
-| `ticket:note` (internal) | all | assigned, group | assigned, group | ❌ | ✅ (summary only) |
-| `ticket:claim` | — | group | group | ❌ | ❌ |
-| `ticket:assign` / `ticket:reassign` | all | ❌ | own teams | ❌ | ❌ |
-| `ticket:transfer` / `ticket:escalate` | all | assigned | own teams | ❌ | ❌ |
-| `ticket:update_status` | all | assigned | assigned | ❌ | ❌ |
-| `ticket:classify` (category) | all | assigned | own teams | ❌ | ❌ |
-| `ticket:classify` (priority) | all | propose only | own teams | ❌ | ❌ |
-| `ticket:confirm` / `ticket:reopen` | on behalf | ❌ | ❌ | own | ❌ |
-| `ticket:cancel` | all | assigned | own teams | own (T16) | ❌ |
-| `ticket:redact` | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Permission | ADMIN | TECHNICIAN | REQUESTER | AI_AGENT |
+|---|---|---|---|---|
+| `ticket:create` | ✅ | ✅ | ✅ | ❌ |
+| `ticket:read` | all | assigned, group | own (+ beneficiary) | all (read-only) |
+| `ticket:comment` (public) | all | assigned, group | own | ✅ (clarification only) |
+| `ticket:note` (internal) | all | assigned, group | ❌ | ✅ (summary only) |
+| `ticket:claim` | — | group | ❌ | ❌ |
+| `ticket:assign` / `ticket:reassign` | all | ❌ | ❌ | ❌ |
+| `ticket:transfer` / `ticket:escalate` | all | assigned | ❌ | ❌ |
+| `ticket:update_status` | all | assigned | ❌ | ❌ |
+| `ticket:classify` (category) | all | assigned | ❌ | ❌ |
+| `ticket:classify` (priority) | all | propose only | ❌ | ❌ |
+| `ticket:confirm` / `ticket:reopen` | on behalf | ❌ | own | ❌ |
+| `ticket:cancel` | all | assigned | own (T16) | ❌ |
+| `ticket:redact` | ✅ | ❌ | ❌ | ❌ |
 
 ## 8. Quality constraints (F03)
 
