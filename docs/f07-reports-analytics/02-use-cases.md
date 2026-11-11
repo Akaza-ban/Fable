@@ -6,12 +6,12 @@
 
 ## Actors and roles
 
-The role codes are the same as in F01, F04 and F05. **Team Lead is not a role**: it is a Technician with the `is_lead` flag in a team (F05 D-IA-07).
+The role codes are the same as in F01, F04 and F05. **There is no Team Lead** (F05 D-IA-07): only Admin, Technician and Requester.
 
 | Role code | Display name | Role in F07 |
 |---|---|---|
 | `ADMIN` | Administrator | Sees every report on every ticket, exports, sets report parameters, receives the weekly digest |
-| `TECHNICIAN` | Technician | Sees volume, SLA and satisfaction for tickets in their scope (assigned to them or their groups); a **Team Lead** also sees per-technician figures and workload for the team they lead (Q-BC-01) |
+| `TECHNICIAN` | Technician | Sees volume, SLA and satisfaction for tickets in their scope (assigned to them or their groups); never other technicians' individual figures |
 | `REQUESTER` | Requester | No access to reports |
 
 | System actor | Code in the audit log | Role in F07 |
@@ -28,7 +28,6 @@ The role codes are the same as in F01, F04 and F05. **Team Lead is not a role**:
 | Handling time and SLA (UC-BC-02) | ✓ | Tickets in their scope | |
 | AI self-resolution and quality (UC-BC-03) | ✓ | | |
 | Satisfaction (UC-BC-04) | ✓ (with comments) | Tickets in their scope, no comments, no colleagues' individual figures | |
-| Team workload (UC-BC-07) | ✓ | Team Lead: team they lead | |
 | Export (UC-BC-05) | ✓ | | |
 | Report parameters (UC-BC-06) | ✓ | | |
 | Weekly digest (UC-BC-08) | Receives, manages recipients | | |
@@ -39,7 +38,7 @@ Proposed permissions, for the F01 owner to accept (naming: Q-BC-12):
 
 | Permission | Admin | Technician | Requester | `AI_AGENT` |
 |---|---|---|---|---|
-| `report:read` | all | scope (Team Lead: own team per technician) | ✗ | ✗ |
+| `report:read` | all | scope | ✗ | ✗ |
 | `report:read_ai` | ✓ | ✗ | ✗ | ✗ |
 | `report:export` | ✓ | ✗ | ✗ | ✗ |
 | `report:configure` | ✓ | ✗ | ✗ | ✗ |
@@ -50,7 +49,7 @@ F07 owns only its parameters (`report_config`) and, in production, nightly aggre
 
 | Data | Owner | Used for |
 |---|---|---|
-| Ticket status `NEW`, `NEEDS_INFO`, `TRIAGE`, `ASSIGNED`, `IN_PROGRESS`, `AUTOMATING`, `RESOLVED`, `CLOSED`, `CANCELLED`; priority; channel; resolution code (`ANSWERED_BY_KB`, `SOLVED_BY_KB`, …) | F03 / F05 | M-01, M-02, M-04, volume |
+| Ticket status `NEW`, `NEEDS_INFO`, `ASSIGNED`, `IN_PROGRESS`, `AUTOMATING`, `RESOLVED`, `CLOSED`, `CANCELLED`; priority; channel; resolution code (`ANSWERED_BY_KB`, `SOLVED_BY_KB`, …) | F03 / F05 | M-01, M-02, M-04, volume |
 | SLA policy versions, `sla_breached`, `SLA_WARNING` / `SLA_BREACHED`, pause intervals | F05 (BR-WF-07, BR-WF-08) | M-02, M-03 |
 | `ai_decisions` (`AUTO_APPROVED` / `NEEDS_INFO` / `ROUTE_TO_HUMAN` with reason) | F05 (BR-WF-17) | M-08 |
 | AI analysis versions: `category`, `agent`, `escalationClass`, status `COMPLETED` / `INVALID` / `FAILED`, model and prompt version | F04 (BR-AI-02) | M-05, M-10, M-11 |
@@ -58,7 +57,7 @@ F07 owns only its parameters (`report_config`) and, in production, nightly aggre
 | KB article ratings | F06 | M-06 |
 | Satisfaction rating 1–5 and comment | F03 | M-07 |
 | Audit log (actor `USER` / `AI` / `AUTOMATION`) | F08 | M-04 (handling actions), M-05 |
-| Users, groups, `is_lead`, service accounts | F01 / F09 | Scope, names |
+| Users, groups, service accounts | F01 / F09 | Scope, names |
 
 ## Metric definitions
 
@@ -77,7 +76,6 @@ Reports, the Dashboard (F02), F05's SCR-WF-30 cards, exports and the digest all 
 | M-09 | Escalation rate | Tickets escalated at least once / tickets created. Sources reported separately: manual escalation (F03), SLA escalation (F05 UC-WF-06). | — |
 | M-10 | Escalation to a technician by class | Tickets handed to a technician / tickets created, split by F04 `escalationClass`: `AGENT_CANNOT_RESOLVE` (with its reason), `SYSTEM_BUG`, `SOFTWARE_REQUIREMENT`. | — |
 | M-11 | AI analysis failure rate | Analyses with status `INVALID` or `FAILED`, and `AI_UNAVAILABLE` routings / analyses. By model and prompt version. | — |
-| M-12 | Workload | Per technician and group: open tickets now, assigned and resolved in the period, age of the oldest open ticket. | — |
 
 **Common rules**
 
@@ -94,7 +92,7 @@ flowchart LR
     subgraph left["Actors"]
         direction TB
         admin(["Admin"])
-        tech(["Technician<br/>(Team Lead: is_lead)"])
+        tech(["Technician"])
     end
 
     subgraph system["Reports & Analytics — System Boundary"]
@@ -105,7 +103,6 @@ flowchart LR
             uc02["UC-BC-02 Handling time and SLA"]
             uc03["UC-BC-03 AI self-resolution and quality"]
             uc04["UC-BC-04 Requester satisfaction"]
-            uc07["UC-BC-07 Team workload"]
         end
         subgraph share["Share and configure"]
             direction LR
@@ -122,8 +119,8 @@ flowchart LR
         f08(["F08 Activity log"])
     end
 
-    admin --> uc01 & uc02 & uc03 & uc04 & uc05 & uc06 & uc07 & uc08
-    tech --> uc01 & uc02 & uc04 & uc07
+    admin --> uc01 & uc02 & uc03 & uc04 & uc05 & uc06 & uc08
+    tech --> uc01 & uc02 & uc04
     uc02 & uc03 -.-> f05
     uc03 -.-> f04
     uc03 & uc05 & uc06 -.-> f08
@@ -133,7 +130,7 @@ flowchart LR
     classDef core fill:#0b4f9e,color:#fff,stroke:#062f5e,stroke-width:3px
     classDef ext fill:#f3f3f3,color:#333,stroke:#999,stroke-dasharray:4 3
     class admin,tech actor
-    class uc04,uc06,uc07,uc08 usecase
+    class uc04,uc06,uc08 usecase
     class uc01,uc02,uc03,uc05 core
     class f05,f04,f08 ext
     style left fill:#fff,stroke:#bbb,stroke-dasharray:5 5
@@ -150,11 +147,11 @@ flowchart LR
     auth["Authenticate session"]:::shared
     authorize["Check permission"]:::shared
     scope["Filter by ticket scope in the query"]:::rule
-    defs["Metric definitions M-01..M-12"]:::rule
+    defs["Metric definitions M-01..M-11"]:::rule
     audit["Write audit log (F08)"]:::shared
     allow["Column allowlist + formula escaping"]:::rule
 
-    viewUc["UC-BC-01..04, 07 View"] --> auth & authorize & scope & defs
+    viewUc["UC-BC-01..04 View"] --> auth & authorize & scope & defs
     exportUc["UC-BC-05 Export"] --> auth & authorize & scope & defs & allow & audit
     configUc["UC-BC-06 Parameters"] --> auth & authorize & audit
     digestUc["UC-BC-08 Digest"] --> defs & audit
@@ -173,7 +170,7 @@ flowchart LR
   1. The user opens *Reports → Tickets* (default period: last 30 days).
   2. The backend loads tickets in the user's scope and counts new, open (backlog at period end), closed, cancelled, reopened and escalated (M-09).
   3. It groups them by request type, `domain/subcategory`, group, priority P1–P4 and channel, with a daily / weekly / monthly trend.
-  4. Tickets in `TRIAGE` appear as the group "Unassigned".
+  4. Tickets `ASSIGNED` to a team but not yet to a technician (F05 team queue) appear as "Team queue" under their group.
 - **Alternative flows:**
   - Technician: the group filter lists only their groups; a membership change applies from the next request (BR-07).
   - Click a count → the ticket list (F03) with the same filters, still limited by `ticket:read`.
@@ -223,7 +220,7 @@ flowchart LR
   2. The system shows M-07: average next to response rate, distribution 1–5, by type, group and handler (AI only / with a technician).
   3. Tickets rated 1–2 are listed with a link to the ticket.
 - **Alternative flows:**
-  - Technician: tickets in scope only; no colleagues' individual figures (Q-BC-02). Team Lead: per technician for the team they lead.
+  - Technician: tickets in scope only; no colleagues' individual figures (Q-BC-02).
   - Comments are shown to Admin only.
 - **Exceptions:** response rate below the threshold → score shown with "Few ratings, not representative"
 - **Result:** conclusions are not drawn from a handful of ratings
@@ -255,19 +252,6 @@ flowchart LR
 - **Exceptions:** negative value, N = 0, limit = 0, target outside 1–100% → `422`; not Admin → `403`
 - **Result:** figures match how the organization works, and every change is traceable
 - **Stories:** US-BC-07 · **Rules:** BR-BC-01, BR-BC-05
-
-### UC-BC-07 Team Workload
-
-- **Actors:** Admin; Team Lead (team they lead)
-- **Preconditions:** `report:read`; Team Lead = `is_lead` in the team
-- **Main flow:**
-  1. The user opens *Reports → Workload*.
-  2. The system shows M-12 per technician and group: open now, assigned and resolved in the period, oldest open ticket, open tickets in `NEEDS_INFO` (not counted as active work).
-  3. Clicking a technician opens the ticket list filtered on them.
-- **Alternative flows:** a technician who is not a lead sees only their own row and the group total
-- **Exceptions:** team the user does not lead → `403`
-- **Result:** leads rebalance work before tickets breach (reassigning is F05 SCR-WF-11)
-- **Stories:** US-BC-10 · **Rules:** BR-BC-02, BR-BC-03
 
 ### UC-BC-08 Weekly Digest
 

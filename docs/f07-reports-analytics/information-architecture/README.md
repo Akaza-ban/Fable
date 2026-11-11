@@ -4,7 +4,7 @@
 >
 > Implementation status: NOT STARTED
 
-This folder places the 11 F07 stories on screens and emails. F07 owns **one page with tabs** (Reports), one settings page, one modal and one email. Its figures also appear on pages owned by other branches (F02 Dashboard, F05 SCR-WF-30), always through the same API. The inventory has four kinds of entries:
+This folder places the 10 F07 stories on screens and emails. F07 owns **one page with tabs** (Reports), one settings page, one modal and one email. Its figures also appear on pages owned by other branches (F02 Dashboard, F05 SCR-WF-30), always through the same API. The inventory has four kinds of entries:
 
 | Kind | ID | Meaning |
 |---|---|---|
@@ -18,14 +18,14 @@ Inputs: [Use cases](../02-use-cases.md), [User stories](../03-user-stories-inves
 | File | Content |
 |---|---|
 | [01-screens-and-navigation.md](01-screens-and-navigation.md) | Screen, section and email inventory; routes and permissions; navigation per role; story-to-screen mapping; screen-to-API mapping |
-| [02-user-flows.md](02-user-flows.md) | Four flows: weekly AI review, SLA bottleneck, Team Lead rebalancing, export for management |
+| [02-user-flows.md](02-user-flows.md) | Three flows: weekly AI review, SLA bottleneck, export for management |
 | [03-ui-states-and-accessibility.md](03-ui-states-and-accessibility.md) | Data state contract, chart rules, responsive layout, accessibility |
 
 ## IA decisions
 
 | ID | Decision | Why |
 |---|---|---|
-| D-BC-IA-01 | **One Reports page with tabs** (Tickets, SLA, AI, Satisfaction, Workload) sharing one filter bar; filters live in the URL, so switching tabs keeps them and a link reopens the same view. | The reports answer one question from different angles; Admins compare them side by side. |
+| D-BC-IA-01 | **One Reports page with tabs** (Tickets, SLA, AI, Satisfaction) sharing one filter bar; filters live in the URL, so switching tabs keeps them and a link reopens the same view. | The reports answer one question from different angles; Admins compare them side by side. |
 | D-BC-IA-02 | **F07 owns the metric, other pages host it.** F02 Dashboard widgets and F05 SCR-WF-30 cards call `/api/v1/reports/*` (SEC-BC-01, SEC-BC-02) and link to the full tab. | One number per metric everywhere (BR-BC-01). |
 | D-BC-IA-03 | **Tabs are hidden, not disabled,** when the role may not open them (Technician: no AI tab). Opening the URL anyway gives SCR-90. | Same behaviour as F05 (D-IA-02). |
 | D-BC-IA-04 | **Every figure drills down to the ticket list** (F03 SCR-T-04) with the same filters; nothing on a report page changes data. | Reports are read-only (BR-BC-03); the work happens in the ticket pages. |
@@ -38,7 +38,7 @@ Solid lines: a page and its tabs or modals. Dashed arrows: which areas each acto
 
 ```mermaid
 flowchart TB
-    tech["<b>Technician</b><br/>(Team Lead: is_lead)"]
+    tech["<b>Technician</b>"]
     admin["<b>Admin</b>"]
 
     subgraph reports["Reports (F07) — /analytics"]
@@ -47,7 +47,6 @@ flowchart TB
         r02["<b>SCR-BC-02 SLA</b><br/>• M-01, M-02, M-03<br/>• Breached / At risk lists"]
         r03["<b>SCR-BC-03 AI</b> (Admin)<br/>• M-04 by path and agent vs target<br/>• M-08, M-10, quality M-05/06/11"]
         r04["<b>SCR-BC-04 Satisfaction</b><br/>• Average + response rate<br/>• Ratings 1–2"]
-        r06["<b>SCR-BC-06 Workload</b><br/>• Per technician / group"]
         m10["<b>SCR-BC-10 Export</b> (modal, Admin)"]
     end
 
@@ -68,15 +67,15 @@ flowchart TB
 
     eml["<b>EML-BC-01</b> Weekly digest"]
 
-    r01 & r02 & r03 & r04 & r06 --- m10
-    r01 & r02 & r03 & r04 & r06 --> t04
+    r01 & r02 & r03 & r04 --- m10
+    r01 & r02 & r03 & r04 --> t04
     t04 --> t02
     f02 --> r01
     wf30 --> r03
     eml --> r03
     r05 -. "SLA targets" .-> wf02["SCR-WF-02 SLA (F05)"]
 
-    tech -.-> r01 & r02 & r04 & r06
+    tech -.-> r01 & r02 & r04
     admin -.-> reports
     admin -.-> settings
     admin -.-> eml
@@ -86,7 +85,7 @@ flowchart TB
     classDef bc fill:#f3ecfb,color:#111,stroke:#7b3fbf,text-align:left
     class tech,admin actor
     class f02,wf30,t04,t02,wf02 host
-    class r01,r02,r03,r04,r05,r06,m10,eml bc
+    class r01,r02,r03,r04,r05,m10,eml bc
 ```
 
 ## Screen hierarchy per role
@@ -94,8 +93,7 @@ flowchart TB
 | Role | Home page | Where F07 shows up |
 |---|---|---|
 | Requester | My tickets (F03) | Nowhere |
-| Technician | Work queues (F03) | Sidebar *Reports*: SCR-BC-01, 02, 04, 06 (own row and group total), scope only; SEC-BC-01 on the Dashboard |
-| Technician — Team Lead | Work queues (F03) | Same, plus per-technician rows for the team they lead on SCR-BC-02, 04, 06 |
+| Technician | Work queues (F03) | Sidebar *Reports*: SCR-BC-01, 02, 04, scope only; SEC-BC-01 on the Dashboard |
 | Admin | Dashboard (F02) | Every tab, SCR-BC-05, SCR-BC-10, EML-BC-01, SEC-BC-01, SEC-BC-02 |
 | AI Service | — | No UI; its `AI_AGENT` account gets `403` on `/reports/*` |
 

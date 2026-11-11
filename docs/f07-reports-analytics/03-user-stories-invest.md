@@ -2,7 +2,7 @@
 
 > Design status: TARGET V1
 >
-> Scope: US-BC-01 … US-BC-11
+> Scope: US-BC-01 … US-BC-09, US-BC-11
 
 Each story is small enough to build and test on its own, or its review says why not. Authorization, ticket scope, the shared metric definitions and audit logging are **shared acceptance constraints**, not hidden features.
 
@@ -32,7 +32,6 @@ MoSCoW: **Must** (required for V1), **Should** (planned, but the core works with
 | US-BC-07 | As an **Admin**, I want to set the observation window, thresholds, target and limits, so that the figures match how we work. | Correct figures | — | Must | S | AC-UC-BC-06 |
 | US-BC-08 | As an **Admin**, I want the route A / B / C share and the escalations to technicians by class (cannot resolve, system bug, software requirement), so that I know why tickets still reach people. | Targets the right fix | F05 `ai_decisions`, F04 `escalationClass` | Must | M | AC-UC-BC-03 |
 | US-BC-09 | As an **Admin**, I want AI corrections, helpful votes and failed analyses by model and prompt version, so that I can tell whether a change made the AI better or worse. | Safe AI changes | F04 UC-AI-07 data | Should | M | AC-UC-BC-03 |
-| US-BC-10 | As a **Team Lead**, I want open and resolved tickets per technician in my team, so that I can rebalance work before tickets breach. | Balanced load | US-BC-02, `is_lead` | Should | M | AC-UC-BC-07 |
 | US-BC-11 | As an **Admin**, I want a weekly email with the key figures, so that management follows the trend without signing in. | Regular visibility | US-BC-01, 03, 04 | Could | S | AC-UC-BC-08 |
 
 Grouped by use case:
@@ -44,7 +43,6 @@ US-BC-04,08,09 UC-BC-03 AI self-resolution and quality
 US-BC-05      UC-BC-04  Requester satisfaction
 US-BC-06      UC-BC-05  Filter and export
 US-BC-07      UC-BC-06  Report parameters
-US-BC-10      UC-BC-07  Team workload
 US-BC-11      UC-BC-08  Weekly digest
 ```
 
@@ -61,13 +59,12 @@ US-BC-11      UC-BC-08  Weekly digest
 | US-BC-07 | PASS | PASS | PASS | PASS | PASS | PASS | SLA targets stay in F05. |
 | US-BC-08 | PASS | PASS | PASS | PASS | PASS | PASS | `escalationClass` is set by F04 and F05 (F04 README, change 6). |
 | US-BC-09 | PASS | PASS | PASS | PASS | PASS | PASS | Uses AC-AI-14.3 (votes countable by model and prompt version). |
-| US-BC-10 | PASS | NEEDS CONFIRM | PASS | PASS | PASS | PASS | Lead per-technician view: Q-BC-01. |
 | US-BC-11 | PASS | NEEDS CONFIRM | PASS | PASS | PASS | PASS | Recipients: Q-BC-14. |
 
 ## Cross-cutting acceptance constraints
 
-- Only 3 roles exist: `ADMIN`, `TECHNICIAN` (Team Lead = `is_lead`), `REQUESTER`; the only system actor is the **AI Service**.
-- Every figure follows the definitions M-01 … M-12, whatever page shows it (BR-BC-01).
+- Only 3 roles exist: `ADMIN`, `TECHNICIAN`, `REQUESTER` (no Team Lead); the only system actor is the **AI Service**.
+- Every figure follows the definitions M-01 … M-11, whatever page shows it (BR-BC-01).
 - Scope is filtered in the API query before aggregation, never in the UI (BR-BC-02).
 - No report endpoint changes data (BR-BC-03).
 - Every export and parameter change is in the audit log with source `USER`; the digest with source `AUTOMATION`.

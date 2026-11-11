@@ -29,14 +29,14 @@ The ID `SCR-NK-01` and `SCR-NK-03` of earlier drafts are now the sections SEC-NK
 
 The API enforces every row; hiding an element is only for usability. "Scope" means tickets assigned to the technician or one of their groups (F01).
 
-| Item | Requester | Technician | Team Lead | Admin | Unauthorized result |
-|---|---|---|---|---|---|
-| SEC-NK-01 | Own tickets, allowlist | Scope, full | Scope, full | ✓ | `403`; out-of-allowlist entries absent from the response |
-| SEC-NK-02 | Own tickets, status line | Assigned: full; group: summary | Own team: full | ✓ + link to SCR-WF-31 | Fields absent from the response |
-| SCR-NK-02 | — | — | — | ✓ | SCR-90 (`/403`) |
-| SCR-NK-04 | — | — | — | ✓ | SCR-90 |
-| SCR-NK-05 | — | Assigned: full; group: summary | Own team: full | ✓ | SCR-90 |
-| Any `PUT` / `PATCH` / `DELETE` on the log | `405` | `405` | `405` | `405` | — |
+| Item | Requester | Technician | Admin | Unauthorized result |
+|---|---|---|---|---|
+| SEC-NK-01 | Own tickets, allowlist | Scope, full | ✓ | `403`; out-of-allowlist entries absent from the response |
+| SEC-NK-02 | Own tickets, status line | Assigned: full; group: summary | ✓ + link to SCR-WF-31 | Fields absent from the response |
+| SCR-NK-02 | — | — | ✓ | SCR-90 (`/403`) |
+| SCR-NK-04 | — | — | ✓ | SCR-90 |
+| SCR-NK-05 | — | Assigned: full; group: summary | ✓ | SCR-90 |
+| Any `PUT` / `PATCH` / `DELETE` on the log | `405` | `405` | `405` | — |
 
 ## 4. Navigation
 
