@@ -22,7 +22,25 @@
 
 ---
 
-## 2. Use Case Diagram (Mermaid)
+## 2. Feature Ownership & Boundaries
+
+| Responsibility | Owning module | F06 boundary |
+| :--- | :--- | :--- |
+| Create, edit, review, publish, revise, flag, and archive KB articles; enforce article audience visibility | **F06 Knowledge Base** | Owns article content, lifecycle, search index, and article-level permissions |
+| Create, submit, cancel, resolve, close, and reopen tickets | **F03 Ticket Management** | F06 may provide KB results in ticket screens but does not create or change ticket state |
+| Classify tickets, generate cited answers from KB content, and decide whether AI can resolve a ticket | **F04 AI Ticket Processing** | F06 supplies authorized published articles; F04 owns AI response generation and ticket-resolution decisions |
+| Routing, assignment, SLA, and workflow notifications | **F05 Workflow & Automation** | F06 emits relevant article lifecycle events; F05 owns ticket routing and automation rules |
+| Aggregate deflection, helpfulness, and article usage metrics | **F07 Reports & Analytics** | F06 records article and feedback events; F07 owns reporting and metric presentation |
+
+**Cross-module flow rules**
+
+- During ticket creation, F03 owns the form and ticket submission. F06 supplies matching, audience-authorized article links; F04 may use those articles to generate an answer or evaluate self-service resolution. Only F03 creates or cancels the ticket.
+- On a resolved ticket, F03 remains the source of ticket status and content. F06 may use that content to create an AI-assisted article draft; the draft follows F06's authoring and approval lifecycle and does not change the ticket.
+- A KB article is searchable by requesters only after publication and only when its audience is `PUBLIC`. F04 must use the same authorization and publication constraints when retrieving article sources.
+
+---
+
+## 3. Use Case Diagram (Mermaid)
 
 ```mermaid
 flowchart LR
@@ -61,7 +79,7 @@ flowchart LR
 
 ---
 
-## 3. Detailed Use Case Specifications
+## 4. Detailed Use Case Specifications
 
 The use case set below covers the end-to-end knowledge lifecycle: search, authoring, approval, maintenance, and final archival of obsolete content.
 
@@ -77,7 +95,7 @@ The use case set below covers the end-to-end knowledge lifecycle: search, author
 | **Pre-conditions** | User has navigated to the Help Center or Support Portal. |
 | **Post-conditions** | System renders matching validated solutions and increments article view metrics. |
 | **Main Flow** | 1. User inputs a query or error code (e.g., *"Cannot connect to VPN after password reset"*).<br>2. System calls AI Vector Engine to perform semantic embedding and intent classification.<br>3. System filters results based on caller's role (`REQUESTER` cannot view `INTERNAL_ONLY` articles).<br>4. System returns ranked article cards with extracted solution snippets highlighted.<br>5. User selects an article card to view full instructions: Symptoms, Root Cause, Step-by-Step Fix, and Attachments.<br>6. System increments `view_count` by 1. |
-| **Alternative Flows** | **3a. Category Browsing:** User clicks a category node (e.g., *"Network & VPN"*); system displays top articles sorted by helpfulness.<br>**4a. Deflection during ticket creation:** User drafts a new ticket; system queries KB in real-time and renders top 3 matching solution links above the submit button. |
+| **Alternative Flows** | **3a. Category Browsing:** User clicks a category node (e.g., *"Network & VPN"*); system displays top articles sorted by helpfulness.<br>**4a. Deflection during ticket creation:** On the F03 ticket form, F06 returns the top 3 matching, authorized article links. F04 may use the returned articles to generate a cited answer or determine self-service resolution; F03 owns the form, ticket submission, and any cancellation. |
 | **Exception Flows** | **4b. No matching article found:** Semantic match score is below 50%. System displays: *"No validated solutions found. Would you like to create a support ticket?"* and pre-fills the query into the ticket title. |
 | **Business Rules** | **BR-KB-01:** Requesters only see `PUBLIC` articles. Only Technicians and Admins can view `INTERNAL_ONLY` technical documentation. |
 

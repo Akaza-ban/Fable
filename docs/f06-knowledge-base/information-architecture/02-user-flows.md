@@ -28,7 +28,9 @@ sequenceDiagram
         SEC->>KB: Opens article in drawer / new tab
         User->>KB: Executes step-by-step fix
         User->>KB: Clicks "This solved my issue"
-        KB-->>Form: Discard ticket draft (Ticket Deflected)
+        KB-->>Form: Notify F03 of successful self-service outcome
+        Form->>Form: F03 discards the unsubmitted draft; no ticket is created
+        Form-->>Form: Record deflection outcome for F07 analytics
     else Solution does not apply
         User->>Form: Continues typing & clicks "Submit Ticket anyway"
         Form-->>Form: Create ticket in F03

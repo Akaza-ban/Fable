@@ -22,13 +22,15 @@
 
 ## 2. Host Pages and Embedded F06 Sections
 
+F06 owns KB article search, visibility filtering, and article content. When these capabilities are embedded in another module, the host module continues to own its page and workflow: F03 owns ticket creation and ticket state changes; F04 owns AI-generated answers and AI resolution decisions.
+
 F06 embeds specialized intelligence and self-service components into host pages owned by **F03 Ticket Management** and **F04 AI Ticket Processing**:
 
 | Host Page | Owner | Route | F06 Embedded Section | Purpose & Content | Stories |
 |---|---|---|---|---|---|
-| `SCR-T-01` Create Ticket | F03 | `/tickets/new` | **SEC-KB-01** (Real-Time Deflection) | As user types title and description, queries vector index and renders top 3 matching solution links. Clicking *"This solved my issue"* cancels ticket creation. | US-KB-08 |
-| `SCR-T-02` Ticket Detail | F03 | `/tickets/:id` | **SEC-KB-02** (Cited Solution Steps) | Embeds verified KB resolution steps into the technician sidebar. Includes 1-click *"Insert into reply draft"* action. | US-KB-01 |
-| Resolve Dialog | F03 | modal on `/tickets/:id` | **SEC-KB-03** (AI KB Synthesis Trigger) | When transitioning ticket to `RESOLVED`, displays prompt: *"Would you like AI to draft a KB article from this resolution?"* ➔ Opens `SCR-KB-04`. | US-KB-04 |
+| `SCR-T-01` Create Ticket | F03 | `/tickets/new` | **SEC-KB-01** (KB suggestions) | F03 sends the in-progress title and description; F06 returns top matching articles filtered by audience. F04 may use these articles for a cited answer or self-service decision. F03 owns the form and ticket submission/cancellation. | US-KB-08 |
+| `SCR-T-02` Ticket Detail | F03 | `/tickets/:id` | **SEC-KB-02** (KB references) | F06 provides authorized published article references. F04 owns any AI-generated answer; F03 owns inserting a selected reference into a reply draft and sending the reply. | US-KB-01 |
+| Resolve Dialog | F03 | modal on `/tickets/:id` | **SEC-KB-03** (KB draft trigger) | F03 supplies the resolved ticket context and may offer a trigger for `SCR-KB-04`. F06 creates an article draft; F03 retains ownership of ticket status and resolution. | US-KB-04 |
 
 ---
 
@@ -96,5 +98,7 @@ GLOBAL SIDEBAR NAVIGATION MATRIX
 | **F03 Ticket Management** | Host `SEC-KB-01` on `/tickets/new` | Receives live draft title and description; returns deflected article click callback to discard draft. |
 | **F03 Ticket Management** | Host `SEC-KB-02` on `/tickets/:id` | Renders verified KB resolution steps; provides button to copy Markdown into ticket response. |
 | **F03 Ticket Management** | Host `SEC-KB-03` on Resolve dialog | Triggers `SCR-KB-04` with `ticket_id`, conversation messages, and resolution notes. |
-| **F04 AI Processing** | Semantic Embeddings API | F06 queries vector embeddings with debounce (300ms) for similarity search and deflection ranking. |
-| **F05 Automation** | Activity Log & Telemetry | F06 logs article publication, version changes, and deflection conversions into system audit stream. |
+| **F04 AI Processing** | KB retrieval for AI answers | F04 consumes authorized, published article results from F06 and owns answer generation, citations, and any AI self-resolution decision. F04 does not create or publish KB articles. |
+| **F05 Workflow & Automation** | Article lifecycle events | F06 emits article submission/flagging events when integration is required; F05 owns workflow rules, routing, assignment, and SLA behavior. |
+| **F07 Reports & Analytics** | KB usage and quality events | F06 provides article views, feedback, and deflection-related events; F07 owns aggregation and report presentation. |
+| **F08 Activity Log** | KB audit events | F06 emits article lifecycle and moderation events; F08 owns audit history and browsing. |

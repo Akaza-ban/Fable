@@ -212,6 +212,6 @@ Feature: Real-Time KB Deflection During Ticket Creation
   Scenario: Ticket creation is avoided when a known fix is found
     Given A high-confidence KB match exists for the user's issue
     When The user clicks "This solved my issue"
-    Then The ticket draft is closed or marked as resolved by self-service guidance
-    And The deflection event is logged for analytics
+    Then F03 discards the unsubmitted ticket form draft without creating or resolving a ticket
+    And The deflection outcome is recorded for F07 analytics
 ```
