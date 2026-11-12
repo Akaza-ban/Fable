@@ -6,11 +6,11 @@
 
 This folder turns the F08 [information architecture](../information-architecture/README.md) into high-fidelity screens. They were drawn in Figma on the shared template *Service Desk UI – DS-01 Relay* (row **5 · Governance detail — Audit (F08)**) and exported to PNG. The scope is the **Audit** area of the Admin: the activity log and the workflow runs with their detail page.
 
-The screens show the F08 rules on a page: no edit, delete or hide control anywhere (D-NK-IA-05), every entry says who did it with an icon and text (D-NK-IA-06), secrets are always `***` (BR-NK-03), and every automated entry links to its evidence. Inputs: [Screens and navigation](../information-architecture/01-screens-and-navigation.md), [User flows](../information-architecture/02-user-flows.md), [UI states](../information-architecture/03-ui-states-and-accessibility.md) and [Acceptance criteria](../04-acceptance-criteria.md).
+The screens show the F08 rules on a page: no edit, delete or hide control anywhere (D-NK-IA-05), every entry says who did it with an icon and text (D-NK-IA-06), passwords are always hidden (BR-NK-03), every automated entry links to what caused it, and everything is written in plain words for non-technical readers (D-NK-UI-07). Inputs: [Screens and navigation](../information-architecture/01-screens-and-navigation.md), [User flows](../information-architecture/02-user-flows.md), [UI states](../information-architecture/03-ui-states-and-accessibility.md) and [Acceptance criteria](../04-acceptance-criteria.md).
 
 | File | Content |
 |---|---|
-| [00-decisions.md](00-decisions.md) | Design decisions D-NK-UI-01 … D-NK-UI-06, what is not drawn yet |
+| [00-decisions.md](00-decisions.md) | Design decisions D-NK-UI-01 … D-NK-UI-07, what is not drawn yet |
 | [01-screen-notes.md](01-screen-notes.md) | Per screen: purpose, layout, annotated elements, and every state |
 | [`../../image/admin/`](../../image/admin/) | PNG exports of the Figma frames (shared Admin image folder) |
 | [Figma file](https://www.figma.com/design/Dfak5zzpiXKxVEqvTOZLdJ/Service-Desk-UI-%E2%80%93-DS-01-Relay?node-id=0-1) | Source frames; the same names as the PNGs below |
@@ -32,9 +32,9 @@ Same template and tokens as the other Admin pages (see [F07 UI design](../../f07
 | Part | Value |
 |---|---|
 | Shell | Module tab **Activity log** active; sidebar group **Audit** with *Activity log* and *Workflow runs* (badge = failed runs today) |
-| Codes and times | Cousine (monospace) for action codes, run ids, times and request / response bodies |
-| Actor marker | Person: 👤 icon + name + role; AI: `AI` badge (purple) + domain agent + prompt version; Automation: ⚙ icon + "Automation" + rule or run |
+| Language | Plain sentences only (D-NK-UI-07): actions, reasons and changes in words; no event codes, error codes or raw ids. Cousine (monospace) only for times |
+| *Done by* marker | Person: 👤 icon + name + role; AI: `AI` badge (purple) + assistant name + "decided on its own"; Automation: ⚙ icon + "Automation" + rule name |
 | Run status chips | ◷ In progress (info), ✓ Succeeded (success), ✕ Failed (danger), 👤 Resolved manually (neutral) — icon and text, never color alone (UI states §3) |
-| Diff | Removed line on red `#FEF0EE` with the word *Removed*; added line on green `#E8F5EF` with the word *Added* |
+| What changed | Old value on red `#FEF0EE` with the word *Before*; new value on green `#E8F5EF` with the word *After*; other changes as plain lines |
 
 **Related:** [F08 README](../README.md) · [Information architecture](../information-architecture/README.md) · [Decisions](00-decisions.md) · [Screen notes](01-screen-notes.md)

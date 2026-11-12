@@ -10,7 +10,7 @@ The screens show how the rules of F07 look on a page: every rate comes with its 
 
 | File | Content |
 |---|---|
-| [00-decisions.md](00-decisions.md) | Design decisions D-BC-UI-01 … D-BC-UI-06, what is not drawn yet |
+| [00-decisions.md](00-decisions.md) | Design decisions D-BC-UI-01 … D-BC-UI-07, what is not drawn yet |
 | [01-screen-notes.md](01-screen-notes.md) | Per screen: purpose, layout, annotated elements, and every state |
 | [`../../image/admin/`](../../image/admin/) | PNG exports of the Figma frames (shared Admin image folder) |
 | [Figma file](https://www.figma.com/design/Dfak5zzpiXKxVEqvTOZLdJ/Service-Desk-UI-%E2%80%93-DS-01-Relay?node-id=0-1) | Source frames; the same names as the PNGs below |
@@ -32,7 +32,7 @@ The frames reuse the template, so they match the other Admin pages of the file (
 | Part | Value |
 |---|---|
 | Shell | Top bar 58 px with the module tabs (*Dashboard* is active for Reports); sidebar 220 px with the groups **Reports** and **Settings**; content 1012 px wide, padding 20 / 24 |
-| Type | Inter: page title 24 Semi Bold, card title 14 Semi Bold, body 13–14, caption 12; Cousine for codes (`AGENT_CANNOT_RESOLVE`) |
+| Type | Inter: page title 24 Semi Bold, card title 14 Semi Bold, body 13–14, caption 12. Plain words only, no internal codes on screen (D-BC-UI-07) |
 | Color | Ink `#172B4D`, secondary `#52627A`, border `#DFE5ED`, page `#F5F7FA`, primary `#175CD3`, AI `#6941C6`, success `#057A55`, warning `#8A5100`, danger `#B42318` |
 | Components | Local components `WB/Button` (primary / secondary, md / sm), `WB/Badge` (info, warning, success, danger, neutral, ai), `WB/KPI card` |
 | Charts | One metric per chart, AI series in purple, target as a dashed red line with the label "Target 50%", text summary under the chart and *View as table* (UI states §3) |

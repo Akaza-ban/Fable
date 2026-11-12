@@ -14,6 +14,7 @@
 | D-BC-UI-04 | Route C reasons are a ranked list where each reason is a link with a bar and its count. | The reason opens SCR-T-04 with the same filters (D-BC-IA-04); a ranked list reads faster than a chart. |
 | D-BC-UI-05 | Report settings is one form in three cards (*How figures are computed*, *Export*, *Weekly digest*) with *Save changes* in the header. N is shown read-only with the tag "Read-only · from F03". | One audited change (`REPORT_CONFIG_UPDATED`); N belongs to F03 (BR-BC-05). |
 | D-BC-UI-06 | The export modal shows the active filters, the format, and the row count **before** export; the Export button is disabled when the count is above the limit. | Users learn about `EXPORT_TOO_LARGE` before they wait for a file (Flow 3). |
+| D-BC-UI-07 | **Plain language only.** The Reports are read by people who are not developers. Labels, messages and changes are written as short sentences ("Access given", "Not allowed by the directory"); internal codes (event names, error codes, metric ids, screen ids, category codes, raw ids, request / response bodies) are not shown. Codes stay in the data for filtering and in these docs for traceability; where a developer needs them, they sit behind a collapsed "Technical details" row. | Feedback on the first draft: the screens looked like developer logs. |
 
 ## Not drawn yet
 

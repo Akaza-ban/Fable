@@ -10,7 +10,7 @@ The screens follow the rules other branches already set: a technician receives t
 
 | File | Content |
 |---|---|
-| [00-decisions.md](00-decisions.md) | Design decisions D-UM-UI-01 … D-UM-UI-06, assumptions to confirm |
+| [00-decisions.md](00-decisions.md) | Design decisions D-UM-UI-01 … D-UM-UI-07, assumptions to confirm |
 | [01-screen-notes.md](01-screen-notes.md) | Per screen: purpose, layout, annotated elements, and every state |
 | [`../../image/admin/`](../../image/admin/) | PNG exports of the Figma frames (shared Admin image folder) |
 | [Figma file](https://www.figma.com/design/Dfak5zzpiXKxVEqvTOZLdJ/Service-Desk-UI-%E2%80%93-DS-01-Relay?node-id=0-1) | Source frames; the same names as the PNGs below |

@@ -18,10 +18,10 @@ Purpose: find users, see their role, access scope and availability, and enable o
 
 | # | Element | Note |
 |---|---|---|
-| 1 | Header meta | "Synced from the company directory · last sync today 10:02 · every change is logged". |
+| 1 | Header meta | "Copied from the company directory · last updated today 10:02". |
 | 2 | Filters | Name or e-mail, role, department, team, status. In the PNG: *Role: Technician*. |
 | 3 | Bulk action bar | "2 selected" with Enable, Disable, Change role, Add to team, *Clear selection*. Selected rows are blue. |
-| 4 | Table | Checkbox, name + e-mail, department, role badge, access scope (teams), availability (`ON · 7 / 12` or `OFF · on leave`), status badge, last sign-in. |
+| 4 | Table | Checkbox, name + e-mail, department, role badge, teams, availability ("Available · 7 tickets" or "Away · on leave"), status badge, last sign-in. |
 | 5 | Row actions | *Edit* (opens SCR-UM-02), *Disable* / *Enable*, *Log* (SCR-NK-02 filtered on the user). |
 | 6 | Note | Disabling signs the user out and returns open tickets to the team queue; *Add user* is for staff not in the directory. |
 
@@ -46,8 +46,8 @@ Purpose: change a user's role, access scope and assignment settings, or disable 
 |---|---|---|
 | 1 | Profile | Display name and department read-only (from the directory). |
 | 2 | Role | Three radio cards: Requester, Technician, Administrator, each with one line on what it allows. |
-| 3 | Access scope | Tree of teams and sub-groups with checkboxes; a parent with some children checked shows a partial mark. Required for Technician. |
-| 4 | Assignment | Toggle *Available for automatic assignment (ON)* and *Maximum open tickets*. |
+| 3 | Teams they work for (access scope) | Tree of teams and sub-groups with checkboxes; a parent with some children checked shows a partial mark. Required for Technician. |
+| 4 | Assignment | Toggle *Can receive new tickets automatically* and *Most tickets at once*. |
 | 5 | Account status | Red zone: "Disabling signs Minh out now and returns 7 open tickets to Network L1 / L2 queues", *Disable user*. |
 | 6 | Footer | *View log for this user →*, *Cancel*, *Save changes*. |
 
@@ -73,19 +73,19 @@ Purpose: maintain the structure that routing uses: teams, sub-groups, the subcat
 
 | # | Element | Note |
 |---|---|---|
-| 1 | Header text | "A ticket goes to the group of its domain, then the sub-group of its subcategory, then a member who is ON and least loaded." |
-| 2 | Structure tree | Teams with their domain (`NETWORK/*`) and member count; sub-groups indented; the selected node has a blue bar. *Triage queue* is the default team. |
-| 3 | Empty sub-group | Badge *Empty* in the tree (Wi-Fi). |
-| 4 | Team header | Name, "Sub-group of Network", support level `L1`; *View log*, *Add sub-group*, *Edit*. |
-| 5 | Properties | Subcategories handled (`NETWORK/VPN`, `NETWORK/LAN`, `NETWORK/DNS`), AI agent as first handler, business calendar. |
-| 6 | Counters | Members ON, open tickets (with the number waiting in the team queue), average workload score. |
-| 7 | Members | Add by name; table with availability toggle and reason, open / max bar (red above 85%), workload score, *Remove*. |
-| 8 | Warning | "Sub-group Wi-Fi has no members. Its NETWORK/WIFI tickets go to Network L1 until someone is added." |
+| 1 | Header text | "New tickets go to the right team first, then to the least busy person who is available." |
+| 2 | Structure tree | Teams with member count; sub-groups indented; the selected node has a blue bar. *Triage queue* "catches unclear tickets". |
+| 3 | Empty sub-group | Badge *No members* in the tree (Wi-Fi). |
+| 4 | Team header | Name, "Part of Network", "Level 1"; *View log*, *Add sub-group*, *Edit*. |
+| 5 | Properties | "Handles requests about" VPN, Office network, Website names (DNS) — category names, never codes; "AI assistant (tries first)"; working hours. |
+| 6 | Counters | Available now, open tickets ("5 not yet picked up"), how busy the team is ("Normal") instead of a numeric workload score. |
+| 7 | Members | Add by name; table with availability toggle ("Available" / "Away · on leave"), tickets now (bar, red above 85%), busy level (Light / Normal / High), *Remove*. |
+| 8 | Warning | "Wi-Fi has no members yet. Wi-Fi tickets go to Network L1 until someone is added." |
 
 | State | Source | Behavior |
 |---|---|---|
 | default | Initial | Network L1 selected. |
 | empty team selected | Empty | "No members yet" with *Add member*, and the warning of #8. |
-| subcategory taken | Validation | Adding a subcategory already handled by another sub-group: "NETWORK/VPN is handled by Network L2. Move it here?" |
+| subcategory taken | Validation | Adding a request type already handled by another sub-group: "VPN is handled by Network L2. Move it here?" |
 | saving | Saving / Processing | Member row shows a spinner while the change is saved. |
 | not admin | 403 | SCR-90. |
