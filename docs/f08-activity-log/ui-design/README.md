@@ -12,18 +12,18 @@ The screens show the F08 rules on a page: no edit, delete or hide control anywhe
 |---|---|
 | [00-decisions.md](00-decisions.md) | Design decisions D-NK-UI-01 … D-NK-UI-06, what is not drawn yet |
 | [01-screen-notes.md](01-screen-notes.md) | Per screen: purpose, layout, annotated elements, and every state |
-| [`images/`](images/) | PNG exports of the Figma frames |
+| [`../../image/admin/`](../../image/admin/) | PNG exports of the Figma frames (shared Admin image folder) |
 | [Figma file](https://www.figma.com/design/Dfak5zzpiXKxVEqvTOZLdJ/Service-Desk-UI-%E2%80%93-DS-01-Relay?node-id=0-1) | Source frames; the same names as the PNGs below |
 
 ## Screens
 
 | ID | Screen | Route | Role | PNG |
 |---|---|---|---|---|
-| SCR-NK-02 | Activity log | `/audit/activity-log` | Admin | [nk-02-activity-log.png](images/nk-02-activity-log.png) |
-| SCR-NK-04 | Workflow runs | `/audit/workflow-runs` | Admin | [nk-04-workflow-runs.png](images/nk-04-workflow-runs.png) |
-| SCR-NK-05 | Workflow run detail | `/audit/workflow-runs/:id` | Admin | [nk-05-workflow-run-detail.png](images/nk-05-workflow-run-detail.png) |
+| SCR-NK-02 | Activity log | `/audit/activity-log` | Admin | [14_SCR-NK-02_Activity-log.png](../../image/admin/14_SCR-NK-02_Activity-log.png) |
+| SCR-NK-04 | Workflow runs | `/audit/workflow-runs` | Admin | [15_SCR-NK-04_Workflow-runs.png](../../image/admin/15_SCR-NK-04_Workflow-runs.png) |
+| SCR-NK-05 | Workflow run detail | `/audit/workflow-runs/:id` | Admin | [16_SCR-NK-05_Workflow-run-detail.png](../../image/admin/16_SCR-NK-05_Workflow-run-detail.png) |
 
-![SCR-NK-02 Activity log](images/nk-02-activity-log.png)
+![SCR-NK-02 Activity log](../../image/admin/14_SCR-NK-02_Activity-log.png)
 
 ## Design system used
 

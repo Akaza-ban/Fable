@@ -8,13 +8,13 @@ Each screen lists its purpose, its layout, the elements worth noting and its sta
 
 ## Audit
 
-### SCR-NK-02 Activity log — `/audit/activity-log` · Admin · [PNG](images/nk-02-activity-log.png)
+### SCR-NK-02 Activity log — `/audit/activity-log` · Admin · [PNG](../../image/admin/14_SCR-NK-02_Activity-log.png)
 
 Purpose: find who did what, when and why across tickets, rules and settings, and see the before / after of each entry (US-NK-04, US-NK-10).
 
 **Layout:** page header with the append-only pill; filter bar in two lines; table (left) and diff panel (right, 350 px); a *States* card at the bottom.
 
-![SCR-NK-02](images/nk-02-activity-log.png)
+![SCR-NK-02](../../image/admin/14_SCR-NK-02_Activity-log.png)
 
 | # | Element | Note |
 |---|---|---|
@@ -38,13 +38,13 @@ Purpose: find who did what, when and why across tickets, rules and settings, and
 
 Accessibility: rows and evidence links are reachable by keyboard; Esc closes the panel and returns focus to its row; removed / added values are labelled in text, not only by color.
 
-### SCR-NK-04 Workflow runs — `/audit/workflow-runs` · Admin · [PNG](images/nk-04-workflow-runs.png)
+### SCR-NK-04 Workflow runs — `/audit/workflow-runs` · Admin · [PNG](../../image/admin/15_SCR-NK-04_Workflow-runs.png)
 
 Purpose: find failing automated actions across tickets and the connector behind them (US-NK-06, US-NK-07).
 
 **Layout:** page header with *Export CSV*; alert banner; four counters; filter bar; table with paging; legend of the status chips.
 
-![SCR-NK-04](images/nk-04-workflow-runs.png)
+![SCR-NK-04](../../image/admin/15_SCR-NK-04_Workflow-runs.png)
 
 | # | Element | Note |
 |---|---|---|
@@ -63,13 +63,13 @@ Purpose: find failing automated actions across tickets and the connector behind 
 | invalid period | `ERROR` | Message under the filters; previous results kept. |
 | not admin | `FORBIDDEN` | SCR-90; technicians see runs in the ticket's Automation tab. |
 
-### SCR-NK-05 Workflow run detail — `/audit/workflow-runs/:id` · Admin · [PNG](images/nk-05-workflow-run-detail.png)
+### SCR-NK-05 Workflow run detail — `/audit/workflow-runs/:id` · Admin · [PNG](../../image/admin/16_SCR-NK-05_Workflow-run-detail.png)
 
 Purpose: see why one run failed: each attempt with the masked request and response (US-NK-06, US-NK-09).
 
 **Layout:** back link *‹ Workflow runs*; header with run id, operation, *Open ticket*; summary card; failure banner; attempts card; note on actions.
 
-![SCR-NK-05](images/nk-05-workflow-run-detail.png)
+![SCR-NK-05](../../image/admin/16_SCR-NK-05_Workflow-run-detail.png)
 
 | # | Element | Note |
 |---|---|---|

@@ -12,18 +12,18 @@ The screens follow the rules other branches already set: a technician receives t
 |---|---|
 | [00-decisions.md](00-decisions.md) | Design decisions D-UM-UI-01 … D-UM-UI-06, assumptions to confirm |
 | [01-screen-notes.md](01-screen-notes.md) | Per screen: purpose, layout, annotated elements, and every state |
-| [`images/`](images/) | PNG exports of the Figma frames |
+| [`../../image/admin/`](../../image/admin/) | PNG exports of the Figma frames (shared Admin image folder) |
 | [Figma file](https://www.figma.com/design/Dfak5zzpiXKxVEqvTOZLdJ/Service-Desk-UI-%E2%80%93-DS-01-Relay?node-id=0-1) | Source frames; the same names as the PNGs below |
 
 ## Screens
 
 | ID (provisional) | Screen | Route | Role | PNG |
 |---|---|---|---|---|
-| SCR-UM-01 | Users | `/admin/users` | Admin | [um-01-users.png](images/um-01-users.png) |
-| SCR-UM-02 | Edit user (drawer) | on `/admin/users` | Admin | [um-02-edit-user-drawer.png](images/um-02-edit-user-drawer.png) |
-| SCR-UM-03 | Teams & sub-groups | `/admin/teams` | Admin | [um-03-teams.png](images/um-03-teams.png) |
+| SCR-UM-01 | Users | `/admin/users` | Admin | [17_SCR-UM-01_Users.png](../../image/admin/17_SCR-UM-01_Users.png) |
+| SCR-UM-02 | Edit user (drawer) | on `/admin/users` | Admin | [18_SCR-UM-02_Edit-user-drawer.png](../../image/admin/18_SCR-UM-02_Edit-user-drawer.png) |
+| SCR-UM-03 | Teams & sub-groups | `/admin/teams` | Admin | [19_SCR-UM-03_Teams.png](../../image/admin/19_SCR-UM-03_Teams.png) |
 
-![SCR-UM-01 Users](images/um-01-users.png)
+![SCR-UM-01 Users](../../image/admin/17_SCR-UM-01_Users.png)
 
 ## Design system used
 

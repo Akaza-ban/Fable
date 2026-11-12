@@ -8,13 +8,13 @@ Each screen lists its purpose, its layout, the elements worth noting and its sta
 
 ## Reports
 
-### SCR-BC-03 Reports › AI — `/analytics/ai` · Admin · [PNG](images/bc-03-reports-ai.png)
+### SCR-BC-03 Reports › AI — `/analytics/ai` · Admin · [PNG](../../image/admin/10_SCR-BC-03_Reports-AI.png)
 
 Purpose: show whether the AI is on track for the self-resolution target, why tickets still go to a person, and whether the AI output is good (US-BC-04, US-BC-08, US-BC-09).
 
 **Layout:** page header (title "Reports", *Export*); tabs Tickets / SLA / **AI** / Satisfaction; filter bar; five tiles; two rows of two cards; the Quality card full width.
 
-![SCR-BC-03](images/bc-03-reports-ai.png)
+![SCR-BC-03](../../image/admin/10_SCR-BC-03_Reports-AI.png)
 
 | # | Element | Note |
 |---|---|---|
@@ -37,13 +37,13 @@ Purpose: show whether the AI is on track for the self-resolution target, why tic
 | invalid period | `ERROR` `422 INVALID_DATE_RANGE` | Message under the period filter; previous figures kept. |
 | technician | `FORBIDDEN` (D-BC-IA-03) | The AI tab is not shown; the URL opens SCR-90. |
 
-### SCR-BC-05 Report settings — `/analytics/settings` · Admin · [PNG](images/bc-05-report-settings.png)
+### SCR-BC-05 Report settings — `/analytics/settings` · Admin · [PNG](../../image/admin/11_SCR-BC-05_Report-settings.png)
 
 Purpose: set the parameters that change how figures are computed for everyone, and the weekly digest (US-BC-07, US-BC-11).
 
 **Layout:** page header with *Cancel* and *Save changes*; info banner; three cards with label / help text on the left and the control on the right.
 
-![SCR-BC-05](images/bc-05-report-settings.png)
+![SCR-BC-05](../../image/admin/11_SCR-BC-05_Report-settings.png)
 
 | # | Element | Note |
 |---|---|---|
@@ -63,11 +63,11 @@ Purpose: set the parameters that change how figures are computed for everyone, a
 | saved | Success | Toast "Report settings saved" for 5 s; the meta line shows the new author and time. |
 | technician | `FORBIDDEN` | Page not in the sidebar; URL opens SCR-90. |
 
-### SCR-BC-10 Export (modal) — on any tab · Admin · [PNG over the page](images/bc-10-export.png) · [PNG states](images/bc-10b-export-states.png)
+### SCR-BC-10 Export (modal) — on any tab · Admin · [PNG over the page](../../image/admin/12_SCR-BC-10_Export.png) · [PNG states](../../image/admin/13_SCR-BC-10_Export-states.png)
 
 Purpose: download the figures of the current tab with its filters as CSV or XLSX (US-BC-06).
 
-![SCR-BC-10 states](images/bc-10b-export-states.png)
+![SCR-BC-10 states](../../image/admin/13_SCR-BC-10_Export-states.png)
 
 | # | Element | Note |
 |---|---|---|

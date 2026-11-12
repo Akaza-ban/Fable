@@ -12,18 +12,18 @@ The screens show how the rules of F07 look on a page: every rate comes with its 
 |---|---|
 | [00-decisions.md](00-decisions.md) | Design decisions D-BC-UI-01 … D-BC-UI-06, what is not drawn yet |
 | [01-screen-notes.md](01-screen-notes.md) | Per screen: purpose, layout, annotated elements, and every state |
-| [`images/`](images/) | PNG exports of the Figma frames |
+| [`../../image/admin/`](../../image/admin/) | PNG exports of the Figma frames (shared Admin image folder) |
 | [Figma file](https://www.figma.com/design/Dfak5zzpiXKxVEqvTOZLdJ/Service-Desk-UI-%E2%80%93-DS-01-Relay?node-id=0-1) | Source frames; the same names as the PNGs below |
 
 ## Screens
 
 | ID | Screen | Route | Role | PNG |
 |---|---|---|---|---|
-| SCR-BC-03 | Reports › AI tab | `/analytics/ai` | Admin | [bc-03-reports-ai.png](images/bc-03-reports-ai.png) |
-| SCR-BC-05 | Report settings | `/analytics/settings` | Admin | [bc-05-report-settings.png](images/bc-05-report-settings.png) |
-| SCR-BC-10 | Export (modal) | on the tab route | Admin | [bc-10-export.png](images/bc-10-export.png), [bc-10b-export-states.png](images/bc-10b-export-states.png) |
+| SCR-BC-03 | Reports › AI tab | `/analytics/ai` | Admin | [10_SCR-BC-03_Reports-AI.png](../../image/admin/10_SCR-BC-03_Reports-AI.png) |
+| SCR-BC-05 | Report settings | `/analytics/settings` | Admin | [11_SCR-BC-05_Report-settings.png](../../image/admin/11_SCR-BC-05_Report-settings.png) |
+| SCR-BC-10 | Export (modal) | on the tab route | Admin | [12_SCR-BC-10_Export.png](../../image/admin/12_SCR-BC-10_Export.png), [13_SCR-BC-10_Export-states.png](../../image/admin/13_SCR-BC-10_Export-states.png) |
 
-![SCR-BC-03 Reports › AI](images/bc-03-reports-ai.png)
+![SCR-BC-03 Reports › AI](../../image/admin/10_SCR-BC-03_Reports-AI.png)
 
 ## Design system used
 

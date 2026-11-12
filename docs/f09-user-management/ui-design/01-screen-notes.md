@@ -8,13 +8,13 @@ Each screen lists its purpose, its layout, the elements worth noting and its sta
 
 ## People
 
-### SCR-UM-01 Users — `/admin/users` · Admin · [PNG](images/um-01-users.png)
+### SCR-UM-01 Users — `/admin/users` · Admin · [PNG](../../image/admin/17_SCR-UM-01_Users.png)
 
 Purpose: find users, see their role, access scope and availability, and enable or disable them alone or in bulk.
 
 **Layout:** page header (*Sync now*, *Add user*); filter bar; bulk action bar (when rows are selected); table with paging; note.
 
-![SCR-UM-01](images/um-01-users.png)
+![SCR-UM-01](../../image/admin/17_SCR-UM-01_Users.png)
 
 | # | Element | Note |
 |---|---|---|
@@ -34,13 +34,13 @@ Purpose: find users, see their role, access scope and availability, and enable o
 | saved | Success | Toast "2 users disabled" for 5 s. |
 | not admin | 403 | SCR-90. |
 
-### SCR-UM-02 Edit user (drawer) — on `/admin/users` · Admin · [PNG](images/um-02-edit-user-drawer.png)
+### SCR-UM-02 Edit user (drawer) — on `/admin/users` · Admin · [PNG](../../image/admin/18_SCR-UM-02_Edit-user-drawer.png)
 
 Purpose: change a user's role, access scope and assignment settings, or disable the account.
 
 **Layout:** drawer 480 px from the right over a dimmed list; header with name and e-mail; five groups; sticky footer.
 
-![SCR-UM-02](images/um-02-edit-user-drawer.png)
+![SCR-UM-02](../../image/admin/18_SCR-UM-02_Edit-user-drawer.png)
 
 | # | Element | Note |
 |---|---|---|
@@ -63,13 +63,13 @@ Accessibility: focus moves into the drawer and is trapped; Esc closes it and ret
 
 ## Teams
 
-### SCR-UM-03 Teams & sub-groups — `/admin/teams` · Admin · [PNG](images/um-03-teams.png)
+### SCR-UM-03 Teams & sub-groups — `/admin/teams` · Admin · [PNG](../../image/admin/19_SCR-UM-03_Teams.png)
 
 Purpose: maintain the structure that routing uses: teams, sub-groups, the subcategories each handles, and their members (F05 UC-WF-04, UC-WF-05).
 
 **Layout:** page header (*New team*); two panes: *Structure* tree (290 px) and the selected team.
 
-![SCR-UM-03](images/um-03-teams.png)
+![SCR-UM-03](../../image/admin/19_SCR-UM-03_Teams.png)
 
 | # | Element | Note |
 |---|---|---|
