@@ -479,6 +479,236 @@ The ticket console must clearly show the AI summary, the reason the ticket came 
 
 Each branch details its own screens: [F02 Dashboard](docs/f02-dashboard/information-architecture/README.md), [F03 Ticket Management](docs/f03-ticket-management/information-architecture/README.md), [F04 AI Ticket Processing](docs/f04-ai-ticket-processing/information-architecture/README.md), [F05 Workflow & Automation](docs/f05-workflow-automation/information-architecture/README.md), [F06 Knowledge Base](docs/f06-knowledge-base/information-architecture/README.md), [F07 Reports & Analytics](docs/f07-reports-analytics/information-architecture/README.md), [F08 Activity Log](docs/f08-activity-log/information-architecture/README.md). Where a branch uses another route or home page, the routes and homes above apply. Users and teams (F09) and Profile (F10) are not specified yet; who approves access outside the catalog, and where, is still open.
 
+### 2.3 Current UI design
+
+The screens are high-fidelity designs drawn in Figma on the shared template *Service Desk UI – DS-01 Relay* and exported to PNG. They follow the role areas of [section 2.1](#21-information-architecture): self-service for the Requester, the support workspace for the Technician, and the governance area for the Administrator. Every label is written in plain language; internal codes stay in the branch documents.
+
+Every screen, by role:
+
+| Role | Screens | Folder |
+|---|---|---|
+| Requester | 8 PNG | [docs/image/requester/](docs/image/requester/) |
+| Technician | 8 PNG | [docs/image/technician/](docs/image/technician/) |
+| Administrator | 19 PNG | [docs/image/admin/](docs/image/admin/) |
+
+Screen notes and states are in the branch folders, for example [F07 UI design](docs/f07-reports-analytics/ui-design/README.md), [F08 UI design](docs/f08-activity-log/ui-design/README.md) and [F09 UI draft](docs/f09-user-management/ui-design/README.md).
+
+#### Requester — self-service
+
+##### 1. Sign in with the company account
+
+![Login](docs/image/requester/01_Login-SSO.png)
+
+Sign in with the company Microsoft or Google account; each role lands on its own home page (the demo environment lets you pick a role).
+
+##### 2. Portal (SCR-DB-03)
+
+![Portal](docs/image/requester/02_SCR-DB-03_Portal.png)
+
+The requester home: search for help, requests that need an action (answer the AI, confirm a fix), active requests with progress, announcements and quick services.
+
+##### 3. New request (SCR-T-01)
+
+![New request](docs/image/requester/03_SCR-T-01_New-request.png)
+
+Subject, category and a free-text description, on behalf of a colleague if needed, with attachments; matching solutions are suggested on the right while typing.
+
+##### 4. My requests (SCR-T-03)
+
+![My requests](docs/image/requester/04_SCR-T-03_My-requests.png)
+
+Every request with its status, priority and time left, grouped in tabs such as *Needs my action* and *Resolved & closed*.
+
+##### 5. Request detail (SCR-T-02)
+
+![Request detail](docs/image/requester/05_SCR-T-02_Request-detail.png)
+
+The conversation with the AI and the technician, a banner when an answer is needed, the progress steps, the time left and what the AI understood from the request.
+
+##### 6. Knowledge base search (SCR-KB-01)
+
+![KB search](docs/image/requester/06_SCR-KB-01_KB-search.png)
+
+Describe the problem in your own words; a suggested answer comes first, then verified articles.
+
+##### 7. Knowledge base article (SCR-KB-02)
+
+![KB article](docs/image/requester/07_SCR-KB-02_KB-article.png)
+
+Problem, cause and step-by-step fix, with *Was this article helpful?* and related solutions.
+
+##### 8. Profile
+
+![Profile](docs/image/requester/08_Profile.png)
+
+Account details from the company directory, the role and what it allows, and a link to change the password with Microsoft.
+
+#### Technician — support workspace
+
+##### 1. Workbench (SCR-DB-02)
+
+![Technician workbench](docs/image/technician/01_SCR-DB-02_Technician-workbench.png)
+
+The technician home: today's queue with SLA timers, and the sub-group queue to claim tickets from.
+
+##### 2. Work queues (SCR-T-04)
+
+![Work queues](docs/image/technician/02_SCR-T-04_Work-queues.png)
+
+Assigned tickets and team queues with filters, SLA time left and why each ticket came to a person.
+
+##### 3. Ticket detail (SCR-T-02)
+
+![Ticket detail](docs/image/technician/03_SCR-T-02_Ticket-detail.png)
+
+The ticket console: AI summary, why it came to a person, fields filled by the AI, SLA timer, conversation and internal notes.
+
+##### 4. Article authoring (SCR-KB-03)
+
+![Article authoring studio](docs/image/technician/04_SCR-KB-03_Article-authoring-studio.png)
+
+Edit a solution guide (problem, cause, steps) with a publishing checklist, then submit it for review.
+
+##### 5. Flagged content (SCR-KB-06)
+
+![Flagged content maintenance](docs/image/technician/05_SCR-KB-06_Flagged-content-maintenance.png)
+
+Articles flagged as outdated or unhelpful, waiting for an update.
+
+##### 6. Reports: Tickets (SCR-BC-01)
+
+![Reports Tickets](docs/image/technician/06_SCR-BC-01_Reports-Tickets.png)
+
+Ticket volume and backlog for the technician's own teams.
+
+##### 7. Reports: SLA (SCR-BC-02)
+
+![Reports SLA](docs/image/technician/07_SCR-BC-02_Reports-SLA.png)
+
+Response and resolution times, with the tickets that breached or are at risk.
+
+##### 8. Reports: Satisfaction (SCR-BC-04)
+
+![Reports Satisfaction](docs/image/technician/08_SCR-BC-04_Reports-Satisfaction.png)
+
+Requester ratings and response rate for the technician's own teams.
+
+#### Administrator — governance
+
+##### 1. Dashboard with a P1 alert (SCR-DB-10)
+
+![Dashboard P1 alert](docs/image/admin/01_SCR-DB-10_Dashboard-P1-alert.png)
+
+The administrator home: volume, AI resolution rate, SLA radar, team workload and live P1 alerts.
+
+##### 2. AI decisions (SCR-WF-30)
+
+![AI decisions](docs/image/admin/02_SCR-WF-30_AI-decisions.png)
+
+Every routing decision of the AI with its outcome: done automatically, asked for details, or sent to a person.
+
+##### 3. AI decision detail (SCR-WF-31)
+
+![AI decision detail](docs/image/admin/03_SCR-WF-31_AI-decision-detail.png)
+
+Why the AI decided: each rule it checked and the values it compared.
+
+##### 4. Learning examples (SCR-AI-01)
+
+![Learning examples](docs/image/admin/04_SCR-AI-01_Learning-examples.png)
+
+Verified, closed tickets the AI learns from; the administrator can exclude a wrong example with a reason.
+
+##### 5. AI actions and thresholds (SCR-WF-03)
+
+![AI actions and thresholds](docs/image/admin/05_SCR-WF-03_AI-actions-thresholds.png)
+
+How sure the AI must be before acting, which AI actions are on, and which domains the AI agent handles first.
+
+##### 6. Approved actions list (SCR-WF-03)
+
+![Whitelist](docs/image/admin/06_SCR-WF-03-06_Whitelist.png)
+
+The requests the AI may approve and execute by itself.
+
+##### 7. Access by department (SCR-WF-03)
+
+![Entitlement matrix](docs/image/admin/07_SCR-WF-03-07_Entitlement-matrix.png)
+
+Which department may get which access without a manual approval.
+
+##### 8. Workload scoring (SCR-WF-01)
+
+![Workload scoring](docs/image/admin/08_SCR-WF-01-05_Workload-scoring.png)
+
+How the system weighs open tickets to pick the least busy technician.
+
+##### 9. Business calendar (SCR-WF-02)
+
+![Business calendar](docs/image/admin/09_SCR-WF-02_Business-calendar.png)
+
+Working hours and holidays; SLA timers pause outside them.
+
+##### 10. Reports: AI (SCR-BC-03)
+
+![Reports AI](docs/image/admin/10_SCR-BC-03_Reports-AI.png)
+
+How many tickets the AI solved alone each week against the 50% target, how it solved them, and why the rest went to a technician.
+
+##### 11. Report settings (SCR-BC-05)
+
+![Report settings](docs/image/admin/11_SCR-BC-05_Report-settings.png)
+
+Targets, limits and the weekly summary e-mail; every change is saved in the activity log.
+
+##### 12. Export (SCR-BC-10)
+
+![Export](docs/image/admin/12_SCR-BC-10_Export.png)
+
+Download the current report as CSV or Excel with the filters on screen.
+
+##### 13. Export states (SCR-BC-10)
+
+![Export states](docs/image/admin/13_SCR-BC-10_Export-states.png)
+
+Ready, too many rows, and export not possible right now.
+
+##### 14. Activity log (SCR-NK-02)
+
+![Activity log](docs/image/admin/14_SCR-NK-02_Activity-log.png)
+
+Everything done by people, the AI and automatic rules, with what changed written as sentences. Entries cannot be changed or deleted.
+
+##### 15. Automatic actions (SCR-NK-04)
+
+![Automatic actions](docs/image/admin/15_SCR-NK-04_Workflow-runs.png)
+
+Changes the system made by itself, with a warning when many fail for the same reason.
+
+##### 16. Automatic action detail (SCR-NK-05)
+
+![Automatic action detail](docs/image/admin/16_SCR-NK-05_Workflow-run-detail.png)
+
+What happened step by step, why it failed, and what to do next.
+
+##### 17. Users (/admin/users)
+
+![Users](docs/image/admin/17_SCR-UM-01_Users.png)
+
+Find users, see their role, teams and availability, and enable or disable them alone or in bulk.
+
+##### 18. Edit user
+
+![Edit user drawer](docs/image/admin/18_SCR-UM-02_Edit-user-drawer.png)
+
+Change the role, the teams a technician works for, and whether they receive new tickets.
+
+##### 19. Teams and sub-groups (/admin/teams)
+
+![Teams and sub-groups](docs/image/admin/19_SCR-UM-03_Teams.png)
+
+The team structure used to route tickets, with the members, their availability and how busy they are.
+
 ## Documentation
 
 - System overview: [Mind map outline](docs/mindmap-xmind.md), [Information architecture (section 2)](#2-information-architecture-screen-hierarchy-and-uiux); the older draft [docs/information-architecture.md](docs/information-architecture.md) is superseded.
