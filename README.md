@@ -488,7 +488,7 @@ Every screen, by role:
 | Role | Screens | Folder |
 |---|---|---|
 | Requester | 8 PNG | [docs/image/requester/](docs/image/requester/) |
-| Technician | 8 PNG | [docs/image/technician/](docs/image/technician/) |
+| Technician | 8 screens (14 PNG) | [docs/image/technician/](docs/image/technician/) |
 | Administrator | 15 PNG | [docs/image/admin/](docs/image/admin/) |
 
 Screen notes and states are in the branch folders, for example [F07 UI design](docs/f07-reports-analytics/ui-design/README.md), [F08 UI design](docs/f08-activity-log/ui-design/README.md) and [F09 UI draft](docs/f09-user-management/ui-design/README.md).
@@ -553,7 +553,11 @@ The technician home: today's queue with SLA timers, and the sub-group queue to c
 
 ##### 2. Work queues (SCR-T-04)
 
-![Work queues](docs/image/technician/02_SCR-T-04_Work-queues.png)
+![Work queues (1/3)](docs/image/technician/02_SCR-T-04_Work-queues-a.png)
+
+![Work queues (2/3)](docs/image/technician/02_SCR-T-04_Work-queues-b.png)
+
+![Work queues (3/3)](docs/image/technician/02_SCR-T-04_Work-queues-c.png)
 
 Assigned tickets and team queues with filters, SLA time left and why each ticket came to a person.
 
@@ -571,25 +575,33 @@ Edit a solution guide (problem, cause, steps) with a publishing checklist, then 
 
 ##### 5. Flagged content (SCR-KB-06)
 
-![Flagged content maintenance](docs/image/technician/05_SCR-KB-06_Flagged-content-maintenance.png)
+![Flagged content maintenance (1/2)](docs/image/technician/05_SCR-KB-06_Flagged-content-maintenance-a.png)
+
+![Flagged content maintenance (2/2)](docs/image/technician/05_SCR-KB-06_Flagged-content-maintenance-b.png)
 
 Articles flagged as outdated or unhelpful, waiting for an update.
 
 ##### 6. Reports: Tickets (SCR-BC-01)
 
-![Reports Tickets](docs/image/technician/06_SCR-BC-01_Reports-Tickets.png)
+![Reports Tickets (1/2)](docs/image/technician/06_SCR-BC-01_Reports-Tickets-a.png)
+
+![Reports Tickets (2/2)](docs/image/technician/06_SCR-BC-01_Reports-Tickets-b.png)
 
 Ticket volume and backlog for the technician's own teams.
 
 ##### 7. Reports: SLA (SCR-BC-02)
 
-![Reports SLA](docs/image/technician/07_SCR-BC-02_Reports-SLA.png)
+![Reports SLA (1/2)](docs/image/technician/07_SCR-BC-02_Reports-SLA-a.png)
+
+![Reports SLA (2/2)](docs/image/technician/07_SCR-BC-02_Reports-SLA-b.png)
 
 Response and resolution times, with the tickets that breached or are at risk.
 
 ##### 8. Reports: Satisfaction (SCR-BC-04)
 
-![Reports Satisfaction](docs/image/technician/08_SCR-BC-04_Reports-Satisfaction.png)
+![Reports Satisfaction (1/2)](docs/image/technician/08_SCR-BC-04_Reports-Satisfaction-a.png)
+
+![Reports Satisfaction (2/2)](docs/image/technician/08_SCR-BC-04_Reports-Satisfaction-b.png)
 
 Requester ratings and response rate for the technician's own teams.
 
