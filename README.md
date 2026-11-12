@@ -487,7 +487,7 @@ Every screen, by role:
 
 | Role | Screens | Folder |
 |---|---|---|
-| Requester | 8 PNG | [docs/image/requester/](docs/image/requester/) |
+| Requester | 7 PNG | [docs/image/requester/](docs/image/requester/) |
 | Technician | 8 screens (14 PNG) | [docs/image/technician/](docs/image/technician/) |
 | Administrator | 15 PNG | [docs/image/admin/](docs/image/admin/) |
 
@@ -505,39 +505,33 @@ Sign in with the company Microsoft or Google account; each role lands on its own
 
 ![Portal](docs/image/requester/02_SCR-DB-03_Portal.png)
 
-The requester home: search for help, requests that need an action (answer the AI, confirm a fix), active requests with progress, announcements and quick services.
+The requester home: requests that need an action (answer the AI, confirm a fix), open requests with their status, announcements and quick prompts. A new request starts in the AI Support Assistant on the right: the requester describes the problem, the assistant suggests a solution first, and if that does not help it drafts the ticket (subject, description, for whom, evidence) for the requester to confirm.
 
-##### 3. New request (SCR-T-01)
-
-![New request](docs/image/requester/03_SCR-T-01_New-request.png)
-
-Subject, category and a free-text description, on behalf of a colleague if needed, with attachments; matching solutions are suggested on the right while typing.
-
-##### 4. My requests (SCR-T-03)
+##### 3. My requests (SCR-T-03)
 
 ![My requests](docs/image/requester/04_SCR-T-03_My-requests.png)
 
 Every request with its status, priority and time left, grouped in tabs such as *Needs my action* and *Resolved & closed*.
 
-##### 5. Request detail (SCR-T-02)
+##### 4. Request detail (SCR-T-02)
 
 ![Request detail](docs/image/requester/05_SCR-T-02_Request-detail.png)
 
 The conversation with the AI and the technician, a banner when an answer is needed, the progress steps, the time left and what the AI understood from the request.
 
-##### 6. Knowledge base search (SCR-KB-01)
+##### 5. Knowledge base search (SCR-KB-01)
 
 ![KB search](docs/image/requester/06_SCR-KB-01_KB-search.png)
 
 Describe the problem in your own words; a suggested answer comes first, then verified articles.
 
-##### 7. Knowledge base article (SCR-KB-02)
+##### 6. Knowledge base article (SCR-KB-02)
 
 ![KB article](docs/image/requester/07_SCR-KB-02_KB-article.png)
 
 Problem, cause and step-by-step fix, with *Was this article helpful?* and related solutions.
 
-##### 8. Profile
+##### 7. Profile
 
 ![Profile](docs/image/requester/08_Profile.png)
 
