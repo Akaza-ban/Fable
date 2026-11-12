@@ -595,11 +595,6 @@ Requester ratings and response rate for the technician's own teams.
 
 #### Administrator — governance
 
-##### 1. Dashboard with a P1 alert (SCR-DB-10)
-
-![Dashboard P1 alert](docs/image/admin/01_SCR-DB-10_Dashboard-P1-alert.png)
-
-The administrator home: volume, AI resolution rate, SLA radar, team workload and live P1 alerts.
 
 ##### 2. AI decisions (SCR-WF-30)
 
@@ -613,11 +608,6 @@ Every routing decision of the AI with its outcome: done automatically, asked for
 
 Why the AI decided: each rule it checked and the values it compared.
 
-##### 4. Learning examples (SCR-AI-01)
-
-![Learning examples](docs/image/admin/04_SCR-AI-01_Learning-examples.png)
-
-Verified, closed tickets the AI learns from; the administrator can exclude a wrong example with a reason.
 
 ##### 5. AI actions and thresholds (SCR-WF-03)
 
