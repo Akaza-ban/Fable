@@ -489,7 +489,7 @@ Every screen, by role:
 |---|---|---|
 | Requester | 8 PNG | [docs/image/requester/](docs/image/requester/) |
 | Technician | 8 PNG | [docs/image/technician/](docs/image/technician/) |
-| Administrator | 21 PNG | [docs/image/admin/](docs/image/admin/) |
+| Administrator | 15 PNG | [docs/image/admin/](docs/image/admin/) |
 
 Screen notes and states are in the branch folders, for example [F07 UI design](docs/f07-reports-analytics/ui-design/README.md), [F08 UI design](docs/f08-activity-log/ui-design/README.md) and [F09 UI draft](docs/f09-user-management/ui-design/README.md).
 
@@ -663,65 +663,29 @@ Response and resolution targets for P1–P4, when the clock runs, the reminder p
 
 Working hours and holidays; SLA timers pause outside them.
 
-##### 10. Reports: AI (SCR-BC-03)
+##### 10. AI performance (SCR-BC-03)
 
-![Reports AI](docs/image/admin/10_SCR-BC-03_Reports-AI.png)
+![AI performance](docs/image/admin/10_SCR-BC-03_AI-performance.png)
 
-How many tickets the AI solved alone each week against the 50% target, how it solved them, and why the rest went to a technician.
+How many tickets the AI solved alone last week against the 50% target, how it solved them, why the rest still needed a technician, and whether the AI is getting it right. *Export* opens a small Excel / CSV menu.
 
 ##### 11. Report settings (SCR-BC-05)
 
 ![Report settings](docs/image/admin/11_SCR-BC-05_Report-settings.png)
 
-Targets, limits and the weekly summary e-mail; every change is saved in the activity log.
+Targets and limits used by every report, and who receives the weekly summary e-mail.
 
-##### 12. Export (SCR-BC-10)
+##### 12. Activity log (SCR-NK-02, SCR-NK-04, SCR-NK-05)
 
-![Export](docs/image/admin/12_SCR-BC-10_Export.png)
+![Activity log](docs/image/admin/12_SCR-NK-02_Activity-log.png)
 
-Download the current report as CSV or Excel with the filters on screen.
+Everything done by people, the AI and automatic actions, one sentence per row. *Failed actions* shows only the automatic actions that failed; a row opens its details and what to do next. Shown with the sidebar collapsed and the *Columns* menu open.
 
-##### 13. Export states (SCR-BC-10)
+##### 13. People (/admin/users, /admin/teams)
 
-![Export states](docs/image/admin/13_SCR-BC-10_Export-states.png)
+![People](docs/image/admin/13_SCR-UM-01_People.png)
 
-Ready, too many rows, and export not possible right now.
-
-##### 14. Activity log (SCR-NK-02)
-
-![Activity log](docs/image/admin/14_SCR-NK-02_Activity-log.png)
-
-Everything done by people, the AI and automatic rules, with what changed written as sentences. Entries cannot be changed or deleted.
-
-##### 15. Automatic actions (SCR-NK-04)
-
-![Automatic actions](docs/image/admin/15_SCR-NK-04_Workflow-runs.png)
-
-Changes the system made by itself, with a warning when many fail for the same reason.
-
-##### 16. Automatic action detail (SCR-NK-05)
-
-![Automatic action detail](docs/image/admin/16_SCR-NK-05_Workflow-run-detail.png)
-
-What happened step by step, why it failed, and what to do next.
-
-##### 17. Users (/admin/users)
-
-![Users](docs/image/admin/17_SCR-UM-01_Users.png)
-
-Find users, see their role, teams and availability, and enable or disable them alone or in bulk.
-
-##### 18. Edit user
-
-![Edit user drawer](docs/image/admin/18_SCR-UM-02_Edit-user-drawer.png)
-
-Change the role, the teams a technician works for, and whether they receive new tickets.
-
-##### 19. Teams and sub-groups (/admin/teams)
-
-![Teams and sub-groups](docs/image/admin/19_SCR-UM-03_Teams.png)
-
-The team structure used to route tickets, with the members, their availability and how busy they are.
+Teams on the left filter the people table; a person opens on the right to change their role, teams and whether they get new tickets.
 
 ## Documentation
 

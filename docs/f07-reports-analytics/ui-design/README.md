@@ -10,7 +10,7 @@ The screens show how the rules of F07 look on a page: every rate comes with its 
 
 | File | Content |
 |---|---|
-| [00-decisions.md](00-decisions.md) | Design decisions D-BC-UI-01 … D-BC-UI-07, what is not drawn yet |
+| [00-decisions.md](00-decisions.md) | Design decisions D-BC-UI-01 … D-BC-UI-08, what is not drawn yet |
 | [01-screen-notes.md](01-screen-notes.md) | Per screen: purpose, layout, annotated elements, and every state |
 | [`../../image/admin/`](../../image/admin/) | PNG exports of the Figma frames (shared Admin image folder) |
 | [Figma file](https://www.figma.com/design/Dfak5zzpiXKxVEqvTOZLdJ/Service-Desk-UI-%E2%80%93-DS-01-Relay?node-id=0-1) | Source frames; the same names as the PNGs below |
@@ -19,11 +19,10 @@ The screens show how the rules of F07 look on a page: every rate comes with its 
 
 | ID | Screen | Route | Role | PNG |
 |---|---|---|---|---|
-| SCR-BC-03 | Reports › AI tab | `/analytics/ai` | Admin | [10_SCR-BC-03_Reports-AI.png](../../image/admin/10_SCR-BC-03_Reports-AI.png) |
+| SCR-BC-03 (+ SCR-BC-10 as the Export menu) | AI performance | `/analytics/ai` | Admin | [10_SCR-BC-03_AI-performance.png](../../image/admin/10_SCR-BC-03_AI-performance.png) |
 | SCR-BC-05 | Report settings | `/analytics/settings` | Admin | [11_SCR-BC-05_Report-settings.png](../../image/admin/11_SCR-BC-05_Report-settings.png) |
-| SCR-BC-10 | Export (modal) | on the tab route | Admin | [12_SCR-BC-10_Export.png](../../image/admin/12_SCR-BC-10_Export.png), [13_SCR-BC-10_Export-states.png](../../image/admin/13_SCR-BC-10_Export-states.png) |
 
-![SCR-BC-03 Reports › AI](../../image/admin/10_SCR-BC-03_Reports-AI.png)
+![AI performance](../../image/admin/10_SCR-BC-03_AI-performance.png)
 
 ## Design system used
 

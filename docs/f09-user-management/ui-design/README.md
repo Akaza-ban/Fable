@@ -10,7 +10,7 @@ The screens follow the rules other branches already set: a technician receives t
 
 | File | Content |
 |---|---|
-| [00-decisions.md](00-decisions.md) | Design decisions D-UM-UI-01 … D-UM-UI-07, assumptions to confirm |
+| [00-decisions.md](00-decisions.md) | Design decisions D-UM-UI-01 … D-UM-UI-08, assumptions to confirm |
 | [01-screen-notes.md](01-screen-notes.md) | Per screen: purpose, layout, annotated elements, and every state |
 | [`../../image/admin/`](../../image/admin/) | PNG exports of the Figma frames (shared Admin image folder) |
 | [Figma file](https://www.figma.com/design/Dfak5zzpiXKxVEqvTOZLdJ/Service-Desk-UI-%E2%80%93-DS-01-Relay?node-id=0-1) | Source frames; the same names as the PNGs below |
@@ -19,11 +19,9 @@ The screens follow the rules other branches already set: a technician receives t
 
 | ID (provisional) | Screen | Route | Role | PNG |
 |---|---|---|---|---|
-| SCR-UM-01 | Users | `/admin/users` | Admin | [17_SCR-UM-01_Users.png](../../image/admin/17_SCR-UM-01_Users.png) |
-| SCR-UM-02 | Edit user (drawer) | on `/admin/users` | Admin | [18_SCR-UM-02_Edit-user-drawer.png](../../image/admin/18_SCR-UM-02_Edit-user-drawer.png) |
-| SCR-UM-03 | Teams & sub-groups | `/admin/teams` | Admin | [19_SCR-UM-03_Teams.png](../../image/admin/19_SCR-UM-03_Teams.png) |
+| SCR-UM-01 (+ 02, 03) | People: users, editing a user, teams | `/admin/users`, `/admin/teams` | Admin | [13_SCR-UM-01_People.png](../../image/admin/13_SCR-UM-01_People.png) |
 
-![SCR-UM-01 Users](../../image/admin/17_SCR-UM-01_Users.png)
+![People](../../image/admin/13_SCR-UM-01_People.png)
 
 ## Design system used
 
