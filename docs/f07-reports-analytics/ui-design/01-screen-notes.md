@@ -67,6 +67,8 @@ Purpose: set the parameters that change how figures are computed for everyone, a
 
 Purpose: download the figures of the current tab with its filters as CSV or XLSX (US-BC-06).
 
+![SCR-BC-10 over the AI tab](../../image/admin/12_SCR-BC-10_Export.png)
+
 ![SCR-BC-10 states](../../image/admin/13_SCR-BC-10_Export-states.png)
 
 | # | Element | Note |
