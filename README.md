@@ -489,7 +489,7 @@ Every screen, by role:
 |---|---|---|
 | Requester | 8 PNG | [docs/image/requester/](docs/image/requester/) |
 | Technician | 8 PNG | [docs/image/technician/](docs/image/technician/) |
-| Administrator | 19 PNG | [docs/image/admin/](docs/image/admin/) |
+| Administrator | 21 PNG | [docs/image/admin/](docs/image/admin/) |
 
 Screen notes and states are in the branch folders, for example [F07 UI design](docs/f07-reports-analytics/ui-design/README.md), [F08 UI design](docs/f08-activity-log/ui-design/README.md) and [F09 UI draft](docs/f09-user-management/ui-design/README.md).
 
@@ -595,6 +595,7 @@ Requester ratings and response rate for the technician's own teams.
 
 #### Administrator — governance
 
+The governance screens are merged into three pages: **AI decisions** (list with a detail drawer), **AI scope** (tabs: AI actions, Whitelist, Entitlements) and **Routing & SLA** (tabs: Workload scoring, SLA policies, Business calendar). Forms and the assignment preview open as dialogs.
 
 ##### 2. AI decisions (SCR-WF-30)
 
@@ -606,34 +607,57 @@ Every routing decision of the AI with its outcome: done automatically, asked for
 
 ![AI decision detail](docs/image/admin/03_SCR-WF-31_AI-decision-detail.png)
 
-Why the AI decided: each rule it checked and the values it compared.
+Clicking a row opens the detail drawer: what the AI extracted, each rule it checked, the configuration used and the API execution. *Full page* opens it as its own page.
 
-
-##### 5. AI actions and thresholds (SCR-WF-03)
+##### 5. AI scope: AI actions and thresholds (SCR-WF-03)
 
 ![AI actions and thresholds](docs/image/admin/05_SCR-WF-03_AI-actions-thresholds.png)
 
 How sure the AI must be before acting, which AI actions are on, and which domains the AI agent handles first.
 
-##### 6. Approved actions list (SCR-WF-03)
+##### 6. AI scope: approved actions list (SCR-WF-03)
 
 ![Whitelist](docs/image/admin/06_SCR-WF-03-06_Whitelist.png)
 
 The requests the AI may approve and execute by itself.
 
-##### 7. Access by department (SCR-WF-03)
+##### 6b. Add an approved action (SCR-WF-06)
+
+![Add action](docs/image/admin/06b_SCR-WF-06_Add-action.png)
+
+Request type, operation, connector, parameters, limits and the fallback team.
+
+##### 7. AI scope: access by department (SCR-WF-03)
 
 ![Entitlement matrix](docs/image/admin/07_SCR-WF-03-07_Entitlement-matrix.png)
 
 Which department may get which access without a manual approval.
 
-##### 8. Workload scoring (SCR-WF-01)
+##### 7b. Add a department entitlement (SCR-WF-07)
+
+![Add entitlement](docs/image/admin/07b_SCR-WF-07_Add-entitlement.png)
+
+Department, system, entitlement, maximum duration and whether the AI may grant it.
+
+##### 8. Routing & SLA: workload scoring (SCR-WF-01)
 
 ![Workload scoring](docs/image/admin/08_SCR-WF-01-05_Workload-scoring.png)
 
 How the system weighs open tickets to pick the least busy technician.
 
-##### 9. Business calendar (SCR-WF-02)
+##### 8b. Assignment preview (SCR-WF-05)
+
+![Assignment preview](docs/image/admin/08b_SCR-WF-05_Assignment-preview.png)
+
+Tries a sample request and shows who would get it and why the others were excluded. No real ticket is assigned.
+
+##### 8c. Routing & SLA: SLA policies (SCR-WF-02)
+
+![SLA policies](docs/image/admin/08c_SCR-WF-02_SLA-policies.png)
+
+Response and resolution targets for P1–P4, when the clock runs, the reminder point, and raising priority on breach.
+
+##### 9. Routing & SLA: business calendar (SCR-WF-02)
 
 ![Business calendar](docs/image/admin/09_SCR-WF-02_Business-calendar.png)
 
