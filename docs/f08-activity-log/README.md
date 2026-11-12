@@ -50,6 +50,7 @@ F08 **does not decide anything**. It records what other branches did and shows i
 | [04-acceptance-criteria.md](04-acceptance-criteria.md) | Given / When / Then criteria |
 | [05-business-rules.md](05-business-rules.md) | BR-NK-01 … BR-NK-07 |
 | [information-architecture/](information-architecture/README.md) | Pages and sections (SCR-NK, SEC-NK), routes and permissions, navigation, user flows, UI states |
+| [ui-design/](ui-design/README.md) | High-fidelity screens (Figma, PNG) for SCR-NK-02 Activity log, SCR-NK-04 Workflow runs, SCR-NK-05 Run detail; screen notes and states |
 
 ## Open questions
 
@@ -74,7 +75,8 @@ F08 **does not decide anything**. It records what other branches did and shows i
 - [x] User stories US-NK-01 … US-NK-10 (INVEST, MoSCoW)
 - [x] Acceptance criteria and business rules
 - [x] Information architecture (screens, routes, navigation, flows, UI states)
+- [x] UI design of the Audit pages (SCR-NK-02, 04, 05)
 - [ ] Decide the open questions (Q-NK-02, Q-NK-03, Q-NK-04 with the F01 and F05 owners; Q-NK-07 with the client)
 - [ ] Non-functional requirements and traceability (API, tables)
 
-**Related:** [README](../../README.md) · [Previous: F07 Reports & Analytics](../f07-reports-analytics/README.md)
+**Related:** [README](../../README.md) · [Previous: F07 Reports & Analytics](../f07-reports-analytics/README.md) · [Next: F09 User Management](../f09-user-management/README.md)

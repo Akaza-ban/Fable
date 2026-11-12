@@ -1,0 +1,40 @@
+# UI Design — F08 Activity Log
+
+> Design status: TARGET V1 (draft for team review)
+>
+> Implementation status: NOT STARTED
+
+This folder turns the F08 [information architecture](../information-architecture/README.md) into high-fidelity screens. They were drawn in Figma on the shared template *Service Desk UI – DS-01 Relay* (row **5 · Governance detail — Audit (F08)**) and exported to PNG. The scope is the **Audit** area of the Admin: the activity log and the workflow runs with their detail page.
+
+The screens show the F08 rules on a page: no edit, delete or hide control anywhere (D-NK-IA-05), every entry says who did it with an icon and text (D-NK-IA-06), secrets are always `***` (BR-NK-03), and every automated entry links to its evidence. Inputs: [Screens and navigation](../information-architecture/01-screens-and-navigation.md), [User flows](../information-architecture/02-user-flows.md), [UI states](../information-architecture/03-ui-states-and-accessibility.md) and [Acceptance criteria](../04-acceptance-criteria.md).
+
+| File | Content |
+|---|---|
+| [00-decisions.md](00-decisions.md) | Design decisions D-NK-UI-01 … D-NK-UI-06, what is not drawn yet |
+| [01-screen-notes.md](01-screen-notes.md) | Per screen: purpose, layout, annotated elements, and every state |
+| [`images/`](images/) | PNG exports of the Figma frames |
+| [Figma file](https://www.figma.com/design/Dfak5zzpiXKxVEqvTOZLdJ/Service-Desk-UI-%E2%80%93-DS-01-Relay?node-id=0-1) | Source frames; the same names as the PNGs below |
+
+## Screens
+
+| ID | Screen | Route | Role | PNG |
+|---|---|---|---|---|
+| SCR-NK-02 | Activity log | `/audit/activity-log` | Admin | [nk-02-activity-log.png](images/nk-02-activity-log.png) |
+| SCR-NK-04 | Workflow runs | `/audit/workflow-runs` | Admin | [nk-04-workflow-runs.png](images/nk-04-workflow-runs.png) |
+| SCR-NK-05 | Workflow run detail | `/audit/workflow-runs/:id` | Admin | [nk-05-workflow-run-detail.png](images/nk-05-workflow-run-detail.png) |
+
+![SCR-NK-02 Activity log](images/nk-02-activity-log.png)
+
+## Design system used
+
+Same template and tokens as the other Admin pages (see [F07 UI design](../../f07-reports-analytics/ui-design/README.md#design-system-used)). Specific to F08:
+
+| Part | Value |
+|---|---|
+| Shell | Module tab **Activity log** active; sidebar group **Audit** with *Activity log* and *Workflow runs* (badge = failed runs today) |
+| Codes and times | Cousine (monospace) for action codes, run ids, times and request / response bodies |
+| Actor marker | Person: 👤 icon + name + role; AI: `AI` badge (purple) + domain agent + prompt version; Automation: ⚙ icon + "Automation" + rule or run |
+| Run status chips | ◷ In progress (info), ✓ Succeeded (success), ✕ Failed (danger), 👤 Resolved manually (neutral) — icon and text, never color alone (UI states §3) |
+| Diff | Removed line on red `#FEF0EE` with the word *Removed*; added line on green `#E8F5EF` with the word *Added* |
+
+**Related:** [F08 README](../README.md) · [Information architecture](../information-architecture/README.md) · [Decisions](00-decisions.md) · [Screen notes](01-screen-notes.md)

@@ -4,7 +4,7 @@ The system helps an enterprise receive, classify, and dispatch internal IT suppo
 
 ## 1. Requirements — User Stories and Use Cases
 
-Requirements define what the system must do, who uses it, and the value delivered. The detailed specification is split into feature branches F01–F09; F02–F08 each have a folder under `docs/`, while F01 Authentication & Authorization and F09 User Management are not specified yet. This section gives the overview across branches.
+Requirements define what the system must do, who uses it, and the value delivered. The detailed specification is split into feature branches F01–F09; F02–F08 each have a folder under `docs/`, while F01 Authentication & Authorization and F09 User Management are not specified yet (F09 has a [UI draft](docs/f09-user-management/README.md) only). This section gives the overview across branches.
 
 ### 1.1 Product mind map
 
@@ -477,7 +477,7 @@ Each role lands on its own home after login: Requesters on the Portal, Technicia
 
 The ticket console must clearly show the AI summary, the reason the ticket came to a person, the fields filled by the AI (correctable with a reason), the SLA timer and the conversation with internal notes kept separate. Anything the AI did (answer, guidance step, executed action) is visible on the ticket with its result, and failed executions fall back to a technician. Email links never change a ticket with one click; they open the ticket with the action pre-selected.
 
-Each branch details its own screens: [F02 Dashboard](docs/f02-dashboard/information-architecture/README.md), [F03 Ticket Management](docs/f03-ticket-management/information-architecture/README.md), [F04 AI Ticket Processing](docs/f04-ai-ticket-processing/information-architecture/README.md), [F05 Workflow & Automation](docs/f05-workflow-automation/information-architecture/README.md), [F06 Knowledge Base](docs/f06-knowledge-base/information-architecture/README.md), [F07 Reports & Analytics](docs/f07-reports-analytics/information-architecture/README.md), [F08 Activity Log](docs/f08-activity-log/information-architecture/README.md). Where a branch uses another route or home page, the routes and homes above apply. Users and teams (F09) and Profile (F10) are not specified yet; who approves access outside the catalog, and where, is still open.
+Each branch details its own screens: [F02 Dashboard](docs/f02-dashboard/information-architecture/README.md), [F03 Ticket Management](docs/f03-ticket-management/information-architecture/README.md), [F04 AI Ticket Processing](docs/f04-ai-ticket-processing/information-architecture/README.md), [F05 Workflow & Automation](docs/f05-workflow-automation/information-architecture/README.md), [F06 Knowledge Base](docs/f06-knowledge-base/information-architecture/README.md), [F07 Reports & Analytics](docs/f07-reports-analytics/information-architecture/README.md), [F08 Activity Log](docs/f08-activity-log/information-architecture/README.md). Where a branch uses another route or home page, the routes and homes above apply. Users and teams (F09) and Profile (F10) are not specified yet (F09 has a [UI draft](docs/f09-user-management/ui-design/README.md)); who approves access outside the catalog, and where, is still open.
 
 ## Documentation
 

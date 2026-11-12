@@ -56,6 +56,7 @@ The leaves of mind-map branch **8. Dashboard & Governance Telemetry** that belon
 | [04-acceptance-criteria.md](04-acceptance-criteria.md) | Given / When / Then criteria, reference data set |
 | [05-business-rules.md](05-business-rules.md) | BR-BC-01 … BR-BC-07 |
 | [information-architecture/](information-architecture/README.md) | Pages, modals, sections and emails (SCR-BC, SEC-BC, EML-BC), routes and permissions, navigation, user flows, UI states |
+| [ui-design/](ui-design/README.md) | High-fidelity screens (Figma, PNG) for SCR-BC-03 AI, SCR-BC-05 Report settings, SCR-BC-10 Export; screen notes and states |
 
 ## Open questions
 
@@ -85,6 +86,8 @@ Roles, ticket scope and `BR-05 … BR-20` come from F01 (`docs/mvp.md` on the `f
 - [x] User stories US-BC-01 … US-BC-09, US-BC-11 (INVEST, MoSCoW)
 - [x] Acceptance criteria and business rules
 - [x] Information architecture (screens, routes, navigation, flows, UI states)
+- [x] UI design of SCR-BC-03 AI, SCR-BC-05 Report settings, SCR-BC-10 Export
+- [ ] UI design of SCR-BC-01 Tickets, SCR-BC-02 SLA, SCR-BC-04 Satisfaction
 - [ ] Decide the open questions with the team (Q-BC-05 with the F05 owner; Q-BC-13 with the client)
 - [ ] Non-functional requirements and traceability (API, tables)
 
